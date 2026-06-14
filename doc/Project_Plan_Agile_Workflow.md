@@ -6,16 +6,16 @@
 
 *With AI One-Click Listing and Interest-Based Homepage Recommendation*
 
-This project is a web-based second-hand trading platform that supports the main buyer, seller, and administrator workflows in a realistic marketplace setting. Visitors can browse listings, search products, apply filters, and view item details before signing in. Registered users can then create listings, save interesting items, submit purchase requests, track request history, complete transactions, and leave reviews. A standard user account can act as both buyer and seller through different actions in the system, while administrators manage platform operations.
+This project is a web-based second-hand trading platform that supports the main user and administrator workflows in a realistic marketplace setting. Visitors can browse listings, search products, apply filters, and view item details before signing in. Registered users can then create listings, save interesting items, submit purchase requests, track request history, complete transactions, and leave reviews. A standard user account can act as both buyer and seller through different actions in the system, while administrators manage platform operations.
 
 The project also draws on a review of mainstream second-hand trading platforms in New Zealand, especially Trade Me. That review highlighted two practical gaps:
-- Trade Me still uses a traditional multi-step listing flow in which sellers must manually fill in all fields before publishing an item. 
+- Trade Me still uses a traditional multi-step listing flow in which users must manually fill in all fields before publishing an item. 
 - Trade Me tends to show relatively fixed and general homepage content to different users
 
 In response, our project focuses on two highlighted features that are practical and clearly differentiated from a standard marketplace flow:
 
 - `AI One-Click Listing Assistant`
-  - helps sellers generate a draft listing from a product photo instead of manually filling every field from scratch
+  - helps users generate a draft listing from a product photo instead of manually filling every field from scratch
 - `Interest-Based Homepage Recommendation`
   - makes homepage discovery more relevant to a user's recent interest instead of showing similar fixed homepage content to different users
 
@@ -210,31 +210,40 @@ The innovation feature scope will be considered complete when the following feat
 
 ## Core User Stories
 
-### Account and Access
+The product backlog is prioritised using three levels:
+
+- `Must Have`: required for the MVP, the core trading workflow, or the two highlighted features.
+- `Should Have`: important for usability and trust, but the platform can still run without them if time becomes tight.
+- `Could Have`: useful improvements that can be postponed without breaking the main workflow or the feature demo.
+
+The backlog also aligns to Jira priority labels as follows:
+
+- `Highest` or `High`: Must Have
+- `Medium`: Should Have
+- `Low`: Could Have
+- `Lowest`: reserved for ideas that are explicitly parked outside the current delivery plan
+
+### Must Have
+
+#### Access and Core Platform Entry
 
 - As a visitor, I want to browse listings without registering so that I can explore the platform before creating an account.
 - As a visitor, I want to search listings and view item details without logging in so that I can decide whether the platform has items I am interested in.
 - As a user, I want to register an account so that I can use the platform.
 - As a user, I want to log in and log out securely so that I can access my personal features safely.
-- As a user, I want to edit my profile details so that my account information and contact preference stay up to date.
-- As an administrator, I want to view user accounts so that I can monitor platform safety.
-- As an administrator, I want to view listings so that I can inspect platform content when needed.
-- As an administrator, I want to lock a user account when necessary so that unsafe or inappropriate activity can be controlled.
-- As an administrator, I want to delete inappropriate listings so that clearly unsuitable content can be removed from the platform.
 
-### User Selling Stories
+#### Listing and Selling Workflow
 
-- As a user, I want to create a listing so that I can sell a second-hand item.
+- As a user, I want to create a listing so that I can offer an item for sale on the platform.
 - As a user, I want to edit or delete my listing so that I can keep item information accurate.
 - As a user, I want to upload one product image and receive a draft listing so that I can publish items much faster than filling every field manually.
 - As a user, I want to view incoming purchase requests on my listings so that I can manage interested buyers.
 - As a user, I want to accept or reject incoming purchase requests on my listings so that the transaction process is clear.
 - As a user, I want to confirm a completed transaction so that the related listing is updated to sold correctly.
-- As a user, I want to view another user's profile so that I can understand credibility before responding to a request.
 
-### User Buying Stories
+#### Buying and Discovery Workflow
 
-- As a user, I want to browse listings so that I can discover available second-hand items.
+- As a user, I want to browse listings so that I can discover available items on the platform.
 - As a user, I want to search listings by keyword so that I can quickly find relevant products.
 - As a user, I want to use filters such as category, condition, and price range so that I can narrow search results efficiently.
 - As a user, I want to view item details so that I can decide whether I am interested in a product.
@@ -242,17 +251,39 @@ The innovation feature scope will be considered complete when the following feat
 - As a user, I want to view my favorite list page so that I can manage saved items.
 - As a user, I want to submit a purchase request so that I can express interest in buying an item.
 - As a user, I want the homepage to recommend listings from categories I recently searched, browsed, or saved so that discovery feels more relevant to my current interest.
-- As a user, I want to view another user's profile so that I can evaluate reliability before making a purchase.
 
-### Trust and Transaction Stories
+#### Administrator Control
 
-- As an administrator, I want to view request records and completed request records so that I can monitor platform activity responsibly.
-- As an administrator, I want to lock a request record when necessary so that a problematic case can be frozen for review without manually changing its result.
-- As a user, I want to view my request or transaction history so that I can track my activity on the platform.
+- As an administrator, I want to view user accounts so that I can monitor platform safety.
+- As an administrator, I want to view listings so that I can inspect platform content when needed.
+- As an administrator, I want to delete inappropriate listings so that clearly unsuitable content can be removed from the platform.
+
+### Should Have
+
+#### Profile, Trust, and Communication
+
+- As a user, I want to edit my profile details so that my account information and contact preference stay up to date.
+- As a user, I want to set my preferred contact method to email or phone so that other users know the best way to contact me.
+- As a user, I want to view another user's profile so that I can understand credibility before responding to a request.
 - As a user, I want to leave a rating or review after a completed transaction so that trust can be built between users.
 - As a user, I want to view profile trust indicators such as completed transactions and positive feedback so that I can judge reliability more easily.
-- As a user, I want to set my preferred contact method to email or phone so that other users know the best way to contact me.
 - As a user, I want my public profile to show key trust and contact information so that marketplace communication is more practical and transparent.
+
+#### Administration and Record Tracking
+
+- As an administrator, I want to lock a user account when necessary so that unsafe or inappropriate activity can be controlled.
+- As an administrator, I want to view request records and completed request records so that I can monitor platform activity responsibly.
+- As a user, I want to view my request or transaction history so that I can track my activity on the platform.
+
+### Could Have
+
+#### Secondary Administrative and Usability Enhancements
+
+- As an administrator, I want to lock a request record when necessary so that a problematic case can be frozen for review without manually changing its result.
+- As an administrator, I want to view request records and completed request records so that I can monitor platform activity responsibly.
+- As a user, I want to view my request or transaction history so that I can track my activity on the platform.
+- As a user, I want to view another user's profile so that I can understand credibility before responding to a request.
+- As a user, I want to set my preferred contact method to email or phone so that other users know the best way to contact me.
 
 ## Sprint Structure
 
@@ -336,14 +367,18 @@ Highlight Tasks:
 - implement basic administrator access control foundation
 - create database tables for users, listings, categories, and requests
 - create database support for favorite list
-- create database support for listing status and transaction history
+- create database support for listing status foundation
 - implement create listing
 - implement listing image support
 - implement edit listing
 - implement delete listing
+- implement browse listings page
+- implement item detail page
+- implement search by keyword
+- implement practical filters such as category, condition, and price range
 - implement basic page templates and forms
 - test authentication workflow
-- test listing creation and management workflow
+- test listing creation and browsing workflow
 
 Frontend / UI Tasks:
 
@@ -351,6 +386,8 @@ Frontend / UI Tasks:
 - build profile edit page
 - build listing form and listing management page
 - include listing image input in listing forms
+- build browse listings page and item detail page
+- build search and filter interface
 - build favorite list page structure
 - connect the first account and listing pages to the backend
 
@@ -363,9 +400,10 @@ Backend / System Tasks:
 - create users, listings, categories, and requests tables
 - create favorite list table
 - add editable profile fields such as phone number and preferred contact method
-- add support for listing status and transaction history foundation
+- add support for listing status foundation
 - add listing image field support for listings
 - implement listing create, edit, and delete logic
+- implement listing browse, item detail, keyword search, and filter logic
 
 Deployment / DevOps Tasks:
 
@@ -374,18 +412,23 @@ Deployment / DevOps Tasks:
 
 Detailed User Stories:
 
-- As a user, I want to register an account so that I can use the platform.
-- As a user, I want to log in and log out securely so that I can access my personal features safely.
-- As a user, I want to edit my profile details so that my account information and contact preference stay up to date.
-- As a user, I want to create a listing so that I can sell a second-hand item.
-- As a user, I want to edit or delete my listing so that I can keep item information accurate.
-- As a user, I want to see listing status such as available, pending, or sold so that I understand the current trading state of an item.
-- As a user, I want to set my preferred contact method to email or phone so that other users know the best way to contact me.
+- `Priority: Highest | Must Have` As a user, I want to register an account so that I can use the platform.
+- `Priority: Highest | Must Have` As a user, I want to log in and log out securely so that I can access my personal features safely.
+- `Priority: Highest | Must Have` As a user, I want to browse listings so that I can discover available items on the platform.
+- `Priority: Highest | Must Have` As a user, I want to search listings by keyword so that I can quickly find relevant products.
+- `Priority: High | Must Have` As a user, I want to use filters such as category, condition, and price range so that I can narrow search results efficiently.
+- `Priority: High | Must Have` As a user, I want to view item details so that I can decide whether I am interested in a product.
+- `Priority: Highest | Must Have` As a user, I want to create a listing so that I can sell an item.
+- `Priority: High | Must Have` As a user, I want to edit or delete my listing so that I can keep item information accurate.
+- `Priority: High | Must Have` As a user, I want to see listing status such as available, pending, or sold so that I understand the current trading state of an item.
+- `Priority: Medium | Should Have` As a user, I want to edit my profile details so that my account information and contact preference stay up to date.
+- `Priority: Low | Could Have` As a user, I want to set my preferred contact method to email or phone so that other users know the best way to contact me.
 
 Expected Output:
 
 - authentication working
 - users can manage their own listings
+- users can browse and search listings
 - database schema implemented
 - basic UI pages connected to backend
 
@@ -401,31 +444,20 @@ Sprint Goal:
 
 Highlight Tasks:
 
-- implement browse listings page
-- implement search by keyword
-- implement practical search filters such as category, condition, and price range
-- implement item detail page
 - implement public user profile view pages
 - implement favorite list add and view flow
 - implement purchase request submission
 - implement incoming request view for listing owners
-- implement request status handling such as accept, reject, or pending
+- implement request actions such as accept, reject, and complete
 - implement buyer confirmation of completed transaction
 - update sold status after completion confirmation
-- implement request or transaction history view
 - implement basic administrator pages for viewing users and listings
 - implement administrator deletion of inappropriate listings
-- implement administrator view of request records and completed request records
-- implement administrator user and transaction locking actions
-- prepare recommendation inputs such as category, browsing behaviour, and favorite list behaviour
 - test end-to-end marketplace workflow
 - fix integration issues
 
 Frontend / UI Tasks:
 
-- build browse listings page
-- build search and filter interface
-- build item detail page
 - build public user profile view pages
 - build favorite list page
 - build purchase request form or action flow
@@ -434,18 +466,14 @@ Frontend / UI Tasks:
 
 Backend / System Tasks:
 
-- implement keyword search
-- implement category, condition, and price range filters
 - implement public user profile data support
 - implement favorite list add and retrieval logic
 - implement purchase request submission
 - implement request handling actions such as accept, reject, and complete
 - implement buyer confirmation of completed transaction
 - update sold status after completion confirmation
-- implement request or transaction history view
 - implement administrator listing deletion support
-- implement administrator request and transaction record support
-- implement administrator user and transaction locking support
+- implement basic administrator user and listing views
 - prepare lightweight recommendation data foundations
 
 Deployment / DevOps Tasks:
@@ -455,33 +483,24 @@ Deployment / DevOps Tasks:
 
 Detailed User Stories:
 
-- As a user, I want to view incoming purchase requests on my listings so that I can manage interested buyers.
-- As a user, I want to accept or reject incoming purchase requests on my listings so that the transaction process is clear.
-- As a user, I want to confirm when a transaction is completed so that the platform can close the trading process correctly.
-- As a user, I want to view another user's profile so that I can understand credibility before making or accepting a request.
-- As a user, I want to browse listings so that I can discover available second-hand items.
-- As a user, I want to search listings by keyword so that I can quickly find relevant products.
-- As a user, I want to use filters such as category, condition, and price range so that I can narrow search results efficiently.
-- As a user, I want to view item details so that I can decide whether I am interested in a product.
-- As a user, I want to save interesting items to a favorite list so that I can revisit them later.
-- As a user, I want to view my favorite list page so that I can manage saved items.
-- As a user, I want to submit a purchase request so that I can express interest in buying an item.
-- As an administrator, I want to view user accounts so that I can monitor platform safety.
-- As an administrator, I want to view listings so that I can inspect platform content when needed.
-- As an administrator, I want to delete inappropriate listings so that unsuitable content can be removed from the platform.
-- As an administrator, I want to view request records and completed request records so that I can monitor platform activity responsibly.
-- As an administrator, I want to lock a user account when necessary so that unsafe or inappropriate activity can be controlled.
-- As an administrator, I want to lock a request record when necessary so that a problematic case can be frozen for review without manually changing its result.
-- As a user, I want to view my request or transaction history so that I can track my activity on the platform.
+- `Priority: Low | Could Have` As a user, I want to view another user's profile so that I can understand credibility before making or accepting a request.
+- `Priority: High | Must Have` As a user, I want to save interesting items to a favorite list so that I can revisit them later.
+- `Priority: High | Must Have` As a user, I want to view my favorite list page so that I can manage saved items.
+- `Priority: Highest | Must Have` As a user, I want to submit a purchase request so that I can express interest in buying an item.
+- `Priority: Highest | Must Have` As a user, I want to view incoming purchase requests on my listings so that I can manage interested buyers.
+- `Priority: Highest | Must Have` As a user, I want to accept or reject incoming purchase requests on my listings so that the transaction process is clear.
+- `Priority: Highest | Must Have` As a user, I want to confirm when a transaction is completed so that the platform can close the trading process correctly.
+- `Priority: High | Must Have` As an administrator, I want to view user accounts so that I can monitor platform safety.
+- `Priority: High | Must Have` As an administrator, I want to view listings so that I can inspect platform content when needed.
+- `Priority: High | Must Have` As an administrator, I want to delete inappropriate listings so that unsuitable content can be removed from the platform.
 
 Expected Output:
 
-- users can browse and search items
-- users can narrow results using practical search filters
 - users can submit purchase requests
 - listing owners can manage requests
-- administrators can view users and listings, delete inappropriate listings, view request records and completed request records, and lock problematic users or request records
+- administrators can view users and listings and delete inappropriate listings
 - public profile viewing is available
+- favorite list support is available
 - core marketplace workflow completed
 
 ## Sprint 4: Core Differentiation Features
@@ -534,12 +553,12 @@ Deployment / DevOps Tasks:
 
 Detailed User Stories:
 
-- As a user, I want to upload one product image and receive a listing draft so that I can publish second-hand items faster.
-- As a user, I want the platform to suggest an item name, category, description, and rough price reference so that creating a listing feels easier and more informed.
-- As a user, I want the homepage to surface listings related to my recent interest category so that item discovery feels more relevant than a fixed general marketplace homepage.
-- As a user, I want to leave a rating or review after a completed transaction so that trust can be built between users.
-- As a user, I want to view profile trust indicators such as completed transactions and positive feedback so that I can judge reliability more easily.
-- As a user, I want my public profile to show key trust and contact information so that marketplace communication is more practical and transparent.
+- `Priority: Highest | Must Have` As a user, I want to upload one product image and receive a listing draft so that I can publish an item faster.
+- `Priority: Highest | Must Have` As a user, I want the platform to suggest an item name, category, description, and rough price reference so that creating a listing feels easier and more informed.
+- `Priority: Highest | Must Have` As a user, I want the homepage to surface listings related to my recent interest category so that item discovery feels more relevant than a fixed general marketplace homepage.
+- `Priority: Medium | Should Have` As a user, I want to leave a rating or review after a completed transaction so that trust can be built between users.
+- `Priority: Medium | Should Have` As a user, I want to view profile trust indicators such as completed transactions and positive feedback so that I can judge reliability more easily.
+- `Priority: Medium | Should Have` As a user, I want my public profile to show key trust and contact information so that marketplace communication is more practical and transparent.
 
 Expected Output:
 
@@ -561,6 +580,9 @@ Sprint Goal:
 
 Highlight Tasks:
 
+- implement request or transaction history view
+- implement administrator view of request records and completed request records
+- implement administrator user and request record locking actions
 - fix bugs
 - improve UI and usability
 - run user testing
@@ -580,6 +602,9 @@ Frontend / UI Tasks:
 
 Backend / System Tasks:
 
+- implement request or transaction history view
+- implement administrator request record and completed request record support
+- implement administrator user and request record locking support
 - fix bugs in implemented features
 - improve integration reliability across modules
 - refine data handling and system stability
@@ -592,12 +617,18 @@ Deployment / DevOps Tasks:
 
 Detailed User Stories:
 
-- As a user, I want the main platform pages to be easier to use so that buying, selling, and browsing feel smoother.
-- As a user, I want bugs in completed features to be fixed so that the platform works more reliably.
-- As a user, I want homepage recommendations and AI listing drafts to be improved after testing so that the feature quality feels more useful in practice.
+- `Priority: Medium | Should Have` As a user, I want bugs in completed features to be fixed so that the platform works more reliably.
+- `Priority: Medium | Should Have` As a user, I want the main platform pages to be easier to use so that buying, selling, and browsing feel smoother.
+- `Priority: Medium | Should Have` As a user, I want homepage recommendations and AI listing drafts to be improved after testing so that the feature quality feels more useful in practice.
+- `Priority: High | Must Have` As an administrator, I want to lock a user account when necessary so that unsafe or inappropriate activity can be controlled.
+- `Priority: Low | Could Have` As a user, I want to view my request or transaction history so that I can track my activity on the platform.
+- `Priority: Low | Could Have` As an administrator, I want to view request records and completed request records so that I can monitor platform activity responsibly.
+- `Priority: Low | Could Have` As an administrator, I want to lock a request record when necessary so that a problematic case can be frozen for review without manually changing its result.
 
 Expected Output:
 
+- request or transaction history available
+- administrator request record and locking features available
 - bugs reduced across core workflows
 - usability improvements applied to key pages
 - testing evidence prepared
