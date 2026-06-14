@@ -157,12 +157,9 @@ To keep the project realistic and manageable, the team will monitor a small numb
 - favorite list support
 - purchase request submission
 - request management for listing owners
-- request or transaction history view
 - sold status update after transaction completion
 - administrator viewing of user accounts and listings
 - administrator deletion of inappropriate listings
-- administrator viewing of request records and completed request records
-- administrator locking of users and request records
 - AI one-click listing assistant
 - interest-based homepage recommendation
 - ratings and reviews for completed transactions
@@ -174,10 +171,12 @@ To keep the project realistic and manageable, the team will monitor a small numb
 
 ### Could Have
 
+- request or transaction history view
+- administrator viewing of request records and completed request records
+- administrator locking of request records
 - semantic-style search improvement only if time permits
 - analytics dashboard
 - flagged listing workflow
-- user suspension tools
 - recently viewed items support
 
 ## MVP and Innovation Scope
@@ -421,7 +420,7 @@ Detailed User Stories:
 - `Priority: Highest | Must Have` As a user, I want to create a listing so that I can sell an item.
 - `Priority: High | Must Have` As a user, I want to edit or delete my listing so that I can keep item information accurate.
 - `Priority: High | Must Have` As a user, I want to see listing status such as available, pending, or sold so that I understand the current trading state of an item.
-- `Priority: Medium | Should Have` As a user, I want to edit my profile details so that my account information and contact preference stay up to date.
+- `Priority: Medium | Should Have` As a user, I want to edit my profile details, including preferred contact method and related contact details, so that my account information stays up to date.
 - `Priority: Low | Could Have` As a user, I want to set my preferred contact method to email or phone so that other users know the best way to contact me.
 
 Expected Output:

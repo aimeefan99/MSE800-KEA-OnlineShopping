@@ -42,7 +42,7 @@ These rules apply to:
 | Rule | Definition |
 |---|---|
 | Single responsibility | Every function must have one clear responsibility. |
-| Function length | No function may exceed 40 lines, including comments and blank lines, unless both developers explicitly agree that splitting it would reduce clarity. |
+| Function length | No function may exceed 30 lines, including comments and blank lines, unless both developers explicitly agree that splitting it would reduce clarity. |
 | Repeated logic | Logic repeated in 2 or more places must be extracted into a reusable helper or service function. |
 | Duplication | Copy-and-paste duplication is not allowed when the duplicated block can be named and extracted cleanly. |
 | Return functions | Functions that return a value must not print output unless printing is the explicit purpose of that function. |
@@ -245,9 +245,12 @@ Every listing card must display:
 Every public profile page must display:
 
 - display name
-- trust indicators
 - preferred contact method
 - selected public contact detail if available
+
+When trust indicators are implemented in the later trust sprint, every public profile page must also display:
+
+- trust indicators
 
 ### Required UI Consistency Rules
 
