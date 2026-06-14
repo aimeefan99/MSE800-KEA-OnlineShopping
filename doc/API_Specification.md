@@ -142,7 +142,7 @@ Rules:
 |---|---|
 | Route | `GET /listings/<listing_id>` |
 | Required route parameter | `listing_id` |
-| Required page data | image, title, price, condition, status, description, seller summary |
+| Required page data | image, title, price, condition, status, description, seller username, available contact method |
 
 ### Browse Listings
 
