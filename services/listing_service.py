@@ -1,31 +1,35 @@
 """Listing service placeholders."""
 
-
-def create_listing() -> None:
-    """Create a listing."""
-
-    raise NotImplementedError
+from services.base_service import BaseService
 
 
-def edit_listing() -> None:
-    """Edit a listing."""
+class ListingService(BaseService):
+    """Handle listing-related business logic."""
 
-    raise NotImplementedError
+    def create_listing(self) -> None:
+        """Create a listing."""
+
+        raise NotImplementedError
+
+    def edit_listing(self) -> None:
+        """Edit a listing."""
+
+        raise NotImplementedError
+
+    def delete_listing(self) -> None:
+        """Delete a listing."""
+
+        raise NotImplementedError
+
+    def browse_listings(self) -> None:
+        """Browse listings."""
+
+        raise NotImplementedError
+
+    def get_listing_detail(self) -> None:
+        """Get listing detail."""
+
+        raise NotImplementedError
 
 
-def delete_listing() -> None:
-    """Delete a listing."""
-
-    raise NotImplementedError
-
-
-def browse_listings() -> None:
-    """Browse listings."""
-
-    raise NotImplementedError
-
-
-def get_listing_detail() -> None:
-    """Get listing detail."""
-
-    raise NotImplementedError
+listing_service = ListingService()

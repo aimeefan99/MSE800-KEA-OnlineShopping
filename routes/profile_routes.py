@@ -1,6 +1,7 @@
 """Profile routes."""
 
 from flask import Blueprint, render_template
+from utils.decorators import login_required
 
 profile_bp = Blueprint("profiles", __name__)
 
@@ -13,6 +14,7 @@ def view_public_profile(user_id: int) -> str:
 
 
 @profile_bp.get("/profile/edit")
+@login_required
 def edit_profile_page() -> str:
     """Render the edit profile page."""
 
@@ -20,6 +22,7 @@ def edit_profile_page() -> str:
 
 
 @profile_bp.post("/profile/edit")
+@login_required
 def edit_profile() -> str:
     """Handle profile edit submission."""
 

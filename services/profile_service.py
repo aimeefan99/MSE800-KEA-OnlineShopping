@@ -1,13 +1,20 @@
 """Profile service placeholders."""
 
-
-def get_public_profile() -> None:
-    """Get public profile data."""
-
-    raise NotImplementedError
+from services.base_service import BaseService
 
 
-def edit_profile() -> None:
-    """Edit a user profile."""
+class ProfileService(BaseService):
+    """Handle profile-related business logic."""
 
-    raise NotImplementedError
+    def get_public_profile(self) -> None:
+        """Get public profile data."""
+
+        raise NotImplementedError
+
+    def edit_profile(self) -> None:
+        """Edit a user profile."""
+
+        raise NotImplementedError
+
+
+profile_service = ProfileService()
