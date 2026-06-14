@@ -1,19 +1,25 @@
 """Authentication service placeholders."""
 
-
-def register_user() -> None:
-    """Register a new user."""
-
-    raise NotImplementedError
+from services.base_service import BaseService
 
 
-def login_user() -> None:
-    """Log in a user."""
+class AuthService(BaseService):
+    """Handle authentication-related business logic."""
 
-    raise NotImplementedError
+    def register_user(self) -> None:
+        """Register a new user."""
+
+        raise NotImplementedError
+
+    def login_user(self) -> None:
+        """Log in a user."""
+
+        raise NotImplementedError
+
+    def logout_user(self) -> None:
+        """Log out a user."""
+
+        raise NotImplementedError
 
 
-def logout_user() -> None:
-    """Log out a user."""
-
-    raise NotImplementedError
+auth_service = AuthService()

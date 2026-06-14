@@ -1,6 +1,7 @@
 """Listing routes."""
 
 from flask import Blueprint, render_template
+from utils.decorators import login_required
 
 listing_bp = Blueprint("listings", __name__)
 
@@ -20,6 +21,7 @@ def view_listing_detail(listing_id: int) -> str:
 
 
 @listing_bp.get("/listings/create")
+@login_required
 def create_listing_page() -> str:
     """Render the create listing page."""
 
@@ -27,15 +29,14 @@ def create_listing_page() -> str:
 
 
 @listing_bp.post("/listings/create")
+@login_required
 def create_listing() -> str:
     """Handle listing creation."""
 
     return "TODO: create listing"
 
-
-
-
 @listing_bp.get("/listings/<int:listing_id>/edit")
+@login_required
 def edit_listing_page(listing_id: int) -> str:
     """Render the edit listing page."""
 
@@ -43,6 +44,7 @@ def edit_listing_page(listing_id: int) -> str:
 
 
 @listing_bp.post("/listings/<int:listing_id>/edit")
+@login_required
 def edit_listing(listing_id: int) -> str:
     """Handle listing edit."""
 
@@ -50,6 +52,7 @@ def edit_listing(listing_id: int) -> str:
 
 
 @listing_bp.post("/listings/<int:listing_id>/delete")
+@login_required
 def delete_listing(listing_id: int) -> str:
     """Handle listing deletion."""
 
