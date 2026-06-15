@@ -12,14 +12,33 @@
         <div class="container">
             <a class="navbar-brand" href="/">Second-Hand Trading Platform</a>
             <div class="navbar-nav gap-2">
+                <a class="nav-link" href="/">Home</a>
                 <a class="nav-link" href="/listings">Listings</a>
-                <a class="nav-link" href="/favorites">Favorites</a>
-                <a class="nav-link" href="/requests/history">Requests</a>
-                <a class="nav-link" href="/login">Login</a>
+                <a class="nav-link" href="/listings/create">Create Listing</a>
+                {% if session.get("user_id") %}
+                    <a class="nav-link" href="/favorites">Favorites</a>
+                    <a class="nav-link" href="/requests/history">Requests</a>
+                    <a class="nav-link" href="/profile/edit">Profile</a>
+                    <form action="{{ url_for('auth.logout') }}" method="post" class="d-inline">
+                        <button class="btn btn-link nav-link p-0" type="submit">Logout</button>
+                    </form>
+                {% else %}
+                    <a class="nav-link" href="/login">Login</a>
+                    <a class="nav-link" href="/register">Register</a>
+                {% endif %}
             </div>
         </div>
     </nav>
     <main class="container py-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-3">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </main>
 </body>
