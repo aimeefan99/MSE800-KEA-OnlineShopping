@@ -1,6 +1,101 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Create Listing</h1>
-<p>Create listing form placeholder.</p>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h1 class="h2 mb-3">Create Listing</h1>
+                <p class="text-muted mb-4">Add the item details and upload one image.</p>
+
+                <form
+                    method="post"
+                    action="{{ url_for('listings.create_listing') }}"
+                    enctype="multipart/form-data"
+                >
+                    <div class="mb-3">
+                        <label class="form-label" for="title">Title</label>
+                        <input
+                            class="form-control"
+                            id="title"
+                            name="title"
+                            type="text"
+                            value="{{ form_data.get('title', '') }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="category_id">Category</label>
+                        <select class="form-select" id="category_id" name="category_id" required>
+                            <option value="">Select category</option>
+                            {% for category in categories %}
+                                <option
+                                    value="{{ category.id }}"
+                                    {% if form_data.get('category_id') == category.id|string %}selected{% endif %}
+                                >
+                                    {{ category.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="condition">Condition</label>
+                        <select class="form-select" id="condition" name="condition" required>
+                            <option value="">Select condition</option>
+                            {% for condition in condition_options %}
+                                <option
+                                    value="{{ condition }}"
+                                    {% if form_data.get('condition') == condition %}selected{% endif %}
+                                >
+                                    {{ condition|title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="price">Price</label>
+                        <input
+                            class="form-control"
+                            id="price"
+                            name="price"
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            value="{{ form_data.get('price', '') }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="description">Description</label>
+                        <textarea
+                            class="form-control"
+                            id="description"
+                            name="description"
+                            rows="5"
+                            required
+                        >{{ form_data.get('description', '') }}</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label" for="image">Image</label>
+                        <input
+                            class="form-control"
+                            id="image"
+                            name="image"
+                            type="file"
+                            accept="image/*"
+                            required
+                        >
+                    </div>
+
+                    <button class="btn btn-primary w-100" type="submit">Create Listing</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
