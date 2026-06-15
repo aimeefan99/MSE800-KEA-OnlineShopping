@@ -10,6 +10,7 @@ def login_required(view):
 
     @wraps(view)
     def wrapped_view(*args, **kwargs):
+        # Private pages redirect to login when no session exists.
         if "user_id" not in session:
             flash("Please log in to continue.", "warning")
             return redirect(url_for("auth.login_page"))
@@ -19,10 +20,11 @@ def login_required(view):
 
 
 def admin_required(view):
-    """Require an administrator session before accessing the route."""
+    """Require an admin session before accessing the route."""
 
     @wraps(view)
     def wrapped_view(*args, **kwargs):
+        # Admin-only pages depend on the stored role value in session.
         if session.get("role") != "admin":
             flash("Administrator access is required.", "warning")
             return redirect(url_for("auth.login_page"))

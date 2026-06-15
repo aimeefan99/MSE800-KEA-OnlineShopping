@@ -20,6 +20,7 @@ def create_app() -> Flask:
     app.config.from_object(Config)
     app.teardown_appcontext(close_db)
 
+    # Register feature blueprints here so routes stay grouped by responsibility.
     app.register_blueprint(auth_bp)
     app.register_blueprint(listing_bp)
     app.register_blueprint(transaction_bp)
