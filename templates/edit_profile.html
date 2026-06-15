@@ -1,6 +1,100 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Edit Profile</h1>
-<p>Edit profile form placeholder.</p>
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h1 class="h2 mb-3">Edit Profile</h1>
+                <p class="text-muted mb-4">Update your account details and contact preference.</p>
+
+                <form method="post" action="{{ url_for('profiles.edit_profile') }}">
+                    <div class="mb-3">
+                        <label class="form-label" for="display_name">Display Name</label>
+                        <input
+                            class="form-control"
+                            id="display_name"
+                            name="display_name"
+                            type="text"
+                            value="{{ form_data.get('display_name', '') }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="full_name">Full Name</label>
+                        <input
+                            class="form-control"
+                            id="full_name"
+                            name="full_name"
+                            type="text"
+                            value="{{ form_data.get('full_name', '') }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="email">Email</label>
+                        <input
+                            class="form-control"
+                            id="email"
+                            type="email"
+                            value="{{ form_data.get('email', '') }}"
+                            readonly
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="phone_number">Phone Number</label>
+                        <input
+                            class="form-control"
+                            id="phone_number"
+                            name="phone_number"
+                            type="text"
+                            value="{{ form_data.get('phone_number', '') }}"
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="preferred_contact_method">
+                            Preferred Contact Method
+                        </label>
+                        <select
+                            class="form-select"
+                            id="preferred_contact_method"
+                            name="preferred_contact_method"
+                            required
+                        >
+                            <option value="">Select contact method</option>
+                            <option
+                                value="email"
+                                {% if form_data.get('preferred_contact_method') == 'email' %}selected{% endif %}
+                            >
+                                Email
+                            </option>
+                            <option
+                                value="phone"
+                                {% if form_data.get('preferred_contact_method') == 'phone' %}selected{% endif %}
+                            >
+                                Phone
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label" for="bio">Bio</label>
+                        <textarea
+                            class="form-control"
+                            id="bio"
+                            name="bio"
+                            rows="4"
+                        >{{ form_data.get('bio', '') }}</textarea>
+                    </div>
+
+                    <button class="btn btn-primary w-100" type="submit">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
