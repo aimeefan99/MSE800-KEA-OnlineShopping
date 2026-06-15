@@ -29,19 +29,18 @@ Visitors can browse listings, search products, apply filters, and view item deta
 
 ## Technology Stack
 
-- Python
-- Flask
-- HTML
-- CSS
-- Bootstrap
-- SQLite
-- OpenAI API
-- Docker
-- Kubernetes
+- Backend: Python, Flask
+- Frontend: HTML, CSS, Bootstrap
+- Database: SQLite
+- AI Integration: OpenAI API
+- Containerization and Deployment: Docker, Kubernetes
+- Version Control: GitHub
+- Project Management: Jira
+- Design Tool: draw.io
 
 ## Environment Requirements
 
-- Python 3.x
+- Python 3.8.20
 - pip
 - Docker
 - Kubernetes

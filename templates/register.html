@@ -1,6 +1,126 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Register</h1>
-<p>Register form placeholder.</p>
+<section class="container py-5" style="max-width: 640px;">
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-4 p-md-5">
+      <h1 class="h2 mb-3">Create Account</h1>
+      <p class="text-muted mb-4">Register to use the marketplace.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="mb-3">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" action="/register">
+        <div class="mb-3">
+          <label class="form-label" for="display_name">Display Name</label>
+          <input
+            class="form-control"
+            id="display_name"
+            name="display_name"
+            type="text"
+            value="{{ form_data.get('display_name', '') }}"
+            required
+          >
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="full_name">Full Name</label>
+          <input
+            class="form-control"
+            id="full_name"
+            name="full_name"
+            type="text"
+            value="{{ form_data.get('full_name', '') }}"
+            required
+          >
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="date_of_birth">Date of Birth</label>
+          <input
+            class="form-control"
+            id="date_of_birth"
+            name="date_of_birth"
+            type="date"
+            value="{{ form_data.get('date_of_birth', '') }}"
+            required
+          >
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="email">Email</label>
+          <input
+            class="form-control"
+            id="email"
+            name="email"
+            type="email"
+            value="{{ form_data.get('email', '') }}"
+            required
+          >
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="password">Password</label>
+          <input
+            class="form-control"
+            id="password"
+            name="password"
+            type="password"
+            required
+          >
+          <div class="form-text">
+            Use at least 6 characters, including uppercase, lowercase, and a number.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="preferred_contact_method">
+            Preferred Contact Method
+          </label>
+          <select
+            class="form-select"
+            id="preferred_contact_method"
+            name="preferred_contact_method"
+            required
+          >
+            <option value="" {% if not form_data.get('preferred_contact_method') %}selected{% endif %} disabled>
+              Select contact method
+            </option>
+            <option value="email" {% if form_data.get('preferred_contact_method') == 'email' %}selected{% endif %}>
+              Email
+            </option>
+            <option value="phone" {% if form_data.get('preferred_contact_method') == 'phone' %}selected{% endif %}>
+              Phone
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label" for="phone_number">Phone Number</label>
+          <input
+            class="form-control"
+            id="phone_number"
+            name="phone_number"
+            type="tel"
+            value="{{ form_data.get('phone_number', '') }}"
+          >
+        </div>
+
+        <button class="btn btn-primary w-100" type="submit">Create Account</button>
+      </form>
+
+      <p class="mt-4 mb-0 text-center">
+        Already have an account?
+        <a href="/login">Log in</a>
+      </p>
+    </div>
+  </div>
+</section>
 {% endblock %}

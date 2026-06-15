@@ -1,6 +1,8 @@
 """Authentication routes."""
 
-from flask import Blueprint, render_template
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+
+from services.auth_service import auth_service
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -23,14 +25,20 @@ def login() -> str:
 def register_page() -> str:
     """Render the register page."""
 
-    return render_template("register.html")
+    return render_template("register.html", form_data={})
 
 
 @auth_bp.post("/register")
 def register() -> str:
     """Handle register submission."""
 
-    return "TODO: register"
+    success, error_message = auth_service.register_user(request.form)
+    if not success:
+        flash(error_message, "danger")
+        return render_template("register.html", form_data=request.form)
+
+    flash("Account created successfully. Please log in.", "success")
+    return redirect(url_for("auth.login_page"))
 
 
 @auth_bp.post("/logout")
