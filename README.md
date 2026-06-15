@@ -1,27 +1,16 @@
-# AI-Powered Second-Hand Trading Platform
+# Second-Hand Trading Platform
 
-*With AI One-Click Listing Assistant and Interest-Based Homepage Recommendation*
+*With AI One-Click Listing and Smart Homepage Recommendation*
 
 ---
 
 ## Overview
 
-This project is an AI-powered web-based second-hand trading platform developed for the **MSE800 Software Engineering** course.
+This project is a web-based second-hand trading platform developed for the **MSE800 Software Engineering** course.
 
-The platform enables users to buy and sell second-hand products through an intuitive marketplace while incorporating artificial intelligence to improve both the selling and browsing experience. Visitors can browse listings without creating an account, while registered users can create and manage listings, submit purchase requests, save favourite items, complete transactions, and leave reviews. Administrators are responsible for managing users, listings, and platform activities to maintain a safe and reliable marketplace.
+The platform allows users to buy and sell products in a second-hand marketplace, supported by an AI-assisted listing feature for sellers and a smart homepage recommendation feature for buyers. Visitors can browse listings without creating an account, while registered users can create and manage listings, submit purchase requests, save favourite items, complete transactions, and leave reviews. Administrators manage users, listings, and request records to help keep the platform safe and reliable.
 
 The project follows an **Agile software development methodology** and applies object-oriented design principles, UML modelling, and modern software engineering practices throughout development.
-
----
-
-## Team
-
-| Team Member | Primary Responsibility |
-|-------------|------------------------|
-| Member 1 | System Design, Interest-Based Homepage Recommendation, Frontend & Backend Development |
-| Member 2 | User Stories, Sprint Planning, AI One-Click Listing Assistant, Frontend & Backend Development |
-
-> Although each member leads one highlighted AI feature, **both team members contribute to both frontend and backend development throughout the project.**
 
 ---
 
@@ -35,7 +24,7 @@ The project follows an **Agile software development methodology** and applies ob
 
 ---
 
-## Highlighted AI Features
+## Highlighted Features
 
 ### AI One-Click Listing Assistant
 
@@ -58,76 +47,20 @@ Displays personalised homepage recommendations by analysing the user's recent in
 - Browsing history
 - Favourite listings
 
-Instead of displaying identical homepage content for every user, the platform prioritises listings that match each user's recent interests.
-
----
-
-## Current Scope
-
-### Visitor Features
-
-- Browse listings
-- Search listings
-- Apply filters
-- View listing details
-- View public profiles
-- Register
-- Log in
-
-### User Features
-
-- Edit profile
-- Create listings
-- Edit and delete own listings
-- Generate listings using AI
-- Save and manage favourite listings
-- Submit purchase requests
-- Accept or reject purchase requests
-- Confirm completed transactions
-- View transaction history
-- Leave ratings and reviews
-- View personalised homepage recommendations
-
-### Administrator Features
-
-- Manage user accounts
-- Manage listings
-- Remove inappropriate listings
-- View purchase requests
-- View completed transactions
-- Lock user accounts
-- Lock purchase requests
+Instead of showing the same fixed homepage content to every user, the platform prioritises listings that better match each user's recent interests.
 
 ---
 
 ## Technology Stack
 
-### Backend
-
-- Python
-- Flask
-- SQLite
-
-### Frontend
-
-- HTML
-- CSS
-- Bootstrap
-- JavaScript
-
-### AI
-
-- OpenAI API
-
-### Deployment
-
-- Docker
-- Kubernetes
-
-### Version Control
-
-- Git
-- GitHub
+- Backend: Python, Flask
+- Frontend: HTML, CSS, Bootstrap
+- Database: SQLite
+- AI Integration: OpenAI API
+- Containerization and Deployment: Docker, Kubernetes
+- Version Control: GitHub
+- Project Management: Jira
+- Design Tool: draw.io
 
 ---
 
@@ -155,6 +88,7 @@ project-root/
 ├── scripts/
 ├── doc/
 ├── diagram/
+├── utils/
 └── README.md
 ```
 
@@ -164,29 +98,13 @@ project-root/
 |----------|-------------|
 | `routes/` | Flask route handlers grouped by feature |
 | `services/` | Business logic and AI services |
-| `models/` | Database models and schema |
+| `models/` | Entity classes, factories, and database helpers |
 | `templates/` | HTML templates |
 | `static/` | CSS, JavaScript, images and uploads |
 | `scripts/` | Database initialisation and utility scripts |
 | `doc/` | Project documentation |
 | `diagram/` | UML diagrams created using draw.io |
-
----
-
-## UML Diagrams
-
-The project design is documented using UML diagrams before implementation.
-
-Completed diagrams include:
-
-- ✅ Use Case Diagram
-- ✅ Entity Relationship (ER) Diagram
-- ✅ Class Diagram
-
-Remaining diagrams:
-
-- ⏳ Activity Diagram
-- ⏳ System Architecture Diagram
+| `utils/` | Shared decorators and helper utilities |
 
 ---
 
@@ -216,19 +134,24 @@ The development server runs at:
 http://127.0.0.1:5000
 ```
 
+### 4. Run Code Quality Check
+
+Use `pylint` to check code quality during development:
+
+```bash
+pylint app.py routes services models utils
+```
+
 ---
 
 ## Documentation
 
 Project documentation can be found in the `doc/` folder.
 
-- Project Proposal
-- Agile Workflow
-- Sprint Planning
-- Product Backlog
-- System Design
-- API Specification
-- Development Guidelines
+- [Project Plan](doc/Project_Plan_Agile_Workflow.md)
+- [System Design](doc/System_Design.md)
+- [API Specification](doc/API_Specification.md)
+- [Development Guidelines](doc/Development_Guidelines.md)
 
 ---
 
@@ -248,38 +171,6 @@ Development activities include:
 - Testing
 - Docker containerisation
 - Kubernetes deployment
-
----
-
-## Repository Status
-
-**Current Status:** 🚧 In Development
-
-Completed:
-
-- ✅ Project Planning
-- ✅ Agile Workflow
-- ✅ User Stories
-- ✅ Sprint Planning
-- ✅ System Design
-- ✅ Database Design
-- ✅ Use Case Diagram
-- ✅ ER Diagram
-- ✅ Class Diagram
-
-In Progress:
-
-- 🚧 Backend Development
-- 🚧 Frontend Development
-- 🚧 AI Feature Integration
-
-Upcoming:
-
-- ⏳ Activity Diagram
-- ⏳ System Architecture Diagram
-- ⏳ Testing
-- ⏳ Docker Deployment
-- ⏳ Kubernetes Deployment
 
 ---
 
