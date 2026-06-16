@@ -29,13 +29,43 @@
                         <strong>{{ listing.status.title() }}</strong>
                     </div>
                     <div>
+                        <span class="text-muted">Category</span>
+                        <strong>{{ listing.category_name }}</strong>
+                    </div>
+                    <div>
                         <span class="text-muted">Item Condition</span>
                         <strong>{{ listing.condition_label }}</strong>
+                    </div>
+                    <div>
+                        <span class="text-muted">Seller</span>
+                        <strong>{{ listing.seller_name }}</strong>
                     </div>
                 </div>
 
                 <h2 class="h5">Description</h2>
-                <p class="mb-0 text-body-secondary">{{ listing.description }}</p>
+                <p class="mb-4 text-body-secondary">{{ listing.description }}</p>
+
+                <div class="card border-0 bg-light-subtle mb-4">
+                    <div class="card-body">
+                        <h2 class="h5 mb-3">Seller Information</h2>
+                        <p class="mb-2"><strong>Username:</strong> {{ listing.seller_name }}</p>
+                        <p class="mb-0">
+                            <strong>{{ listing.seller_contact_method_label }}:</strong>
+                            {{ listing.seller_contact_value }}
+                        </p>
+                    </div>
+                </div>
+
+                {% if session.get("user_id") %}
+                    {# Keep a visible favorite entry here without taking over the separate favorites story. #}
+                    <button class="btn btn-outline-primary w-100" type="button" disabled>
+                        Add to Favorites
+                    </button>
+                {% else %}
+                    <a class="btn btn-outline-primary w-100" href="{{ url_for('auth.login_page') }}">
+                        Add to Favorites
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>

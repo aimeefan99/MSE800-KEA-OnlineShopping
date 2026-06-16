@@ -56,5 +56,4 @@ class TransactionService(BaseService):
 
         raise NotImplementedError
 
-
 transaction_service = TransactionService()
