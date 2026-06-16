@@ -75,6 +75,7 @@ def _strip_upload_prefix(value: str) -> str:
 def view_listing_detail(listing_id: int) -> str:
     """Render the listing detail page."""
 
+    # Item details stay public so visitors can evaluate listings before registering.
     listing = listing_service.get_listing_detail(listing_id)
     if listing is None:
         abort(404)

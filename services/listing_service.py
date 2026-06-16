@@ -95,6 +95,7 @@ class ListingService(BaseService):
             """
             SELECT
                 listings.id,
+                listings.seller_id,
                 listings.title,
                 listings.description,
                 listings.condition,
@@ -121,6 +122,7 @@ class ListingService(BaseService):
             """
             SELECT
                 listings.id,
+                listings.seller_id,
                 listings.title,
                 listings.description,
                 listings.condition,
@@ -129,7 +131,10 @@ class ListingService(BaseService):
                 listings.status,
                 listings.created_at,
                 categories.name AS category_name,
-                users.display_name AS seller_name
+                users.display_name AS seller_name,
+                users.preferred_contact_method AS seller_contact_method,
+                users.email AS seller_email,
+                users.phone_number AS seller_phone_number
             FROM listings
             INNER JOIN categories ON categories.id = listings.category_id
             INNER JOIN users ON users.id = listings.seller_id
@@ -272,6 +277,14 @@ class ListingService(BaseService):
         listing["condition"] = LEGACY_CONDITION_MAP.get(listing["condition"], listing["condition"])
         listing["condition_label"] = listing["condition"].title()
         listing["price_label"] = "{0:.2f}".format(listing["price"])
+        seller_contact_method = listing.get("seller_contact_method")
+        # The detail page only needs one visible contact path, based on the seller's preference.
+        if seller_contact_method == "phone":
+            listing["seller_contact_method_label"] = "Phone"
+            listing["seller_contact_value"] = listing.get("seller_phone_number") or "Not provided"
+        elif seller_contact_method == "email":
+            listing["seller_contact_method_label"] = "Email"
+            listing["seller_contact_value"] = listing.get("seller_email") or "Not provided"
         return listing
 
 
