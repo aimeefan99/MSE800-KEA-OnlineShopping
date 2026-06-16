@@ -37,7 +37,6 @@ class ListingService(BaseService):
 
     def get_category_options(self) -> List[Dict[str, Any]]:
         """Get available category options for listing forms."""
-
         # Seed the category table once so the form has valid options to render.
         self._ensure_default_categories()
         db = get_db()
@@ -47,7 +46,6 @@ class ListingService(BaseService):
     @staticmethod
     def get_condition_options() -> List[str]:
         """Get allowed listing condition values."""
-
         return CONDITION_OPTIONS
 
     def create_listing(
@@ -57,7 +55,6 @@ class ListingService(BaseService):
         image_file: Optional[FileStorage],
     ) -> Tuple[bool, Optional[str], Dict[str, str], Optional[int]]:
         """Create a listing from form input."""
-
         # Return cleaned form data on failure so the form can be re-rendered.
         cleaned_data = self._clean_listing_data(form_data)
         validation_error = self._validate_listing_data(cleaned_data, image_file)
@@ -77,19 +74,51 @@ class ListingService(BaseService):
         listing_id = self._insert_listing(listing)
         return True, None, cleaned_data, listing_id
 
-    def edit_listing(self) -> None:
-        """Edit a listing."""
+    def edit_listing(
+        self,
+        listing_id: int,
+        user_id: int,
+        category_id: int,
+        title: str,
+        description: str,
+        condition: str,
+        price: float
+    ) -> bool:
+        """Update an item's details, but only if the user making the request is the owner!"""
+        db = get_db()
 
-        raise NotImplementedError
+        # Ownership Safety Check using the class's built-in get_listing_detail method
+        item = self.get_listing_detail(listing_id)
+        if not item or item["seller_id"] != user_id:
+            return False
 
-    def delete_listing(self) -> None:
-        """Delete a listing."""
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        db.execute(
+            """
+            UPDATE listings 
+            SET category_id = ?, title = ?, description = ?, condition = ?, price = ?, updated_at = ?
+            WHERE id = ?
+            """,
+            (category_id, title, description, condition, price, now_str, listing_id)
+        )
+        db.commit()
+        return True
 
-        raise NotImplementedError
+    def delete_listing(self, listing_id: int, user_id: int) -> bool:
+        """Permanently remove an item, but only if the user making the request is the owner!"""
+        db = get_db()
+
+        # Ownership Safety Check using the class's built-in get_listing_detail method
+        item = self.get_listing_detail(listing_id)
+        if not item or item["seller_id"] != user_id:
+            return False
+
+        db.execute("DELETE FROM listings WHERE id = ?", (listing_id,))
+        db.commit()
+        return True
 
     def browse_listings(self) -> List[Dict[str, Any]]:
         """Return available listings for the public browse page."""
-
         db = get_db()
         listings = db.execute(
             """
@@ -116,7 +145,6 @@ class ListingService(BaseService):
 
     def get_listing_detail(self, listing_id: int) -> Optional[Dict[str, Any]]:
         """Return one listing detail record for the detail page."""
-
         db = get_db()
         listing = db.execute(
             """
@@ -149,7 +177,6 @@ class ListingService(BaseService):
     @staticmethod
     def _clean_listing_data(form_data: Mapping[str, str]) -> Dict[str, str]:
         """Normalize create listing form values."""
-
         return {
             "title": form_data.get("title", "").strip(),
             "category_id": form_data.get("category_id", "").strip(),
@@ -164,7 +191,6 @@ class ListingService(BaseService):
         image_file: Optional[FileStorage],
     ) -> Optional[str]:
         """Check create listing rules."""
-
         required_fields = ["title", "category_id", "description", "condition", "price"]
         if not all(cleaned_data[field] for field in required_fields):
             return "Please complete all required fields."
@@ -190,7 +216,6 @@ class ListingService(BaseService):
     @staticmethod
     def _save_image_file(image_file: FileStorage) -> str:
         """Save the uploaded image and return its relative path."""
-
         upload_folder = Path(current_app.config["UPLOAD_FOLDER"])
         upload_folder.mkdir(parents=True, exist_ok=True)
 
@@ -203,7 +228,6 @@ class ListingService(BaseService):
     @staticmethod
     def _insert_listing(listing) -> int:
         """Insert a listing record and return its id."""
-
         db = get_db()
         timestamp = datetime.utcnow().isoformat()
         cursor = db.execute(
@@ -240,7 +264,6 @@ class ListingService(BaseService):
 
     def _category_exists(self, category_id: str) -> bool:
         """Check whether a category id exists."""
-
         if not category_id.isdigit():
             return False
         db = get_db()
@@ -252,7 +275,6 @@ class ListingService(BaseService):
 
     def _ensure_default_categories(self) -> None:
         """Insert any missing default categories."""
-
         db = get_db()
         existing_names = {
             row["name"]
@@ -272,13 +294,12 @@ class ListingService(BaseService):
     @staticmethod
     def _serialize_listing_row(row) -> Dict[str, Any]:
         """Convert a database row to template-friendly listing data."""
-
         listing = dict(row)
         listing["condition"] = LEGACY_CONDITION_MAP.get(listing["condition"], listing["condition"])
         listing["condition_label"] = listing["condition"].title()
         listing["price_label"] = "{0:.2f}".format(listing["price"])
         seller_contact_method = listing.get("seller_contact_method")
-        # The detail page only needs one visible contact path, based on the seller's preference.
+        
         if seller_contact_method == "phone":
             listing["seller_contact_method_label"] = "Phone"
             listing["seller_contact_value"] = listing.get("seller_phone_number") or "Not provided"
