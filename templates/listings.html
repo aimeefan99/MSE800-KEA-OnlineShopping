@@ -1,42 +1,61 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="my-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="fw-bold">Marketplace Listings</h2>
-      <a href="{{ url_for('listings.create_listing_page') }}" class="btn btn-primary px-3">+ Create New Listing</a>
-  </div>
+<section class="mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
+        <div>
+            <p class="text-uppercase small text-muted mb-1">Marketplace</p>
+            <h1 class="mb-2">Browse Listings</h1>
+            <p class="text-muted mb-0">Discover available second-hand items from the community.</p>
+        </div>
+        <a class="btn btn-primary" href="{{ url_for('listings.create_listing_page') }}">Sell an Item</a>
+    </div>
+</section>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }}">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="row mb-4">
+      <div class="col-12">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} shadow-sm mb-2">{{ message }}</div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+{% endwith %}
 
-  <div class="row row-cols-1 row-cols-md-3 g-4">
-      {% for item in listings %}
-      <div class="col">
-          <div class="card h-100 shadow-sm border-0 bg-white">
-              <div class="card-body">
-                  <h5 class="card-title fw-bold mb-1 text-dark">{{ item.title }}</h5>
-                  <h6 class="card-subtitle mb-3 text-success fw-semibold">${{ "%.2f"|format(item.price) }} NZD</h6>
-                  <p class="card-text text-muted text-truncate" style="max-height: 50px;">{{ item.description }}</p>
-                  <span class="badge bg-light text-secondary border">{{ item.condition }}</span>
-              </div>
-              <div class="card-footer bg-transparent border-top-0 pb-3">
-                  <a href="{{ url_for('listings.view_listing_detail_page', listing_id=item.id) }}" class="btn btn-outline-primary btn-sm w-100 py-1">View Details</a>
-              </div>
-          </div>
-      </div>
-      {% else %}
-      <div class="col-12 text-center py-5">
-          <div class="alert alert-info py-4 max-width-sm mx-auto shadow-inner">
-             <p class="mb-0 fw-medium">No listings available at the moment. Be the first to post something!</p>
-          </div>
-      </div>
-      {% endfor %}
-  </div>
-</div>
+{% if listings %}
+    <div class="row g-4">
+        {% for listing in listings %}
+            <div class="col-md-6 col-xl-4">
+                <a class="listing-card card h-100 border-0 shadow-sm text-decoration-none" href="{{ url_for('listings.view_listing_detail', listing_id=listing.id) }}">
+                    <img
+                        class="listing-card-image card-img-top"
+                        src="{{ listing.image_src }}"
+                        alt="{{ listing.title }}"
+                    >
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                            <h2 class="h5 card-title mb-0 text-dark">{{ listing.title }}</h2>
+                            <span class="badge text-bg-light border">{{ listing.condition_label }}</span>
+                        </div>
+                        <p class="text-muted small mb-2">{{ listing.category_name }} by {{ listing.seller_name }}</p>
+                        <p class="card-text text-body-secondary flex-grow-1">{{ listing.description[:120] }}{% if listing.description|length > 120 %}...{% endif %}</p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <span class="listing-price text-success fw-bold">${{ listing.price_label }} NZD</span>
+                            <span class="btn btn-outline-primary btn-sm">View Details</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4 text-center">
+            <h2 class="h4 mb-2">No listings available</h2>
+            <p class="text-muted mb-0">Check back soon when new items are posted.</p>
+        </div>
+    </div>
+{% endif %}
 {% endblock %}

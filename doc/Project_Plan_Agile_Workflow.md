@@ -63,6 +63,8 @@ Work will be divided evenly by sprint tasks and project features rather than by 
 - Project Management: Trello or Jira
 - Design Tool: draw.io
 
+The implementation approach follows object-oriented programming and selected design patterns from the course where appropriate.
+
 ## Agile Ceremonies
 
 ### Sprint Planning
@@ -616,13 +618,12 @@ Deployment / DevOps Tasks:
 
 Detailed User Stories:
 
-- `Priority: Medium | Should Have` As a user, I want bugs in completed features to be fixed so that the platform works more reliably.
-- `Priority: Medium | Should Have` As a user, I want the main platform pages to be easier to use so that buying, selling, and browsing feel smoother.
-- `Priority: Medium | Should Have` As a user, I want homepage recommendations and AI listing drafts to be improved after testing so that the feature quality feels more useful in practice.
-- `Priority: High | Must Have` As an administrator, I want to lock a user account when necessary so that unsafe or inappropriate activity can be controlled.
 - `Priority: Low | Could Have` As a user, I want to view my request or transaction history so that I can track my activity on the platform.
 - `Priority: Low | Could Have` As an administrator, I want to view request records and completed request records so that I can monitor platform activity responsibly.
+- `Priority: High | Must Have` As an administrator, I want to lock a user account when necessary so that unsafe or inappropriate activity can be controlled.
 - `Priority: Low | Could Have` As an administrator, I want to lock a request record when necessary so that a problematic case can be frozen for review without manually changing its result.
+- `Priority: Medium | Should Have` As a user, I want the main platform pages to be easier to use so that buying, selling, and browsing feel smoother.
+- `Priority: Medium | Should Have` As a user, I want homepage recommendations to be improved after testing so that the feature quality feels more useful in practice.
 
 Expected Output:
 

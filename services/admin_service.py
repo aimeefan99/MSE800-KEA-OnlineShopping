@@ -1,43 +1,45 @@
 """Administrator service placeholders."""
 
-
-def get_admin_users() -> None:
-    """Get users for administrator view."""
-
-    raise NotImplementedError
+from services.base_service import BaseService
 
 
-def get_admin_listings() -> None:
-    """Get listings for administrator view."""
+class AdminService(BaseService):
+    """Handle administrator control actions."""
 
-    raise NotImplementedError
+    def get_admin_users(self) -> None:
+        """Get users for administrator view."""
+
+        raise NotImplementedError
+
+    def get_admin_listings(self) -> None:
+        """Get listings for administrator view."""
+
+        raise NotImplementedError
+
+    def get_admin_requests(self) -> None:
+        """Get request records for administrator view."""
+
+        raise NotImplementedError
+
+    def delete_inappropriate_listing(self) -> None:
+        """Delete an inappropriate listing."""
+
+        raise NotImplementedError
+
+    def get_admin_completed_requests(self) -> None:
+        """Get completed request records for administrator view."""
+
+        raise NotImplementedError
+
+    def lock_user_account(self) -> None:
+        """Lock a user account."""
+
+        raise NotImplementedError
+
+    def lock_request_record(self) -> None:
+        """Lock a request record."""
+
+        raise NotImplementedError
 
 
-def get_admin_requests() -> None:
-    """Get request records for administrator view."""
-
-    raise NotImplementedError
-
-
-def delete_inappropriate_listing() -> None:
-    """Delete an inappropriate listing."""
-
-    raise NotImplementedError
-
-
-def get_admin_completed_requests() -> None:
-    """Get completed request records for administrator view."""
-
-    raise NotImplementedError
-
-
-def lock_user_account() -> None:
-    """Lock a user account."""
-
-    raise NotImplementedError
-
-
-def lock_request_record() -> None:
-    """Lock a request record."""
-
-    raise NotImplementedError
+admin_service = AdminService()
