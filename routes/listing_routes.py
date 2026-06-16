@@ -14,14 +14,18 @@ listing_bp = Blueprint("listings", __name__)
 def browse_listings() -> str:
     """Render the listing browse page."""
 
-    return render_template("listings.html")
+    listings = listing_service.browse_listings()
+    return render_template(
+        "listings.html",
+        listings=_decorate_listing_images(listings),
+    )
 
 
 @listing_bp.get("/uploads/<path:filename>")
 def uploaded_file(filename: str):
     """Serve uploaded listing images from the runtime upload directory."""
 
-    normalized_filename = filename.removeprefix("uploads/")
+    normalized_filename = _strip_upload_prefix(filename)
     upload_folder = Path(current_app.config["UPLOAD_FOLDER"])
     image_path = upload_folder / normalized_filename
     if image_path.is_file():
@@ -35,11 +39,47 @@ def uploaded_file(filename: str):
     abort(404)
 
 
+def _decorate_listing_images(listings):
+    """Attach a resolved image source to each listing for template rendering."""
+
+    for listing in listings:
+        listing["image_src"] = _resolve_listing_image_url(listing["image_url"])
+    return listings
+
+
+def _resolve_listing_image_url(image_url: str) -> str:
+    """Return the uploaded image URL or a stable placeholder when the file is missing."""
+
+    normalized_filename = _strip_upload_prefix(image_url)
+    upload_folder = Path(current_app.config["UPLOAD_FOLDER"])
+    if (upload_folder / normalized_filename).is_file():
+        return url_for("listings.uploaded_file", filename=image_url)
+
+    legacy_upload_folder = Path(current_app.config["LEGACY_UPLOAD_FOLDER"])
+    if (legacy_upload_folder / normalized_filename).is_file():
+        return url_for("listings.uploaded_file", filename=image_url)
+
+    return url_for("static", filename="images/listing-placeholder.svg")
+
+
+def _strip_upload_prefix(value: str) -> str:
+    """Normalize stored upload paths for Python 3.8 compatibility."""
+
+    prefix = "uploads/"
+    if value.startswith(prefix):
+        return value[len(prefix):]
+    return value
+
+
 @listing_bp.get("/listings/<int:listing_id>")
 def view_listing_detail(listing_id: int) -> str:
     """Render the listing detail page."""
 
-    return render_template("listing_detail.html", listing_id=listing_id)
+    listing = listing_service.get_listing_detail(listing_id)
+    if listing is None:
+        abort(404)
+    listing["image_src"] = _resolve_listing_image_url(listing["image_url"])
+    return render_template("listing_detail.html", listing=listing)
 
 
 @listing_bp.get("/listings/create")
