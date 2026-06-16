@@ -6,7 +6,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 INSTANCE_DIR = BASE_DIR / "instance"
 DATABASE_PATH = INSTANCE_DIR / "app.db"
-UPLOAD_FOLDER = BASE_DIR / "static" / "uploads"
+UPLOAD_FOLDER = INSTANCE_DIR / "uploads"
+LEGACY_UPLOAD_FOLDER = BASE_DIR / "static" / "uploads"
 
 
 class Config:
@@ -15,3 +16,4 @@ class Config:
     SECRET_KEY = "dev-secret-key"
     DATABASE_PATH = DATABASE_PATH
     UPLOAD_FOLDER = UPLOAD_FOLDER
+    LEGACY_UPLOAD_FOLDER = LEGACY_UPLOAD_FOLDER

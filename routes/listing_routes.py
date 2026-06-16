@@ -1,6 +1,8 @@
 """Listing routes."""
 
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from pathlib import Path
+
+from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, send_from_directory, session, url_for
 
 from services.listing_service import listing_service
 from utils.decorators import login_required
@@ -13,6 +15,24 @@ def browse_listings() -> str:
     """Render the listing browse page."""
 
     return render_template("listings.html")
+
+
+@listing_bp.get("/uploads/<path:filename>")
+def uploaded_file(filename: str):
+    """Serve uploaded listing images from the runtime upload directory."""
+
+    normalized_filename = filename.removeprefix("uploads/")
+    upload_folder = Path(current_app.config["UPLOAD_FOLDER"])
+    image_path = upload_folder / normalized_filename
+    if image_path.is_file():
+        return send_from_directory(upload_folder, normalized_filename)
+
+    legacy_upload_folder = Path(current_app.config["LEGACY_UPLOAD_FOLDER"])
+    legacy_image_path = legacy_upload_folder / normalized_filename
+    if legacy_image_path.is_file():
+        return send_from_directory(legacy_upload_folder, normalized_filename)
+
+    abort(404)
 
 
 @listing_bp.get("/listings/<int:listing_id>")
