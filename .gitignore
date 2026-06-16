@@ -1,1 +1,6 @@
 *.pyc
+instance/uploads/*
+!instance/uploads/.gitkeep
+static/uploads/*
+!static/uploads/.gitkeep
+doc/Jira_Sprint2_to_Sprint5.md
