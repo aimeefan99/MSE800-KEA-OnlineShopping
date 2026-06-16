@@ -1,11 +1,13 @@
 """Administrator routes."""
 
 from flask import Blueprint, render_template
+from utils.decorators import admin_required
 
 admin_bp = Blueprint("admin", __name__)
 
 
 @admin_bp.get("/admin/users")
+@admin_required
 def view_users() -> str:
     """Render the administrator user page."""
 
@@ -13,6 +15,7 @@ def view_users() -> str:
 
 
 @admin_bp.get("/admin/listings")
+@admin_required
 def view_listings() -> str:
     """Render the administrator listing page."""
 
@@ -20,6 +23,7 @@ def view_listings() -> str:
 
 
 @admin_bp.get("/admin/requests")
+@admin_required
 def view_requests() -> str:
     """Render the administrator request page."""
 
@@ -27,6 +31,7 @@ def view_requests() -> str:
 
 
 @admin_bp.get("/admin/requests/completed")
+@admin_required
 def view_completed_requests() -> str:
     """Render the administrator completed request page."""
 
@@ -34,6 +39,7 @@ def view_completed_requests() -> str:
 
 
 @admin_bp.post("/admin/listings/<int:listing_id>/delete")
+@admin_required
 def delete_inappropriate_listing(listing_id: int) -> str:
     """Handle administrator listing deletion."""
 
@@ -41,6 +47,7 @@ def delete_inappropriate_listing(listing_id: int) -> str:
 
 
 @admin_bp.post("/admin/users/<int:user_id>/lock")
+@admin_required
 def lock_user_account(user_id: int) -> str:
     """Handle administrator user lock."""
 
@@ -48,6 +55,7 @@ def lock_user_account(user_id: int) -> str:
 
 
 @admin_bp.post("/admin/requests/<int:request_id>/lock")
+@admin_required
 def lock_request_record(request_id: int) -> str:
     """Handle administrator request lock."""
 
