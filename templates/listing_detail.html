@@ -1,6 +1,42 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Listing Detail</h1>
-<p>Listing detail placeholder for listing {{ listing_id }}.</p>
+<div class="card p-4 shadow-sm my-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="bg-light text-center py-5 border rounded mb-3" style="font-size: 24px; color: #aaa;">
+        🖼️ Item Image Placeholder
+      </div>
+    </div>
+    <div class="col-md-6">
+      <h1 class="display-6 fw-bold">{{ listing.title }}</h1>
+      <h2 class="text-success my-3">${{ "%.2f"|format(listing.price) }} NZD</h2>
+      <p><strong>Condition:</strong> <span class="badge bg-secondary">{{ listing.condition }}</span></p>
+      <p><strong>Status:</strong> <span class="badge bg-info">{{ listing.status }}</span></p>
+      <hr>
+      <h5>Description:</h5>
+      <p style="white-space: pre-wrap;">{{ listing.description }}</p>
+      
+      {% if session.get('user_id') == listing.seller_id %}
+        <div class="mt-4 p-3 border border-warning rounded bg-light">
+          <p class="text-warning fw-bold mb-2"> Seller Management Controls</p>
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('listings.edit_listing_page', listing_id=listing.id) }}" class="btn btn-warning">Edit Item Information</a>
+            <form action="{{ url_for('listings.handle_delete_listing', listing_id=listing.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this listing?');">
+              <button type="submit" class="btn btn-danger">Delete Listing</button>
+            </form>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
 {% endblock %}
