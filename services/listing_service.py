@@ -21,7 +21,7 @@ DEFAULT_CATEGORIES = [
     "Beauty",
     "Sports",
 ]
-CONDITION_OPTIONS = ["new", "like new", "good", "fair"]
+CONDITION_OPTIONS = ["new", "used"]
 
 
 class ListingService(BaseService):
