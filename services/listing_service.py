@@ -15,13 +15,21 @@ from services.base_service import BaseService
 
 DEFAULT_CATEGORIES = [
     "Electronics",
-    "Furniture",
-    "Books",
-    "Clothing",
-    "Beauty",
-    "Sports",
+    "Home & Living",
+    "Clothing & Fashion",
+    "Books & Media",
+    "Sports & Outdoors",
+    "Beauty & Health",
+    "Hobbies & Toys",
+    "Vehicles & Bicycles",
+    "Other",
 ]
 CONDITION_OPTIONS = ["new", "used"]
+LEGACY_CONDITION_MAP = {
+    "like new": "used",
+    "good": "used",
+    "fair": "used",
+}
 
 
 class ListingService(BaseService):
@@ -79,15 +87,59 @@ class ListingService(BaseService):
 
         raise NotImplementedError
 
-    def browse_listings(self) -> None:
-        """Browse listings."""
+    def browse_listings(self) -> List[Dict[str, Any]]:
+        """Return available listings for the public browse page."""
 
-        raise NotImplementedError
+        db = get_db()
+        listings = db.execute(
+            """
+            SELECT
+                listings.id,
+                listings.title,
+                listings.description,
+                listings.condition,
+                listings.price,
+                listings.image_url,
+                listings.status,
+                listings.created_at,
+                categories.name AS category_name,
+                users.display_name AS seller_name
+            FROM listings
+            INNER JOIN categories ON categories.id = listings.category_id
+            INNER JOIN users ON users.id = listings.seller_id
+            WHERE listings.status = 'available'
+            ORDER BY listings.created_at DESC, listings.id DESC
+            """
+        ).fetchall()
+        return [self._serialize_listing_row(listing) for listing in listings]
 
-    def get_listing_detail(self) -> None:
-        """Get listing detail."""
+    def get_listing_detail(self, listing_id: int) -> Optional[Dict[str, Any]]:
+        """Return one listing detail record for the detail page."""
 
-        raise NotImplementedError
+        db = get_db()
+        listing = db.execute(
+            """
+            SELECT
+                listings.id,
+                listings.title,
+                listings.description,
+                listings.condition,
+                listings.price,
+                listings.image_url,
+                listings.status,
+                listings.created_at,
+                categories.name AS category_name,
+                users.display_name AS seller_name
+            FROM listings
+            INNER JOIN categories ON categories.id = listings.category_id
+            INNER JOIN users ON users.id = listings.seller_id
+            WHERE listings.id = ?
+            """,
+            (listing_id,),
+        ).fetchone()
+        if listing is None:
+            return None
+        return self._serialize_listing_row(listing)
 
     @staticmethod
     def _clean_listing_data(form_data: Mapping[str, str]) -> Dict[str, str]:
@@ -194,18 +246,33 @@ class ListingService(BaseService):
         return category is not None
 
     def _ensure_default_categories(self) -> None:
-        """Insert default categories when the table is empty."""
+        """Insert any missing default categories."""
 
         db = get_db()
-        category_count = db.execute("SELECT COUNT(*) AS count FROM categories").fetchone()["count"]
-        if category_count:
+        existing_names = {
+            row["name"]
+            for row in db.execute("SELECT name FROM categories").fetchall()
+        }
+        missing_categories = [
+            (name,)
+            for name in DEFAULT_CATEGORIES
+            if name not in existing_names
+        ]
+        if not missing_categories:
             return
 
-        db.executemany(
-            "INSERT INTO categories (name) VALUES (?)",
-            [(name,) for name in DEFAULT_CATEGORIES],
-        )
+        db.executemany("INSERT INTO categories (name) VALUES (?)", missing_categories)
         db.commit()
+
+    @staticmethod
+    def _serialize_listing_row(row) -> Dict[str, Any]:
+        """Convert a database row to template-friendly listing data."""
+
+        listing = dict(row)
+        listing["condition"] = LEGACY_CONDITION_MAP.get(listing["condition"], listing["condition"])
+        listing["condition_label"] = listing["condition"].title()
+        listing["price_label"] = "{0:.2f}".format(listing["price"])
+        return listing
 
 
 listing_service = ListingService()
