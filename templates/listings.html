@@ -1,6 +1,42 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Listings</h1>
-<p>Listing browse page placeholder.</p>
+<div class="my-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold">Marketplace Listings</h2>
+      <a href="{{ url_for('listings.create_listing_page') }}" class="btn btn-primary px-3">+ Create New Listing</a>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="row row-cols-1 row-cols-md-3 g-4">
+      {% for item in listings %}
+      <div class="col">
+          <div class="card h-100 shadow-sm border-0 bg-white">
+              <div class="card-body">
+                  <h5 class="card-title fw-bold mb-1 text-dark">{{ item.title }}</h5>
+                  <h6 class="card-subtitle mb-3 text-success fw-semibold">${{ "%.2f"|format(item.price) }} NZD</h6>
+                  <p class="card-text text-muted text-truncate" style="max-height: 50px;">{{ item.description }}</p>
+                  <span class="badge bg-light text-secondary border">{{ item.condition }}</span>
+              </div>
+              <div class="card-footer bg-transparent border-top-0 pb-3">
+                  <a href="{{ url_for('listings.view_listing_detail_page', listing_id=item.id) }}" class="btn btn-outline-primary btn-sm w-100 py-1">View Details</a>
+              </div>
+          </div>
+      </div>
+      {% else %}
+      <div class="col-12 text-center py-5">
+          <div class="alert alert-info py-4 max-width-sm mx-auto shadow-inner">
+             <p class="mb-0 fw-medium">No listings available at the moment. Be the first to post something!</p>
+          </div>
+      </div>
+      {% endfor %}
+  </div>
+</div>
 {% endblock %}
