@@ -12,6 +12,18 @@
     </div>
 </section>
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="row mb-4">
+      <div class="col-12">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} shadow-sm mb-2">{{ message }}</div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+{% endwith %}
+
 {% if listings %}
     <div class="row g-4">
         {% for listing in listings %}
@@ -24,13 +36,13 @@
                     >
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
-                            <h2 class="h5 card-title mb-0">{{ listing.title }}</h2>
+                            <h2 class="h5 card-title mb-0 text-dark">{{ listing.title }}</h2>
                             <span class="badge text-bg-light border">{{ listing.condition_label }}</span>
                         </div>
                         <p class="text-muted small mb-2">{{ listing.category_name }} by {{ listing.seller_name }}</p>
                         <p class="card-text text-body-secondary flex-grow-1">{{ listing.description[:120] }}{% if listing.description|length > 120 %}...{% endif %}</p>
                         <div class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="listing-price">${{ listing.price_label }}</span>
+                            <span class="listing-price text-success fw-bold">${{ listing.price_label }} NZD</span>
                             <span class="btn btn-outline-primary btn-sm">View Details</span>
                         </div>
                     </div>

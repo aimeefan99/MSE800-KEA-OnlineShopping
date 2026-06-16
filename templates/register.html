@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="container py-5" style="max-width: 640px;">
+<section class="container py-4" style="max-width: 640px;">
   <div class="card shadow-sm border-0">
     <div class="card-body p-4 p-md-5">
       <h1 class="h2 mb-3">Create Account</h1>
@@ -11,39 +11,41 @@
         {% if messages %}
           <div class="mb-3">
             {% for category, message in messages %}
-              <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+              <div class="alert alert-{{ category }} shadow-sm" role="alert">{{ message }}</div>
             {% endfor %}
           </div>
         {% endif %}
       {% endwith %}
 
-      <form method="post" action="/register">
+      <form method="post" action="{{ url_for('auth.register') }}">
         <div class="mb-3">
-          <label class="form-label" for="display_name">Display Name</label>
+          <label class="form-label" for="display_name">Public Display Name *</label>
           <input
             class="form-control"
             id="display_name"
             name="display_name"
             type="text"
+            placeholder="e.g. JohnDoe"
             value="{{ form_data.get('display_name', '') }}"
             required
           >
         </div>
 
         <div class="mb-3">
-          <label class="form-label" for="full_name">Full Name</label>
+          <label class="form-label" for="full_name">Full Legal Name *</label>
           <input
             class="form-control"
             id="full_name"
             name="full_name"
             type="text"
+            placeholder="John David Doe"
             value="{{ form_data.get('full_name', '') }}"
             required
           >
         </div>
 
         <div class="mb-3">
-          <label class="form-label" for="date_of_birth">Date of Birth</label>
+          <label class="form-label" for="date_of_birth">Date of Birth *</label>
           <input
             class="form-control"
             id="date_of_birth"
@@ -55,24 +57,26 @@
         </div>
 
         <div class="mb-3">
-          <label class="form-label" for="email">Email</label>
+          <label class="form-label" for="email">Email Address *</label>
           <input
             class="form-control"
             id="email"
             name="email"
             type="email"
+            placeholder="name@example.com"
             value="{{ form_data.get('email', '') }}"
             required
           >
         </div>
 
         <div class="mb-3">
-          <label class="form-label" for="password">Password</label>
+          <label class="form-label" for="password">Password *</label>
           <input
             class="form-control"
             id="password"
             name="password"
             type="password"
+            placeholder="••••••••"
             required
           >
           <div class="form-text">
@@ -82,7 +86,7 @@
 
         <div class="mb-3">
           <label class="form-label" for="preferred_contact_method">
-            Preferred Contact Method
+            Preferred Contact Method *
           </label>
           <select
             class="form-select"
@@ -97,28 +101,29 @@
               Email
             </option>
             <option value="phone" {% if form_data.get('preferred_contact_method') == 'phone' %}selected{% endif %}>
-              Phone
+              Phone / Text
             </option>
           </select>
         </div>
 
         <div class="mb-4">
-          <label class="form-label" for="phone_number">Phone Number</label>
+          <label class="form-label" for="phone_number">Phone Number (Optional)</label>
           <input
             class="form-control"
             id="phone_number"
             name="phone_number"
             type="tel"
+            placeholder="021 000 0000"
             value="{{ form_data.get('phone_number', '') }}"
           >
         </div>
 
-        <button class="btn btn-primary w-100" type="submit">Create Account</button>
+        <button class="btn btn-primary w-100 py-2" type="submit">Sign Up</button>
       </form>
 
       <p class="mt-4 mb-0 text-center">
         Already have an account?
-        <a href="/login">Log in</a>
+        <a href="{{ url_for('auth.login_page') }}">Log in here</a>
       </p>
     </div>
   </div>

@@ -1,9 +1,7 @@
-"""Listing routes."""
+"""Listing controller routes for creating, showing, editing, and deleting items."""
 
 from pathlib import Path
-
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, send_from_directory, session, url_for
-
 from services.listing_service import listing_service
 from utils.decorators import login_required
 
@@ -13,7 +11,6 @@ listing_bp = Blueprint("listings", __name__)
 @listing_bp.get("/listings")
 def browse_listings() -> str:
     """Render the listing browse page."""
-
     listings = listing_service.browse_listings()
     return render_template(
         "listings.html",
@@ -24,7 +21,6 @@ def browse_listings() -> str:
 @listing_bp.get("/uploads/<path:filename>")
 def uploaded_file(filename: str):
     """Serve uploaded listing images from the runtime upload directory."""
-
     normalized_filename = _strip_upload_prefix(filename)
     upload_folder = Path(current_app.config["UPLOAD_FOLDER"])
     image_path = upload_folder / normalized_filename
@@ -41,7 +37,6 @@ def uploaded_file(filename: str):
 
 def _decorate_listing_images(listings):
     """Attach a resolved image source to each listing for template rendering."""
-
     for listing in listings:
         listing["image_src"] = _resolve_listing_image_url(listing["image_url"])
     return listings
@@ -49,7 +44,6 @@ def _decorate_listing_images(listings):
 
 def _resolve_listing_image_url(image_url: str) -> str:
     """Return the uploaded image URL or a stable placeholder when the file is missing."""
-
     normalized_filename = _strip_upload_prefix(image_url)
     upload_folder = Path(current_app.config["UPLOAD_FOLDER"])
     if (upload_folder / normalized_filename).is_file():
@@ -64,7 +58,6 @@ def _resolve_listing_image_url(image_url: str) -> str:
 
 def _strip_upload_prefix(value: str) -> str:
     """Normalize stored upload paths for Python 3.8 compatibility."""
-
     prefix = "uploads/"
     if value.startswith(prefix):
         return value[len(prefix):]
@@ -74,8 +67,6 @@ def _strip_upload_prefix(value: str) -> str:
 @listing_bp.get("/listings/<int:listing_id>")
 def view_listing_detail(listing_id: int) -> str:
     """Render the listing detail page."""
-
-    # Item details stay public so visitors can evaluate listings before registering.
     listing = listing_service.get_listing_detail(listing_id)
     if listing is None:
         abort(404)
@@ -87,7 +78,6 @@ def view_listing_detail(listing_id: int) -> str:
 @login_required
 def create_listing_page() -> str:
     """Render the create listing page."""
-
     return render_template(
         "create_listing.html",
         form_data={},
@@ -100,8 +90,6 @@ def create_listing_page() -> str:
 @login_required
 def create_listing() -> str:
     """Handle listing creation."""
-
-    # Keep form validation and persistence in the service layer.
     success, error_message, form_data, listing_id = listing_service.create_listing(
         session["user_id"],
         request.form,
@@ -123,22 +111,55 @@ def create_listing() -> str:
 @listing_bp.get("/listings/<int:listing_id>/edit")
 @login_required
 def edit_listing_page(listing_id: int) -> str:
-    """Render the edit listing page."""
+    """Render the edit listing page with pre-filled details."""
+    item = listing_service.get_listing_detail(listing_id)
+    if not item:
+        abort(404)
 
-    return render_template("edit_listing.html", listing_id=listing_id)
+    if item["seller_id"] != session["user_id"]:
+        flash("You are not authorized to edit this item.", "danger")
+        return redirect(url_for("listings.view_listing_detail", listing_id=listing_id))
+
+    return render_template("edit_listing.html", listing=item)
 
 
 @listing_bp.post("/listings/<int:listing_id>/edit")
 @login_required
-def edit_listing(listing_id: int) -> str:
-    """Handle listing edit."""
+def handle_edit_listing(listing_id: int) -> str:
+    """Process data when someone submits changes to their item."""
+    title = request.form.get("title")
+    description = request.form.get("description")
+    condition = request.form.get("condition")
+    price = float(request.form.get("price", 0))
+    category_id = int(request.form.get("category_id", 1))
 
-    return f"TODO: edit listing {listing_id}"
+    # Adapted to use Fan Fan's listing_service architecture style
+    success = listing_service.edit_listing(
+        listing_id,
+        session["user_id"],
+        category_id,
+        title,
+        description,
+        condition,
+        price
+    )
+    
+    if success:
+        flash("Item updated successfully!", "success")
+    else:
+        flash("Failed to update item. Access denied.", "danger")
+
+    return redirect(url_for("listings.view_listing_detail", listing_id=listing_id))
 
 
 @listing_bp.post("/listings/<int:listing_id>/delete")
 @login_required
 def delete_listing(listing_id: int) -> str:
-    """Handle listing deletion."""
+    """Delete an item completely if requested by its owner."""
+    success = listing_service.delete_listing(listing_id, session["user_id"])
+    if success:
+        flash("Item was successfully deleted.", "info")
+        return redirect(url_for("listings.browse_listings"))
 
-    return f"TODO: delete listing {listing_id}"
+    flash("Failed to delete item. Access denied.", "danger")
+    return redirect(url_for("listings.view_listing_detail", listing_id=listing_id))
