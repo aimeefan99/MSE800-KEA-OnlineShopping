@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">Listing image placeholder</title>
+  <desc id="desc">Fallback illustration shown when a listing image is unavailable.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eff4f8" />
+      <stop offset="100%" stop-color="#dbe7ef" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)" />
+  <rect x="255" y="170" width="690" height="410" rx="36" fill="#ffffff" stroke="#c8d5df" stroke-width="18" />
+  <rect x="315" y="245" width="570" height="255" rx="18" fill="#edf3f7" />
+  <circle cx="445" cy="365" r="52" fill="#8eb1c7" />
+  <path d="M390 500l110-95 95 75 105-125 120 145H390z" fill="#77a06a" />
+  <rect x="355" y="650" width="490" height="34" rx="17" fill="#b4c6d4" />
+  <rect x="440" y="715" width="320" height="28" rx="14" fill="#c8d5df" />
+</svg>
