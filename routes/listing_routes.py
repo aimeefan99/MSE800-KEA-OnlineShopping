@@ -1,7 +1,18 @@
 """Listing controller routes for creating, showing, editing, and deleting items."""
 
 from pathlib import Path
-from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, send_from_directory, session, url_for
+from flask import (
+    Blueprint,
+    abort,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    session,
+    url_for,
+)
 from services.listing_service import listing_service
 from utils.decorators import login_required
 
@@ -11,12 +22,20 @@ listing_bp = Blueprint("listings", __name__)
 @listing_bp.get("/listings")
 def browse_listings() -> str:
     """Render the listing browse page."""
-    keyword = request.args.get("keyword", "").strip()
-    listings = listing_service.browse_listings(keyword)
+    filters = {
+        "keyword": request.args.get("keyword", "").strip(),
+        "category_id": request.args.get("category_id", "").strip(),
+        "condition": request.args.get("condition", "").strip(),
+        "min_price": request.args.get("min_price", "").strip(),
+        "max_price": request.args.get("max_price", "").strip(),
+    }
+    listings = listing_service.browse_listings(filters)
     return render_template(
         "listings.html",
         listings=_decorate_listing_images(listings),
-        keyword=keyword,
+        filters=filters,
+        categories=listing_service.get_category_options(),
+        condition_options=listing_service.get_condition_options(),
     )
 
 
