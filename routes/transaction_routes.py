@@ -1,6 +1,8 @@
 """Transaction-related routes for favorites, requests, and reviews."""
 
-from flask import Blueprint, render_template
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+
+from services.transaction_service import transaction_service
 from utils.decorators import login_required
 
 transaction_bp = Blueprint("transactions", __name__)
@@ -19,7 +21,18 @@ def view_favorites() -> str:
 def add_favorite() -> str:
     """Handle favorite add action."""
 
-    return "TODO: add favorite"
+    listing_id = request.form.get("listing_id", type=int)
+    if listing_id is None:
+        flash("Please choose a valid listing.", "danger")
+        return redirect(url_for("listings.browse_listings"))
+
+    message = transaction_service.add_favorite(session["user_id"], listing_id)
+    category = "warning" if "already" in message.lower() else "success"
+    if "not found" in message.lower():
+        category = "danger"
+    flash(message, category)
+    next_url = request.form.get("next") or url_for("listings.view_listing_detail", listing_id=listing_id)
+    return redirect(next_url)
 
 
 @transaction_bp.post("/favorites/remove")

@@ -3,6 +3,7 @@
 from pathlib import Path
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, send_from_directory, session, url_for
 from services.listing_service import listing_service
+from services.transaction_service import transaction_service
 from utils.decorators import login_required
 
 listing_bp = Blueprint("listings", __name__)
@@ -71,7 +72,10 @@ def view_listing_detail(listing_id: int) -> str:
     if listing is None:
         abort(404)
     listing["image_src"] = _resolve_listing_image_url(listing["image_url"])
-    return render_template("listing_detail.html", listing=listing)
+    favorite_id = None
+    if "user_id" in session:
+        favorite_id = transaction_service.get_favorite_id(session["user_id"], listing_id)
+    return render_template("listing_detail.html", listing=listing, favorite_id=favorite_id)
 
 
 @listing_bp.get("/listings/create")
