@@ -120,18 +120,28 @@ def edit_listing_page(listing_id: int) -> str:
         flash("You are not authorized to edit this item.", "danger")
         return redirect(url_for("listings.view_listing_detail", listing_id=listing_id))
 
-    return render_template("edit_listing.html", listing=item)
+    return render_template(
+        "edit_listing.html",
+        listing=item,
+        categories=listing_service.get_category_options(),
+        condition_options=listing_service.get_condition_options(),
+    )
 
 
 @listing_bp.post("/listings/<int:listing_id>/edit")
 @login_required
 def handle_edit_listing(listing_id: int) -> str:
     """Process data when someone submits changes to their item."""
-    title = request.form.get("title")
-    description = request.form.get("description")
-    condition = request.form.get("condition")
-    price = float(request.form.get("price", 0))
-    category_id = int(request.form.get("category_id", 1))
+    title = request.form.get("title", "").strip()
+    description = request.form.get("description", "").strip()
+    condition = request.form.get("condition", "").strip()
+
+    try:
+        price = float(request.form.get("price", ""))
+        category_id = int(request.form.get("category_id", ""))
+    except ValueError:
+        flash("Please enter valid listing information.", "danger")
+        return redirect(url_for("listings.edit_listing_page", listing_id=listing_id))
 
     # Adapted to use Fan Fan's listing_service architecture style
     success = listing_service.edit_listing(

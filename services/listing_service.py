@@ -151,6 +151,7 @@ class ListingService(BaseService):
             SELECT
                 listings.id,
                 listings.seller_id,
+                listings.category_id,
                 listings.title,
                 listings.description,
                 listings.condition,
