@@ -25,6 +25,7 @@ DEFAULT_CATEGORIES = [
     "Other",
 ]
 CONDITION_OPTIONS = ["new", "used"]
+STATUS_OPTIONS = ["available", "pending", "sold"]
 LEGACY_CONDITION_MAP = {
     "like new": "used",
     "good": "used",
@@ -38,6 +39,7 @@ SET
     description = ?,
     condition = ?,
     price = ?,
+    status = ?,
     updated_at = ?
 WHERE id = ?
 """
@@ -96,6 +98,11 @@ class ListingService(BaseService):
         """Get allowed listing condition values."""
         return CONDITION_OPTIONS
 
+    @staticmethod
+    def get_status_options() -> List[str]:
+        """Get allowed listing status values."""
+        return STATUS_OPTIONS
+
     def create_listing(
         self,
         seller_id: int,
@@ -130,9 +137,13 @@ class ListingService(BaseService):
         title: str,
         description: str,
         condition: str,
-        price: float
+        price: float,
+        status: str,
     ) -> bool:
         """Update an item's details, but only if the user making the request is the owner!"""
+        if status not in STATUS_OPTIONS:
+            return False
+
         db = get_db()
 
         # Ownership Safety Check using the class's built-in get_listing_detail method
@@ -143,7 +154,7 @@ class ListingService(BaseService):
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         db.execute(
             UPDATE_LISTING_SQL,
-            (category_id, title, description, condition, price, now_str, listing_id)
+            (category_id, title, description, condition, price, status, now_str, listing_id)
         )
         db.commit()
         return True
@@ -397,6 +408,7 @@ class ListingService(BaseService):
         listing = dict(row)
         listing["condition"] = LEGACY_CONDITION_MAP.get(listing["condition"], listing["condition"])
         listing["condition_label"] = listing["condition"].title()
+        listing["status_label"] = listing["status"].title()
         listing["price_label"] = "{0:.2f}".format(listing["price"])
         seller_contact_method = listing.get("seller_contact_method")
         

@@ -150,6 +150,7 @@ def edit_listing_page(listing_id: int) -> str:
         listing=item,
         categories=listing_service.get_category_options(),
         condition_options=listing_service.get_condition_options(),
+        status_options=listing_service.get_status_options(),
     )
 
 
@@ -160,6 +161,7 @@ def handle_edit_listing(listing_id: int) -> str:
     title = request.form.get("title", "").strip()
     description = request.form.get("description", "").strip()
     condition = request.form.get("condition", "").strip()
+    status = request.form.get("status", "").strip()
 
     try:
         price = float(request.form.get("price", ""))
@@ -176,7 +178,8 @@ def handle_edit_listing(listing_id: int) -> str:
         title,
         description,
         condition,
-        price
+        price,
+        status,
     )
     
     if success:

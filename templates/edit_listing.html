@@ -38,6 +38,16 @@
         </select>
       </div>
       <div class="mb-3">
+        <label class="form-label" for="status">Listing Status</label>
+        <select class="form-select" id="status" name="status" required>
+          {% for status in status_options %}
+            <option value="{{ status }}" {% if listing.status == status %}selected{% endif %}>
+              {{ status|title }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
         <label class="form-label">Item Description</label>
         <textarea name="description" class="form-control" rows="5" required>{{ listing.description }}</textarea>
       </div>
