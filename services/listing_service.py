@@ -30,6 +30,54 @@ LEGACY_CONDITION_MAP = {
     "good": "used",
     "fair": "used",
 }
+UPDATE_LISTING_SQL = """
+UPDATE listings
+SET
+    category_id = ?,
+    title = ?,
+    description = ?,
+    condition = ?,
+    price = ?,
+    updated_at = ?
+WHERE id = ?
+"""
+LISTING_DETAIL_SQL = """
+SELECT
+    listings.id,
+    listings.seller_id,
+    listings.category_id,
+    listings.title,
+    listings.description,
+    listings.condition,
+    listings.price,
+    listings.image_url,
+    listings.status,
+    listings.created_at,
+    categories.name AS category_name,
+    users.display_name AS seller_name,
+    users.preferred_contact_method AS seller_contact_method,
+    users.email AS seller_email,
+    users.phone_number AS seller_phone_number
+FROM listings
+INNER JOIN categories ON categories.id = listings.category_id
+INNER JOIN users ON users.id = listings.seller_id
+WHERE listings.id = ?
+"""
+INSERT_LISTING_SQL = """
+INSERT INTO listings (
+    seller_id,
+    category_id,
+    image_url,
+    title,
+    description,
+    condition,
+    price,
+    status,
+    created_at,
+    updated_at
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+"""
 
 
 class ListingService(BaseService):
@@ -94,11 +142,7 @@ class ListingService(BaseService):
 
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         db.execute(
-            """
-            UPDATE listings 
-            SET category_id = ?, title = ?, description = ?, condition = ?, price = ?, updated_at = ?
-            WHERE id = ?
-            """,
+            UPDATE_LISTING_SQL,
             (category_id, title, description, condition, price, now_str, listing_id)
         )
         db.commit()
@@ -117,22 +161,10 @@ class ListingService(BaseService):
         db.commit()
         return True
 
-    def browse_listings(self, keyword: str = "") -> List[Dict[str, Any]]:
+    def browse_listings(self, filters: Optional[Mapping[str, str]] = None) -> List[Dict[str, Any]]:
         """Return available listings for the public browse page."""
         db = get_db()
-        keyword = keyword.strip()
-        query_parameters = []
-        keyword_filter = ""
-        if keyword:
-            keyword_filter = """
-                AND (
-                    listings.title LIKE ?
-                    OR listings.description LIKE ?
-                    OR categories.name LIKE ?
-                )
-            """
-            search_term = "%{0}%".format(keyword)
-            query_parameters = [search_term, search_term, search_term]
+        where_clause, query_parameters = self._build_browse_filter_query(filters or {})
 
         listings = db.execute(
             """
@@ -151,40 +183,94 @@ class ListingService(BaseService):
             FROM listings
             INNER JOIN categories ON categories.id = listings.category_id
             INNER JOIN users ON users.id = listings.seller_id
-            WHERE listings.status = 'available'
-            {keyword_filter}
+            WHERE {where_clause}
             ORDER BY listings.created_at DESC, listings.id DESC
-            """.format(keyword_filter=keyword_filter),
+            """.format(where_clause=where_clause),
             query_parameters,
         ).fetchall()
         return [self._serialize_listing_row(listing) for listing in listings]
+
+    def _build_browse_filter_query(self, filters: Mapping[str, str]) -> Tuple[str, List[Any]]:
+        """Build the listing browse WHERE clause and parameter list."""
+        where_clauses = ["listings.status = 'available'"]
+        query_parameters: List[Any] = []
+
+        self._add_keyword_filter(filters, where_clauses, query_parameters)
+        self._add_category_filter(filters, where_clauses, query_parameters)
+        self._add_condition_filter(filters, where_clauses, query_parameters)
+        self._add_price_filters(filters, where_clauses, query_parameters)
+
+        return " AND ".join(where_clauses), query_parameters
+
+    @staticmethod
+    def _add_keyword_filter(
+        filters: Mapping[str, str],
+        where_clauses: List[str],
+        query_parameters: List[Any],
+    ) -> None:
+        """Add keyword matching across listing title, description, and category."""
+        keyword = filters.get("keyword", "").strip()
+        if not keyword:
+            return
+
+        where_clauses.append(
+            """
+            (
+                listings.title LIKE ?
+                OR listings.description LIKE ?
+                OR categories.name LIKE ?
+            )
+            """
+        )
+        search_term = "%{0}%".format(keyword)
+        query_parameters.extend([search_term, search_term, search_term])
+
+    @staticmethod
+    def _add_category_filter(
+        filters: Mapping[str, str],
+        where_clauses: List[str],
+        query_parameters: List[Any],
+    ) -> None:
+        """Add a category filter when the submitted category id is numeric."""
+        category_id = filters.get("category_id", "").strip()
+        if category_id.isdigit():
+            where_clauses.append("listings.category_id = ?")
+            query_parameters.append(int(category_id))
+
+    @staticmethod
+    def _add_condition_filter(
+        filters: Mapping[str, str],
+        where_clauses: List[str],
+        query_parameters: List[Any],
+    ) -> None:
+        """Add a condition filter when the value is supported."""
+        condition = filters.get("condition", "").strip()
+        if condition in CONDITION_OPTIONS:
+            where_clauses.append("listings.condition = ?")
+            query_parameters.append(condition)
+
+    def _add_price_filters(
+        self,
+        filters: Mapping[str, str],
+        where_clauses: List[str],
+        query_parameters: List[Any],
+    ) -> None:
+        """Add minimum and maximum price filters when values are valid."""
+        min_price = self._parse_price_filter(filters.get("min_price", ""))
+        if min_price is not None:
+            where_clauses.append("listings.price >= ?")
+            query_parameters.append(min_price)
+
+        max_price = self._parse_price_filter(filters.get("max_price", ""))
+        if max_price is not None:
+            where_clauses.append("listings.price <= ?")
+            query_parameters.append(max_price)
 
     def get_listing_detail(self, listing_id: int) -> Optional[Dict[str, Any]]:
         """Return one listing detail record for the detail page."""
         db = get_db()
         listing = db.execute(
-            """
-            SELECT
-                listings.id,
-                listings.seller_id,
-                listings.category_id,
-                listings.title,
-                listings.description,
-                listings.condition,
-                listings.price,
-                listings.image_url,
-                listings.status,
-                listings.created_at,
-                categories.name AS category_name,
-                users.display_name AS seller_name,
-                users.preferred_contact_method AS seller_contact_method,
-                users.email AS seller_email,
-                users.phone_number AS seller_phone_number
-            FROM listings
-            INNER JOIN categories ON categories.id = listings.category_id
-            INNER JOIN users ON users.id = listings.seller_id
-            WHERE listings.id = ?
-            """,
+            LISTING_DETAIL_SQL,
             (listing_id,),
         ).fetchone()
         if listing is None:
@@ -248,21 +334,7 @@ class ListingService(BaseService):
         db = get_db()
         timestamp = datetime.utcnow().isoformat()
         cursor = db.execute(
-            """
-            INSERT INTO listings (
-                seller_id,
-                category_id,
-                image_url,
-                title,
-                description,
-                condition,
-                price,
-                status,
-                created_at,
-                updated_at
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
+            INSERT_LISTING_SQL,
             (
                 listing.seller_id,
                 listing.category_id,
@@ -289,6 +361,17 @@ class ListingService(BaseService):
             (int(category_id),),
         ).fetchone()
         return category is not None
+
+    @staticmethod
+    def _parse_price_filter(value: str) -> Optional[float]:
+        """Return a valid non-negative price filter or ignore invalid input."""
+        try:
+            price = float(value)
+        except (TypeError, ValueError):
+            return None
+        if price < 0:
+            return None
+        return price
 
     def _ensure_default_categories(self) -> None:
         """Insert any missing default categories."""
