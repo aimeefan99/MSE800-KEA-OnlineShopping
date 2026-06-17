@@ -1,4 +1,7 @@
 *.pyc
+.venv/
+.uv-cache/
+.uv-python/
 instance/uploads/*
 !instance/uploads/.gitkeep
 static/uploads/*

@@ -11,10 +11,12 @@ listing_bp = Blueprint("listings", __name__)
 @listing_bp.get("/listings")
 def browse_listings() -> str:
     """Render the listing browse page."""
-    listings = listing_service.browse_listings()
+    keyword = request.args.get("keyword", "").strip()
+    listings = listing_service.browse_listings(keyword)
     return render_template(
         "listings.html",
         listings=_decorate_listing_images(listings),
+        keyword=keyword,
     )
 
 

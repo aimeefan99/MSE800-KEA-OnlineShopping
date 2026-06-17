@@ -12,6 +12,28 @@
     </div>
 </section>
 
+<section class="mb-4">
+    <form class="row g-2 align-items-end" action="{{ url_for('listings.browse_listings') }}" method="get">
+        <div class="col-md-9 col-lg-10">
+            <label class="form-label" for="keyword">Search listings</label>
+            <input
+                class="form-control"
+                id="keyword"
+                name="keyword"
+                type="search"
+                value="{{ keyword }}"
+                placeholder="Search by product, description, or category"
+            >
+        </div>
+        <div class="col-md-3 col-lg-2 d-flex gap-2">
+            <button class="btn btn-primary flex-grow-1" type="submit">Search</button>
+            {% if keyword %}
+                <a class="btn btn-outline-secondary" href="{{ url_for('listings.browse_listings') }}">Clear</a>
+            {% endif %}
+        </div>
+    </form>
+</section>
+
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
     <div class="row mb-4">
@@ -53,8 +75,13 @@
 {% else %}
     <div class="card border-0 shadow-sm">
         <div class="card-body p-4 text-center">
-            <h2 class="h4 mb-2">No listings available</h2>
-            <p class="text-muted mb-0">Check back soon when new items are posted.</p>
+            {% if keyword %}
+                <h2 class="h4 mb-2">No listings found</h2>
+                <p class="text-muted mb-0">Try a different keyword or clear the search.</p>
+            {% else %}
+                <h2 class="h4 mb-2">No listings available</h2>
+                <p class="text-muted mb-0">Check back soon when new items are posted.</p>
+            {% endif %}
         </div>
     </div>
 {% endif %}
