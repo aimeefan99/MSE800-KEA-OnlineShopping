@@ -117,9 +117,23 @@ class ListingService(BaseService):
         db.commit()
         return True
 
-    def browse_listings(self) -> List[Dict[str, Any]]:
+    def browse_listings(self, keyword: str = "") -> List[Dict[str, Any]]:
         """Return available listings for the public browse page."""
         db = get_db()
+        keyword = keyword.strip()
+        query_parameters = []
+        keyword_filter = ""
+        if keyword:
+            keyword_filter = """
+                AND (
+                    listings.title LIKE ?
+                    OR listings.description LIKE ?
+                    OR categories.name LIKE ?
+                )
+            """
+            search_term = "%{0}%".format(keyword)
+            query_parameters = [search_term, search_term, search_term]
+
         listings = db.execute(
             """
             SELECT
@@ -138,8 +152,10 @@ class ListingService(BaseService):
             INNER JOIN categories ON categories.id = listings.category_id
             INNER JOIN users ON users.id = listings.seller_id
             WHERE listings.status = 'available'
+            {keyword_filter}
             ORDER BY listings.created_at DESC, listings.id DESC
-            """
+            """.format(keyword_filter=keyword_filter),
+            query_parameters,
         ).fetchall()
         return [self._serialize_listing_row(listing) for listing in listings]
 
