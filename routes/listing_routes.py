@@ -1,7 +1,18 @@
 """Listing controller routes for creating, showing, editing, and deleting items."""
 
 from pathlib import Path
-from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, send_from_directory, session, url_for
+from flask import (
+    Blueprint,
+    abort,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    session,
+    url_for,
+)
 from services.listing_service import listing_service
 from services.transaction_service import transaction_service
 from utils.decorators import login_required
@@ -12,10 +23,20 @@ listing_bp = Blueprint("listings", __name__)
 @listing_bp.get("/listings")
 def browse_listings() -> str:
     """Render the listing browse page."""
-    listings = listing_service.browse_listings()
+    filters = {
+        "keyword": request.args.get("keyword", "").strip(),
+        "category_id": request.args.get("category_id", "").strip(),
+        "condition": request.args.get("condition", "").strip(),
+        "min_price": request.args.get("min_price", "").strip(),
+        "max_price": request.args.get("max_price", "").strip(),
+    }
+    listings = listing_service.browse_listings(filters)
     return render_template(
         "listings.html",
         listings=_decorate_listing_images(listings),
+        filters=filters,
+        categories=listing_service.get_category_options(),
+        condition_options=listing_service.get_condition_options(),
     )
 
 
@@ -124,18 +145,28 @@ def edit_listing_page(listing_id: int) -> str:
         flash("You are not authorized to edit this item.", "danger")
         return redirect(url_for("listings.view_listing_detail", listing_id=listing_id))
 
-    return render_template("edit_listing.html", listing=item)
+    return render_template(
+        "edit_listing.html",
+        listing=item,
+        categories=listing_service.get_category_options(),
+        condition_options=listing_service.get_condition_options(),
+    )
 
 
 @listing_bp.post("/listings/<int:listing_id>/edit")
 @login_required
 def handle_edit_listing(listing_id: int) -> str:
     """Process data when someone submits changes to their item."""
-    title = request.form.get("title")
-    description = request.form.get("description")
-    condition = request.form.get("condition")
-    price = float(request.form.get("price", 0))
-    category_id = int(request.form.get("category_id", 1))
+    title = request.form.get("title", "").strip()
+    description = request.form.get("description", "").strip()
+    condition = request.form.get("condition", "").strip()
+
+    try:
+        price = float(request.form.get("price", ""))
+        category_id = int(request.form.get("category_id", ""))
+    except ValueError:
+        flash("Please enter valid listing information.", "danger")
+        return redirect(url_for("listings.edit_listing_page", listing_id=listing_id))
 
     # Adapted to use Fan Fan's listing_service architecture style
     success = listing_service.edit_listing(
