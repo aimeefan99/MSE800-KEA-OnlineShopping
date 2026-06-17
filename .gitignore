@@ -4,6 +4,7 @@
 .uv-python/
 instance/uploads/*
 !instance/uploads/.gitkeep
+instance/app.db
 static/uploads/*
 !static/uploads/.gitkeep
 doc/Jira_Sprint2_to_Sprint5.md
