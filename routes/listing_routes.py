@@ -94,9 +94,16 @@ def view_listing_detail(listing_id: int) -> str:
         abort(404)
     listing["image_src"] = _resolve_listing_image_url(listing["image_url"])
     favorite_id = None
+    request_status = None
     if "user_id" in session:
         favorite_id = transaction_service.get_favorite_id(session["user_id"], listing_id)
-    return render_template("listing_detail.html", listing=listing, favorite_id=favorite_id)
+        request_status = transaction_service.get_request_status(session["user_id"], listing_id)
+    return render_template(
+        "listing_detail.html",
+        listing=listing,
+        favorite_id=favorite_id,
+        request_status=request_status,
+    )
 
 
 @listing_bp.get("/listings/create")
