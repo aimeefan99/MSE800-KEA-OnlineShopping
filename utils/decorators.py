@@ -4,6 +4,8 @@ from functools import wraps
 
 from flask import flash, redirect, session, url_for
 
+from models.db import get_db
+
 
 def login_required(view):
     """Require a user session before accessing the route."""
@@ -13,6 +15,14 @@ def login_required(view):
         # Private pages redirect to login when no session exists.
         if "user_id" not in session:
             flash("Please log in to continue.", "warning")
+            return redirect(url_for("auth.login_page"))
+        user = get_db().execute(
+            "SELECT id FROM users WHERE id = ?",
+            (session["user_id"],),
+        ).fetchone()
+        if user is None:
+            session.clear()
+            flash("Please log in again to continue.", "warning")
             return redirect(url_for("auth.login_page"))
         return view(*args, **kwargs)
 
