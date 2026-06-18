@@ -1,9 +1,33 @@
 """Transaction-related service placeholders for favorites, requests, and reviews."""
 
-from typing import Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from models.db import get_db
 from services.base_service import BaseService
+
+INCOMING_REQUESTS_SQL = """
+SELECT
+    requests.id,
+    requests.listing_id,
+    requests.buyer_id,
+    requests.seller_id,
+    requests.status,
+    requests.message,
+    requests.created_at,
+    requests.updated_at,
+    listings.title AS listing_title,
+    listings.price AS listing_price,
+    listings.status AS listing_status,
+    users.display_name AS buyer_name,
+    users.email AS buyer_email,
+    users.phone_number AS buyer_phone_number,
+    users.preferred_contact_method AS buyer_contact_method
+FROM requests
+INNER JOIN listings ON listings.id = requests.listing_id
+INNER JOIN users ON users.id = requests.buyer_id
+WHERE requests.seller_id = ?
+ORDER BY requests.created_at DESC, requests.id DESC
+"""
 
 
 class TransactionService(BaseService):
@@ -86,10 +110,12 @@ class TransactionService(BaseService):
         db.commit()
         return True, "Purchase request submitted."
 
-    def incoming_requests(self) -> None:
+    def incoming_requests(self, seller_id: int) -> List[Dict[str, Any]]:
         """Get incoming requests for a seller."""
 
-        raise NotImplementedError
+        db = get_db()
+        requests = db.execute(INCOMING_REQUESTS_SQL, (seller_id,)).fetchall()
+        return [self._serialize_incoming_request(request) for request in requests]
 
     def request_history(self) -> None:
         """Get request history for a user."""
@@ -178,5 +204,21 @@ class TransactionService(BaseService):
             (buyer_id, listing_id),
         ).fetchone()
         return request is not None
+
+    @staticmethod
+    def _serialize_incoming_request(row) -> Dict[str, Any]:
+        """Convert an incoming request row to template-friendly values."""
+
+        request = dict(row)
+        request["listing_price_label"] = "{0:.2f}".format(request["listing_price"])
+        request["status_label"] = request["status"].title()
+        request["listing_status_label"] = request["listing_status"].title()
+        if request["buyer_contact_method"] == "phone":
+            request["buyer_contact_method_label"] = "Phone"
+            request["buyer_contact_value"] = request["buyer_phone_number"] or "Not provided"
+        else:
+            request["buyer_contact_method_label"] = "Email"
+            request["buyer_contact_value"] = request["buyer_email"] or "Not provided"
+        return request
 
 transaction_service = TransactionService()
