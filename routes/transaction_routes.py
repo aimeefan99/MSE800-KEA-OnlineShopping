@@ -31,7 +31,10 @@ def add_favorite() -> str:
     if "not found" in message.lower():
         category = "danger"
     flash(message, category)
-    next_url = request.form.get("next") or url_for("listings.view_listing_detail", listing_id=listing_id)
+    next_url = request.form.get("next") or url_for(
+        "listings.view_listing_detail",
+        listing_id=listing_id,
+    )
     return redirect(next_url)
 
 
@@ -59,7 +62,10 @@ def create_request() -> str:
         request.form.get("message", ""),
     )
     flash(message, "success" if success else "warning")
-    next_url = request.form.get("next") or url_for("listings.view_listing_detail", listing_id=listing_id)
+    next_url = request.form.get("next") or url_for(
+        "listings.view_listing_detail",
+        listing_id=listing_id,
+    )
     return redirect(next_url)
 
 
@@ -68,7 +74,8 @@ def create_request() -> str:
 def incoming_requests() -> str:
     """Render incoming requests page."""
 
-    return render_template("requests_incoming.html")
+    requests = transaction_service.incoming_requests(session["user_id"])
+    return render_template("requests_incoming.html", requests=requests)
 
 
 @transaction_bp.get("/requests/history")
