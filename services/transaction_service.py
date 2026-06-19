@@ -33,10 +33,29 @@ ORDER BY requests.created_at DESC, requests.id DESC
 class TransactionService(BaseService):
     """Handle favorites, requests, and review workflow logic."""
 
-    def view_favorites(self) -> None:
+    def view_favorites(self, user_id: int) -> List[Dict[str, Any]]:
         """Get favorite listings for the current user."""
 
-        raise NotImplementedError
+        db = get_db()
+        favorites = db.execute(
+            """
+            SELECT
+                favorite_list.id,
+                favorite_list.listing_id,
+                favorite_list.created_at,
+                listings.title,
+                listings.price,
+                listings.image_url,
+                listings.condition,
+                listings.status
+            FROM favorite_list
+            INNER JOIN listings ON listings.id = favorite_list.listing_id
+            WHERE favorite_list.user_id = ?
+            ORDER BY favorite_list.created_at DESC, favorite_list.id DESC
+            """,
+            (user_id,),
+        ).fetchall()
+        return [self._serialize_favorite(row) for row in favorites]
 
     def add_favorite(self, user_id: int, listing_id: int) -> str:
         """Add a listing to the favorite list."""
@@ -220,5 +239,15 @@ class TransactionService(BaseService):
             request["buyer_contact_method_label"] = "Email"
             request["buyer_contact_value"] = request["buyer_email"] or "Not provided"
         return request
+
+    @staticmethod
+    def _serialize_favorite(row) -> Dict[str, Any]:
+        """Convert a favorite row to template-friendly values."""
+
+        favorite = dict(row)
+        favorite["condition_label"] = favorite["condition"].title()
+        favorite["status_label"] = favorite["status"].title()
+        favorite["price_label"] = "{0:.2f}".format(favorite["price"])
+        return favorite
 
 transaction_service = TransactionService()
