@@ -4,6 +4,7 @@ from flask import Blueprint, flash, redirect, render_template, request, session,
 
 from services.transaction_service import transaction_service
 from utils.decorators import login_required
+from utils.listing_images import attach_listing_image_sources
 
 transaction_bp = Blueprint("transactions", __name__)
 
@@ -13,7 +14,8 @@ transaction_bp = Blueprint("transactions", __name__)
 def view_favorites() -> str:
     """Render the favorite list page."""
 
-    return render_template("favorites.html")
+    favorites = transaction_service.view_favorites(session["user_id"])
+    return render_template("favorites.html", favorites=attach_listing_image_sources(favorites))
 
 
 @transaction_bp.post("/favorites/add")
