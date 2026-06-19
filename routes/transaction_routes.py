@@ -91,7 +91,9 @@ def request_history() -> str:
 def accept_request(request_id: int) -> str:
     """Handle request acceptance."""
 
-    return f"TODO: accept request {request_id}"
+    success, message = transaction_service.accept_request(session["user_id"], request_id)
+    flash(message, "success" if success else "danger")
+    return redirect(url_for("transactions.incoming_requests"))
 
 
 @transaction_bp.post("/requests/<int:request_id>/reject")
@@ -99,7 +101,9 @@ def accept_request(request_id: int) -> str:
 def reject_request(request_id: int) -> str:
     """Handle request rejection."""
 
-    return f"TODO: reject request {request_id}"
+    success, message = transaction_service.reject_request(session["user_id"], request_id)
+    flash(message, "success" if success else "danger")
+    return redirect(url_for("transactions.incoming_requests"))
 
 
 @transaction_bp.post("/requests/<int:request_id>/complete")
