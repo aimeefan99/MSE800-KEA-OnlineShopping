@@ -2,4 +2,5 @@
 .venv/
 .uv-cache/
 .uv-python/
+.DS_Store
 doc/Jira_Sprint2_to_Sprint5.md
