@@ -31,7 +31,10 @@ def add_favorite() -> str:
     if "not found" in message.lower():
         category = "danger"
     flash(message, category)
-    next_url = request.form.get("next") or url_for("listings.view_listing_detail", listing_id=listing_id)
+    next_url = request.form.get("next") or url_for(
+        "listings.view_listing_detail",
+        listing_id=listing_id,
+    )
     return redirect(next_url)
 
 
@@ -48,7 +51,22 @@ def remove_favorite() -> str:
 def create_request() -> str:
     """Handle purchase request creation."""
 
-    return "TODO: create request"
+    listing_id = request.form.get("listing_id", type=int)
+    if listing_id is None:
+        flash("Please choose a valid listing.", "danger")
+        return redirect(url_for("listings.browse_listings"))
+
+    success, message = transaction_service.create_request(
+        session["user_id"],
+        listing_id,
+        request.form.get("message", ""),
+    )
+    flash(message, "success" if success else "warning")
+    next_url = request.form.get("next") or url_for(
+        "listings.view_listing_detail",
+        listing_id=listing_id,
+    )
+    return redirect(next_url)
 
 
 @transaction_bp.get("/requests/incoming")
@@ -56,7 +74,8 @@ def create_request() -> str:
 def incoming_requests() -> str:
     """Render incoming requests page."""
 
-    return render_template("requests_incoming.html")
+    requests = transaction_service.incoming_requests(session["user_id"])
+    return render_template("requests_incoming.html", requests=requests)
 
 
 @transaction_bp.get("/requests/history")
