@@ -1,18 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <div class="row justify-content-center mb-3">
-      <div class="col-12">
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }} shadow-sm">{{ message }}</div>
-        {% endfor %}
-      </div>
-    </div>
-  {% endif %}
-{% endwith %}
-
 <div class="row g-4 align-items-start">
     <div class="col-lg-7">
         <div class="card border-0 shadow-sm overflow-hidden">
@@ -55,7 +43,9 @@
                 </div>
 
                 <h2 class="h5">Description</h2>
-                <p class="mb-4 text-body-secondary" style="white-space: pre-wrap;">{{ listing.description }}</p>
+                <p class="mb-4 text-body-secondary" style="white-space: pre-wrap;">
+                    {{ listing.description }}
+                </p>
 
                 <div class="card border-0 bg-light-subtle mb-4">
                     <div class="card-body">
@@ -73,21 +63,93 @@
                     <div class="card-body">
                         <h2 class="h5 text-warning fw-bold mb-3">🛠️ Seller Management Controls</h2>
                         <div class="d-flex gap-2">
-                            <a href="{{ url_for('listings.edit_listing_page', listing_id=listing.id) }}" class="btn btn-warning flex-grow-1">Edit Information</a>
-                            <form action="{{ url_for('listings.delete_listing', listing_id=listing.id) }}" method="POST" class="flex-grow-1" onsubmit="return confirm('Are you sure you want to permanently delete this listing?');">
-                                <button type="submit" class="btn btn-danger w-100">Delete Listing</button>
+                            <a
+                                class="btn btn-warning flex-grow-1"
+                                href="{{
+                                    url_for(
+                                        'listings.edit_listing_page',
+                                        listing_id=listing.id
+                                    )
+                                }}"
+                            >
+                                Edit Information
+                            </a>
+                            <form
+                                action="{{
+                                    url_for(
+                                        'listings.delete_listing',
+                                        listing_id=listing.id
+                                    )
+                                }}"
+                                class="flex-grow-1"
+                                method="POST"
+                                onsubmit="return confirm('Delete this listing permanently?');"
+                            >
+                                <button type="submit" class="btn btn-danger w-100">
+                                    Delete Listing
+                                </button>
                             </form>
                         </div>
                     </div>
                 </div>
                 {% endif %}
 
+                <div class="mb-3">
+                    {% if session.get("user_id") == listing.seller_id %}
+                        <button class="btn btn-outline-secondary w-100" type="button" disabled>
+                            Your Listing
+                        </button>
+                    {% elif session.get("user_id") %}
+                        {% if request_status == "pending" %}
+                            <button class="btn btn-outline-secondary w-100" type="button" disabled>
+                                Request Pending
+                            </button>
+                        {% elif listing.status == "available" %}
+                            <form
+                                method="post"
+                                action="{{ url_for('transactions.create_request') }}"
+                            >
+                                <input type="hidden" name="listing_id" value="{{ listing.id }}">
+                                <input
+                                    type="hidden"
+                                    name="next"
+                                    value="{{
+                                        url_for(
+                                            'listings.view_listing_detail',
+                                            listing_id=listing.id
+                                        )
+                                    }}"
+                                >
+                                <button class="btn btn-success w-100" type="submit">
+                                    Submit Purchase Request
+                                </button>
+                            </form>
+                        {% else %}
+                            <button class="btn btn-outline-secondary w-100" type="button" disabled>
+                                Not Available
+                            </button>
+                        {% endif %}
+                    {% else %}
+                        <a class="btn btn-success w-100" href="{{ url_for('auth.login_page') }}">
+                            Log In to Request Purchase
+                        </a>
+                    {% endif %}
+                </div>
+
                 {% if session.get("user_id") %}
                     <form method="post" action="{{ url_for('transactions.add_favorite') }}">
                         <input type="hidden" name="listing_id" value="{{ listing.id }}">
-                        <input type="hidden" name="next" value="{{ url_for('listings.view_listing_detail', listing_id=listing.id) }}">
+                        <input
+                            type="hidden"
+                            name="next"
+                            value="{{
+                                url_for(
+                                    'listings.view_listing_detail',
+                                    listing_id=listing.id
+                                )
+                            }}"
+                        >
                         {% if favorite_id %}
-                            {# Prevent duplicate saves while keeping the saved state visible on the detail page. #}
                             <button class="btn btn-outline-secondary w-100" type="button" disabled>
                                 Saved to Favorites
                             </button>
@@ -98,7 +160,10 @@
                         {% endif %}
                     </form>
                 {% else %}
-                    <a class="btn btn-outline-primary w-100" href="{{ url_for('auth.login_page') }}">
+                    <a
+                        class="btn btn-outline-primary w-100"
+                        href="{{ url_for('auth.login_page') }}"
+                    >
                         Add to Favorites
                     </a>
                 {% endif %}
