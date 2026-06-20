@@ -9,10 +9,39 @@ from services.base_service import BaseService
 class ProfileService(BaseService):
     """Handle profile-related business logic."""
 
-    def get_public_profile(self) -> None:
+    def get_public_profile(self, user_id: int) -> Optional[Dict[str, Any]]:
         """Get public profile data."""
 
-        raise NotImplementedError
+        db = get_db()
+        profile = db.execute(
+            """
+            SELECT
+                users.id,
+                users.display_name,
+                users.bio,
+                users.preferred_contact_method,
+                users.email,
+                users.phone_number,
+                users.created_at,
+                COUNT(CASE WHEN listings.status = 'available' THEN 1 END) AS active_listing_count,
+                COUNT(CASE WHEN listings.status = 'sold' THEN 1 END) AS sold_listing_count
+            FROM users
+            LEFT JOIN listings ON listings.seller_id = users.id
+            WHERE users.id = ?
+            GROUP BY
+                users.id,
+                users.display_name,
+                users.bio,
+                users.preferred_contact_method,
+                users.email,
+                users.phone_number,
+                users.created_at
+            """,
+            (user_id,),
+        ).fetchone()
+        if profile is None:
+            return None
+        return self._serialize_public_profile(profile)
 
     def get_edit_profile_data(self, user_id: int) -> Optional[Dict[str, Any]]:
         """Get editable profile data for the current user."""
@@ -99,6 +128,21 @@ class ProfileService(BaseService):
             ),
         )
         db.commit()
+
+    @staticmethod
+    def _serialize_public_profile(row) -> Dict[str, Any]:
+        """Convert public profile data to template-friendly values."""
+
+        profile = dict(row)
+        profile["bio"] = profile.get("bio") or "No public bio provided yet."
+        profile["member_since_label"] = str(profile["created_at"])[:10]
+        if profile["preferred_contact_method"] == "phone":
+            profile["preferred_contact_method_label"] = "Phone"
+            profile["public_contact_value"] = profile.get("phone_number") or "Not provided"
+        else:
+            profile["preferred_contact_method_label"] = "Email"
+            profile["public_contact_value"] = profile.get("email") or "Not provided"
+        return profile
 
 
 profile_service = ProfileService()
