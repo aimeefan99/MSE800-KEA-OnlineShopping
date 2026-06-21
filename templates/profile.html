@@ -1,6 +1,53 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Public Profile</h1>
-<p>Public profile placeholder for user {{ user_id }}.</p>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <section class="mb-4">
+            <p class="text-uppercase small text-muted mb-1">Public Profile</p>
+            <h1 class="mb-2">{{ profile.display_name }}</h1>
+            <p class="text-muted mb-0">
+                View basic seller information before making or accepting a request.
+            </p>
+        </section>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="rounded-4 bg-light p-3 h-100">
+                            <span class="text-muted d-block mb-1">Member Since</span>
+                            <strong>{{ profile.member_since_label }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="rounded-4 bg-light p-3 h-100">
+                            <span class="text-muted d-block mb-1">Active Listings</span>
+                            <strong>{{ profile.active_listing_count }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="rounded-4 bg-light p-3 h-100">
+                            <span class="text-muted d-block mb-1">Sold Listings</span>
+                            <strong>{{ profile.sold_listing_count }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h2 class="h5">Public Contact Preference</h2>
+                    <p class="mb-1 text-body-secondary">{{ profile.preferred_contact_method_label }}</p>
+                    <p class="mb-0"><strong>{{ profile.public_contact_value }}</strong></p>
+                </div>
+
+                <div>
+                    <h2 class="h5">Bio</h2>
+                    <p class="mb-0 text-body-secondary" style="white-space: pre-wrap;">
+                        {{ profile.bio }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

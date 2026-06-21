@@ -21,7 +21,15 @@
                     <span class="badge text-bg-light border">{{ listing.condition_label }}</span>
                 </div>
                 <p class="listing-price fs-3 mb-3">${{ listing.price_label }} NZD</p>
-                <p class="text-muted mb-4">Listed by {{ listing.seller_name }}</p>
+                <p class="text-muted mb-4">
+                    Listed by
+                    <a
+                        class="text-decoration-none"
+                        href="{{ url_for('profiles.view_public_profile', user_id=listing.seller_id) }}"
+                    >
+                        {{ listing.seller_name }}
+                    </a>
+                </p>
 
                 <div class="listing-meta mb-4">
                     <div>
@@ -51,6 +59,14 @@
                     <div class="card-body">
                         <h2 class="h5 mb-3">Seller Information</h2>
                         <p class="mb-2"><strong>Username:</strong> {{ listing.seller_name }}</p>
+                        <p class="mb-2">
+                            <a
+                                class="btn btn-outline-primary btn-sm"
+                                href="{{ url_for('profiles.view_public_profile', user_id=listing.seller_id) }}"
+                            >
+                                View Public Profile
+                            </a>
+                        </p>
                         <p class="mb-0">
                             <strong>{{ listing.seller_contact_method_label }}:</strong>
                             {{ listing.seller_contact_value }}

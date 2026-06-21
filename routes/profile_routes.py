@@ -1,6 +1,6 @@
 """Profile routes."""
 
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 
 from services.profile_service import profile_service
 from utils.decorators import login_required
@@ -12,7 +12,10 @@ profile_bp = Blueprint("profiles", __name__)
 def view_public_profile(user_id: int) -> str:
     """Render the public profile page."""
 
-    return render_template("profile.html", user_id=user_id)
+    profile_data = profile_service.get_public_profile(user_id)
+    if profile_data is None:
+        abort(404)
+    return render_template("profile.html", profile=profile_data)
 
 
 @profile_bp.get("/profile/edit")
