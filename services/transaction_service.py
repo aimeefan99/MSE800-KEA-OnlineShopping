@@ -1,4 +1,4 @@
-"""Transaction-related service placeholders for favorites, requests, and reviews."""
+"""Transaction-related service logic for favorites, requests, and reviews."""
 
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -141,15 +141,38 @@ class TransactionService(BaseService):
 
         raise NotImplementedError
 
-    def accept_request(self) -> None:
+    def accept_request(self, seller_id: int, request_id: int) -> Tuple[bool, str]:
         """Accept a purchase request."""
 
-        raise NotImplementedError
+        request, error_message = self._get_authorized_request(seller_id, request_id)
+        if error_message is not None:
+            return False, error_message
 
-    def reject_request(self) -> None:
+        if request["status"] != "pending":
+            return False, "Only pending requests can be accepted."
+
+        if request["listing_status"] != "available":
+            return False, "This listing is not available for accepting a request."
+
+        if self._listing_has_accepted_request(int(request["listing_id"])):
+            return False, "This listing already has an accepted request."
+
+        self._mark_request_accepted(request_id, int(request["listing_id"]))
+        return True, "Purchase request accepted."
+
+    def reject_request(self, seller_id: int, request_id: int) -> Tuple[bool, str]:
         """Reject a purchase request."""
 
-        raise NotImplementedError
+        request, error_message = self._get_authorized_request(seller_id, request_id)
+        if error_message is not None:
+            return False, error_message
+
+        if request["status"] not in ("pending", "accepted"):
+            return False, "Only pending or accepted requests can be rejected."
+
+        was_accepted = request["status"] == "accepted"
+        self._mark_request_rejected(request_id, int(request["listing_id"]), was_accepted)
+        return True, "Purchase request rejected."
 
     def complete_request(self) -> None:
         """Complete a purchase request."""
@@ -192,6 +215,57 @@ class TransactionService(BaseService):
         return str(request["status"])
 
     @staticmethod
+    def _mark_request_accepted(request_id: int, listing_id: int) -> None:
+        """Set the selected request accepted and move the listing to pending."""
+
+        db = get_db()
+        db.execute(
+            """
+            UPDATE requests
+            SET status = 'accepted', updated_at = datetime('now')
+            WHERE id = ?
+            """,
+            (request_id,),
+        )
+        db.execute(
+            """
+            UPDATE listings
+            SET status = 'pending', updated_at = datetime('now')
+            WHERE id = ?
+            """,
+            (listing_id,),
+        )
+        db.commit()
+
+    @staticmethod
+    def _mark_request_rejected(
+        request_id: int,
+        listing_id: int,
+        was_accepted: bool,
+    ) -> None:
+        """Set a request rejected and reopen its listing when needed."""
+
+        db = get_db()
+        db.execute(
+            """
+            UPDATE requests
+            SET status = 'rejected', updated_at = datetime('now')
+            WHERE id = ?
+            """,
+            (request_id,),
+        )
+        if was_accepted:
+            db.execute(
+                """
+                UPDATE listings
+                SET status = 'available', updated_at = datetime('now')
+                WHERE id = ?
+                """,
+                (listing_id,),
+            )
+        db.commit()
+
+    @staticmethod
     def _listing_exists(listing_id: int) -> bool:
         """Check whether the requested listing exists before saving it."""
 
@@ -221,6 +295,57 @@ class TransactionService(BaseService):
             WHERE buyer_id = ? AND listing_id = ? AND status = 'pending'
             """,
             (buyer_id, listing_id),
+        ).fetchone()
+        return request is not None
+
+    @staticmethod
+    def _get_request_for_action(request_id: int):
+        """Fetch request and listing details needed for seller status actions."""
+
+        db = get_db()
+        return db.execute(
+            """
+            SELECT
+                requests.id,
+                requests.listing_id,
+                requests.seller_id,
+                requests.status,
+                requests.is_locked,
+                listings.status AS listing_status
+            FROM requests
+            INNER JOIN listings ON listings.id = requests.listing_id
+            WHERE requests.id = ?
+            """,
+            (request_id,),
+        ).fetchone()
+
+    def _get_authorized_request(self, seller_id: int, request_id: int):
+        """Return a request row after checking seller ownership and lock status."""
+
+        request = self._get_request_for_action(request_id)
+        if request is None:
+            return None, "Purchase request not found."
+
+        if int(request["seller_id"]) != seller_id:
+            return None, "You can only manage requests for your own listings."
+
+        if request["is_locked"]:
+            return None, "This request is locked and cannot be changed."
+
+        return request, None
+
+    @staticmethod
+    def _listing_has_accepted_request(listing_id: int) -> bool:
+        """Check whether a listing already has an accepted request."""
+
+        db = get_db()
+        request = db.execute(
+            """
+            SELECT id
+            FROM requests
+            WHERE listing_id = ? AND status = 'accepted'
+            """,
+            (listing_id,),
         ).fetchone()
         return request is not None
 
