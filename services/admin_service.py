@@ -9,10 +9,25 @@ from services.base_service import BaseService
 class AdminService(BaseService):
     """Handle administrator control actions."""
 
-    def get_admin_users(self) -> None:
+    def get_admin_users(self) -> List[Dict[str, Any]]:
         """Get users for administrator view."""
 
-        raise NotImplementedError
+        db = get_db()
+        users = db.execute(
+            """
+            SELECT
+                id,
+                display_name,
+                email,
+                role,
+                is_locked,
+                preferred_contact_method,
+                created_at
+            FROM users
+            ORDER BY created_at DESC, id DESC
+            """
+        ).fetchall()
+        return [self._serialize_admin_user(row) for row in users]
 
     def get_admin_listings(self) -> List[Dict[str, Any]]:
         """Get listings for administrator view."""
@@ -73,6 +88,17 @@ class AdminService(BaseService):
         listing["price_label"] = "{0:.2f}".format(listing["price"])
         listing["created_at_label"] = str(listing["created_at"]).replace("T", " ")[:16]
         return listing
+
+    @staticmethod
+    def _serialize_admin_user(row) -> Dict[str, Any]:
+        """Convert an admin user row to template-friendly values."""
+
+        user = dict(row)
+        user["role_label"] = str(user["role"]).title()
+        user["preferred_contact_method_label"] = str(user["preferred_contact_method"]).title()
+        user["account_status_label"] = "Locked" if user["is_locked"] else "Active"
+        user["created_at_label"] = str(user["created_at"]).replace("T", " ")[:16]
+        return user
 
 
 admin_service = AdminService()

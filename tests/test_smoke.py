@@ -100,6 +100,17 @@ class SmokeTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.headers["Location"], "/login")
 
+    def test_admin_users_page_lists_user_accounts(self) -> None:
+        """Protect the rule that the admin user page shows account records."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.get("/admin/users")
+        page = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("User Management", page)
+        self.assertIn("buyer@example.com", page)
+        self.assertIn("admin@example.com", page)
+
     def test_browse_rule_public_list_page_hides_sold_listings(self) -> None:
         """Protect the rule that sold items stay out of normal browse results."""
 

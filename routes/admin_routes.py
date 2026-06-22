@@ -13,7 +13,10 @@ admin_bp = Blueprint("admin", __name__)
 def view_users() -> str:
     """Render the administrator user page."""
 
-    return render_template("admin/users.html")
+    return render_template(
+        "admin/users.html",
+        users=admin_service.get_admin_users(),
+    )
 
 
 @admin_bp.get("/admin/listings")
