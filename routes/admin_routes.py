@@ -1,6 +1,6 @@
 """Administrator routes."""
 
-from flask import Blueprint, render_template
+from flask import Blueprint, flash, redirect, render_template, url_for
 
 from services.admin_service import admin_service
 from utils.decorators import admin_required
@@ -51,7 +51,9 @@ def view_completed_requests() -> str:
 def delete_inappropriate_listing(listing_id: int) -> str:
     """Handle administrator listing deletion."""
 
-    return f"TODO: admin delete listing {listing_id}"
+    success, message = admin_service.delete_inappropriate_listing(listing_id)
+    flash(message, "success" if success else "danger")
+    return redirect(url_for("admin.view_listings"))
 
 
 @admin_bp.post("/admin/users/<int:user_id>/lock")

@@ -1,6 +1,6 @@
 """Administrator service logic."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from models.db import get_db
 from services.base_service import BaseService
@@ -58,10 +58,39 @@ class AdminService(BaseService):
 
         raise NotImplementedError
 
-    def delete_inappropriate_listing(self) -> None:
-        """Delete an inappropriate listing."""
+    def delete_inappropriate_listing(self, listing_id: int) -> Tuple[bool, str]:
+        """Delete a listing and its dependent moderation records."""
 
-        raise NotImplementedError
+        db = get_db()
+        listing_row = db.execute(
+            "SELECT id FROM listings WHERE id = ?",
+            (listing_id,),
+        ).fetchone()
+        if listing_row is None:
+            return False, "Listing not found."
+
+        request_rows = db.execute(
+            "SELECT id FROM requests WHERE listing_id = ?",
+            (listing_id,),
+        ).fetchall()
+        request_ids = [row["id"] for row in request_rows]
+
+        # Remove child records first because the schema intentionally keeps foreign keys strict.
+        if request_ids:
+            placeholders = ", ".join(["?"] * len(request_ids))
+            db.execute(
+                "DELETE FROM reviews WHERE request_id IN ({0})".format(placeholders),
+                request_ids,
+            )
+            db.execute(
+                "DELETE FROM requests WHERE id IN ({0})".format(placeholders),
+                request_ids,
+            )
+
+        db.execute("DELETE FROM favorite_list WHERE listing_id = ?", (listing_id,))
+        db.execute("DELETE FROM listings WHERE id = ?", (listing_id,))
+        db.commit()
+        return True, "Listing deleted successfully."
 
     def get_admin_completed_requests(self) -> None:
         """Get completed request records for administrator view."""

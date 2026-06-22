@@ -111,6 +111,27 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("buyer@example.com", page)
         self.assertIn("admin@example.com", page)
 
+    def test_admin_delete_rule_admin_can_remove_listing_from_management(self) -> None:
+        """Protect the rule that administrators can delete inappropriate listings."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.post(
+            "/admin/listings/1/delete",
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Listing deleted successfully.", page)
+        self.assertNotIn("Available Camera", self.client.get("/listings").get_data(as_text=True))
+
+    def test_admin_delete_rule_marketplace_user_cannot_delete_listing(self) -> None:
+        """Protect the rule that normal users cannot use admin deletion actions."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.post("/admin/listings/1/delete", follow_redirects=False)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.headers["Location"], "/login")
+
     def test_browse_rule_public_list_page_hides_sold_listings(self) -> None:
         """Protect the rule that sold items stay out of normal browse results."""
 
