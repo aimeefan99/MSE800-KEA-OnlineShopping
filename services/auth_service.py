@@ -8,6 +8,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from models.db import get_db
 from services.base_service import BaseService
+from utils.constants import CONTACT_METHOD_PHONE, ROLE_USER
 
 
 class AuthService(BaseService):
@@ -99,10 +100,10 @@ class AuthService(BaseService):
         """Check contact method and related contact detail rules."""
 
         preferred_contact_method = cleaned_data["preferred_contact_method"]
-        if preferred_contact_method not in {"email", "phone"}:
+        if preferred_contact_method not in {"email", CONTACT_METHOD_PHONE}:
             return "Please select a valid contact method."
 
-        if preferred_contact_method == "phone" and not cleaned_data["phone_number"]:
+        if preferred_contact_method == CONTACT_METHOD_PHONE and not cleaned_data["phone_number"]:
             return "Phone number is required when phone is selected."
         return None
 
@@ -138,7 +139,7 @@ class AuthService(BaseService):
                 bio,
                 created_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'user', 0, NULL, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, ?)
             """,
             (
                 cleaned_data["display_name"],
@@ -148,6 +149,7 @@ class AuthService(BaseService):
                 cleaned_data["phone_number"] or None,
                 cleaned_data["preferred_contact_method"],
                 generate_password_hash(cleaned_data["password"]),
+                ROLE_USER,
                 datetime.utcnow().isoformat(),
             ),
         )

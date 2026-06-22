@@ -12,6 +12,13 @@ from werkzeug.utils import secure_filename
 from models.db import get_db
 from models.factory import ListingFactory
 from services.base_service import BaseService
+from utils.constants import (
+    CONTACT_METHOD_EMAIL,
+    CONTACT_METHOD_PHONE,
+    LISTING_CONDITIONS,
+    LISTING_STATUSES,
+    LISTING_STATUS_AVAILABLE,
+)
 
 DEFAULT_CATEGORIES = [
     "Electronics",
@@ -24,8 +31,8 @@ DEFAULT_CATEGORIES = [
     "Vehicles & Bicycles",
     "Other",
 ]
-CONDITION_OPTIONS = ["new", "used"]
-STATUS_OPTIONS = ["available", "pending", "sold"]
+CONDITION_OPTIONS = LISTING_CONDITIONS
+STATUS_OPTIONS = LISTING_STATUSES
 LEGACY_CONDITION_MAP = {
     "like new": "used",
     "good": "used",
@@ -203,8 +210,9 @@ class ListingService(BaseService):
 
     def _build_browse_filter_query(self, filters: Mapping[str, str]) -> Tuple[str, List[Any]]:
         """Build the listing browse WHERE clause and parameter list."""
-        where_clauses = ["listings.status = 'available'"]
+        where_clauses = ["listings.status = ?"]
         query_parameters: List[Any] = []
+        query_parameters.append(LISTING_STATUS_AVAILABLE)
 
         self._add_keyword_filter(filters, where_clauses, query_parameters)
         self._add_category_filter(filters, where_clauses, query_parameters)
@@ -412,10 +420,10 @@ class ListingService(BaseService):
         listing["price_label"] = "{0:.2f}".format(listing["price"])
         seller_contact_method = listing.get("seller_contact_method")
         
-        if seller_contact_method == "phone":
+        if seller_contact_method == CONTACT_METHOD_PHONE:
             listing["seller_contact_method_label"] = "Phone"
             listing["seller_contact_value"] = listing.get("seller_phone_number") or "Not provided"
-        elif seller_contact_method == "email":
+        elif seller_contact_method == CONTACT_METHOD_EMAIL:
             listing["seller_contact_method_label"] = "Email"
             listing["seller_contact_value"] = listing.get("seller_email") or "Not provided"
         return listing

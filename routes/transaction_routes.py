@@ -3,14 +3,14 @@
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
 from services.transaction_service import transaction_service
-from utils.decorators import login_required
+from utils.decorators import marketplace_user_required
 from utils.listing_images import attach_listing_image_sources
 
 transaction_bp = Blueprint("transactions", __name__)
 
 
 @transaction_bp.get("/favorites")
-@login_required
+@marketplace_user_required
 def view_favorites() -> str:
     """Render the favorite list page."""
 
@@ -19,7 +19,7 @@ def view_favorites() -> str:
 
 
 @transaction_bp.post("/favorites/add")
-@login_required
+@marketplace_user_required
 def add_favorite() -> str:
     """Handle favorite add action."""
 
@@ -41,7 +41,7 @@ def add_favorite() -> str:
 
 
 @transaction_bp.post("/favorites/remove")
-@login_required
+@marketplace_user_required
 def remove_favorite() -> str:
     """Handle favorite remove action."""
 
@@ -49,7 +49,7 @@ def remove_favorite() -> str:
 
 
 @transaction_bp.post("/requests/create")
-@login_required
+@marketplace_user_required
 def create_request() -> str:
     """Handle purchase request creation."""
 
@@ -72,7 +72,7 @@ def create_request() -> str:
 
 
 @transaction_bp.get("/requests/incoming")
-@login_required
+@marketplace_user_required
 def incoming_requests() -> str:
     """Render incoming requests page."""
 
@@ -81,15 +81,20 @@ def incoming_requests() -> str:
 
 
 @transaction_bp.get("/requests/history")
-@login_required
+@marketplace_user_required
 def request_history() -> str:
     """Render request history page."""
 
-    return render_template("request_history.html")
+    request_views = transaction_service.request_history(session["user_id"])
+    return render_template(
+        "request_history.html",
+        outgoing_requests=request_views["outgoing_requests"],
+        incoming_requests=request_views["incoming_requests"],
+    )
 
 
 @transaction_bp.post("/requests/<int:request_id>/accept")
-@login_required
+@marketplace_user_required
 def accept_request(request_id: int) -> str:
     """Handle request acceptance."""
 
@@ -99,7 +104,7 @@ def accept_request(request_id: int) -> str:
 
 
 @transaction_bp.post("/requests/<int:request_id>/reject")
-@login_required
+@marketplace_user_required
 def reject_request(request_id: int) -> str:
     """Handle request rejection."""
 
@@ -109,7 +114,7 @@ def reject_request(request_id: int) -> str:
 
 
 @transaction_bp.post("/requests/<int:request_id>/complete")
-@login_required
+@marketplace_user_required
 def complete_request(request_id: int) -> str:
     """Handle transaction completion."""
 
@@ -117,7 +122,7 @@ def complete_request(request_id: int) -> str:
 
 
 @transaction_bp.post("/reviews/create")
-@login_required
+@marketplace_user_required
 def create_review() -> str:
     """Handle review submission."""
 

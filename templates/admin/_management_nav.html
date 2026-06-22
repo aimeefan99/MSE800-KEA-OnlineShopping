@@ -1,0 +1,16 @@
+<div class="mb-4">
+    <nav class="nav nav-pills gap-2">
+        <a
+            class="nav-link {% if active_section == 'listings' %}active{% endif %}"
+            href="{{ url_for('admin.view_listings') }}"
+        >
+            Listings
+        </a>
+        <a
+            class="nav-link {% if active_section == 'users' %}active{% endif %}"
+            href="{{ url_for('admin.view_users') }}"
+        >
+            Users
+        </a>
+    </nav>
+</div>
