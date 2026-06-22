@@ -1,8 +1,83 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section>
-  <h1>Admin Listings</h1>
-  <p>Administrator listing management page placeholder.</p>
+<section class="mb-4">
+    <p class="text-uppercase small text-muted mb-1">Administrator</p>
+    <h1 class="mb-2">Listing Management</h1>
+    <p class="text-muted mb-0">
+        Review platform listings across all statuses when moderation is needed.
+    </p>
 </section>
+
+{% if listings %}
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Seller</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Condition</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Created</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for listing in listings %}
+                        <tr>
+                            <td>{{ listing.id }}</td>
+                            <td>{{ listing.title }}</td>
+                            <td>
+                                <a
+                                    class="text-decoration-none"
+                                    href="{{
+                                        url_for(
+                                            'profiles.view_public_profile',
+                                            user_id=listing.seller_id
+                                        )
+                                    }}"
+                                >
+                                    {{ listing.seller_name }}
+                                </a>
+                            </td>
+                            <td>{{ listing.category_name }}</td>
+                            <td>{{ listing.condition_label }}</td>
+                            <td>
+                                <span class="badge text-bg-light border">
+                                    {{ listing.status_label }}
+                                </span>
+                            </td>
+                            <td>${{ listing.price_label }}</td>
+                            <td>{{ listing.created_at_label }}</td>
+                            <td>
+                                <a
+                                    class="btn btn-outline-primary btn-sm"
+                                    href="{{
+                                        url_for(
+                                            'listings.view_listing_detail',
+                                            listing_id=listing.id
+                                        )
+                                    }}"
+                                >
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4 text-center">
+            <h2 class="h4 mb-2">No listings found</h2>
+            <p class="text-muted mb-0">There are no listings to review right now.</p>
+        </div>
+    </div>
+{% endif %}
 {% endblock %}

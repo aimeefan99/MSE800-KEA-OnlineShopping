@@ -1,0 +1,272 @@
+"""Smoke tests for the most important shared platform rules.
+
+Run with:
+    python -m unittest -v tests.test_smoke
+
+This file protects a few core guardrails that are easy to break during parallel development:
+- admin accounts must stay out of marketplace-only pages
+- normal users must stay out of admin pages
+- sold listings must stay out of normal public browse results
+- the same listing must not be favorited twice by the same user
+- public profiles must show public contact details without exposing full legal names
+"""
+
+import sqlite3
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from app import create_app
+from models.schema import SCHEMA
+from utils.constants import (
+    CONTACT_METHOD_EMAIL,
+    LISTING_STATUS_AVAILABLE,
+    LISTING_STATUS_SOLD,
+    ROLE_ADMIN,
+    ROLE_USER,
+)
+
+
+class SmokeTestCase(unittest.TestCase):
+    """Verify the smallest set of rules that should never silently regress."""
+
+    def setUp(self) -> None:
+        """Create an isolated application and SQLite database for each test."""
+
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.database_path = Path(self.temp_dir.name) / "test.db"
+        self.upload_dir = Path(self.temp_dir.name) / "uploads"
+        self.legacy_upload_dir = Path(self.temp_dir.name) / "legacy_uploads"
+        self.upload_dir.mkdir(parents=True, exist_ok=True)
+        self.legacy_upload_dir.mkdir(parents=True, exist_ok=True)
+
+        self.app = create_app()
+        self.app.config.update(
+            TESTING=True,
+            SECRET_KEY="test-secret",
+            DATABASE_PATH=self.database_path,
+            UPLOAD_FOLDER=self.upload_dir,
+            LEGACY_UPLOAD_FOLDER=self.legacy_upload_dir,
+        )
+        self.client = self.app.test_client()
+
+        self._initialize_database()
+
+    def tearDown(self) -> None:
+        """Clean up the temporary workspace used by the test."""
+
+        self.temp_dir.cleanup()
+
+    def test_access_rule_admin_cannot_open_marketplace_only_pages(self) -> None:
+        """Protect the rule that admin accounts do not participate in trading flows."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        for path in ["/profile/edit", "/favorites", "/listings/create", "/requests/history"]:
+            response = self.client.get(path, follow_redirects=False)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.headers["Location"], "/")
+
+    def test_access_rule_marketplace_user_cannot_open_admin_pages(self) -> None:
+        """Protect the rule that marketplace users cannot enter admin management pages."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.get("/admin/listings", follow_redirects=False)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.headers["Location"], "/login")
+
+    def test_access_rule_locked_user_cannot_keep_using_marketplace_pages(self) -> None:
+        """Protect the rule that a locked account cannot continue using an old session."""
+
+        connection = sqlite3.connect(self.database_path)
+        connection.execute("UPDATE users SET is_locked = 1 WHERE id = 1")
+        connection.commit()
+        connection.close()
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.get("/favorites", follow_redirects=False)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.headers["Location"], "/login")
+
+    def test_access_rule_session_role_must_match_live_admin_role(self) -> None:
+        """Protect the rule that admin access must be confirmed against the database."""
+
+        self._login_as(1, ROLE_ADMIN, "Buyer")
+        response = self.client.get("/admin/listings", follow_redirects=False)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.headers["Location"], "/login")
+
+    def test_browse_rule_public_list_page_hides_sold_listings(self) -> None:
+        """Protect the rule that sold items stay out of normal browse results."""
+
+        response = self.client.get("/listings")
+        page = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Available Camera", page)
+        self.assertNotIn("Sold Bike", page)
+
+    def test_favorite_rule_same_listing_cannot_be_saved_twice(self) -> None:
+        """Protect the rule that favorites are unique per user and listing."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        first_response = self.client.post(
+            "/favorites/add",
+            data={"listing_id": 1, "next": "/listings/1"},
+            follow_redirects=True,
+        )
+        second_response = self.client.post(
+            "/favorites/add",
+            data={"listing_id": 1, "next": "/listings/1"},
+            follow_redirects=True,
+        )
+        self.assertIn("Listing added to favorites.", first_response.get_data(as_text=True))
+        self.assertIn(
+            "This listing is already in your favorites.",
+            second_response.get_data(as_text=True),
+        )
+
+    def test_profile_rule_public_profile_hides_full_name_but_shows_public_contact(self) -> None:
+        """Protect the rule that only public profile fields are shown to other users."""
+
+        response = self.client.get("/profiles/1")
+        page = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("buyer@example.com", page)
+        self.assertNotIn("Buyer Legal Name", page)
+
+    def _login_as(self, user_id: int, role: str, display_name: str) -> None:
+        """Write a test session for the selected account."""
+
+        with self.client.session_transaction() as session:
+            session["user_id"] = user_id
+            session["role"] = role
+            session["display_name"] = display_name
+
+    def _initialize_database(self) -> None:
+        """Create the schema and seed the smallest useful demo dataset."""
+
+        connection = sqlite3.connect(self.database_path)
+        connection.executescript(SCHEMA)
+        connection.executemany(
+            """
+            INSERT INTO users (
+                id,
+                display_name,
+                full_name,
+                date_of_birth,
+                email,
+                phone_number,
+                preferred_contact_method,
+                password_hash,
+                role,
+                is_locked,
+                bio,
+                created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    1,
+                    "Buyer",
+                    "Buyer Legal Name",
+                    "1990-01-01",
+                    "buyer@example.com",
+                    None,
+                    CONTACT_METHOD_EMAIL,
+                    "hashed-password",
+                    ROLE_USER,
+                    0,
+                    "Buyer bio",
+                    "2026-06-01T10:00:00",
+                ),
+                (
+                    2,
+                    "Admin",
+                    "Platform Administrator",
+                    "1990-01-01",
+                    "admin@example.com",
+                    None,
+                    CONTACT_METHOD_EMAIL,
+                    "hashed-password",
+                    ROLE_ADMIN,
+                    0,
+                    "Admin bio",
+                    "2026-06-01T10:00:00",
+                ),
+                (
+                    3,
+                    "Seller",
+                    "Seller Legal Name",
+                    "1991-02-02",
+                    "seller@example.com",
+                    None,
+                    CONTACT_METHOD_EMAIL,
+                    "hashed-password",
+                    ROLE_USER,
+                    0,
+                    "Seller bio",
+                    "2026-06-01T10:00:00",
+                ),
+            ],
+        )
+        connection.executemany(
+            "INSERT INTO categories (id, name) VALUES (?, ?)",
+            [(1, "Electronics"), (2, "Sports & Outdoors")],
+        )
+        connection.executemany(
+            """
+            INSERT INTO listings (
+                id,
+                seller_id,
+                category_id,
+                image_url,
+                title,
+                description,
+                condition,
+                price,
+                status,
+                created_at,
+                updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    1,
+                    3,
+                    1,
+                    "uploads/missing-camera.jpg",
+                    "Available Camera",
+                    "Good camera listing",
+                    "used",
+                    1000.0,
+                    LISTING_STATUS_AVAILABLE,
+                    "2026-06-05T10:00:00",
+                    "2026-06-05T10:00:00",
+                ),
+                (
+                    2,
+                    3,
+                    2,
+                    "uploads/missing-bike.jpg",
+                    "Sold Bike",
+                    "Already sold bike listing",
+                    "used",
+                    250.0,
+                    LISTING_STATUS_SOLD,
+                    "2026-06-04T09:00:00",
+                    "2026-06-04T09:00:00",
+                ),
+            ],
+        )
+        connection.commit()
+        connection.close()
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

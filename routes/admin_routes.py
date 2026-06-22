@@ -1,6 +1,8 @@
 """Administrator routes."""
 
 from flask import Blueprint, render_template
+
+from services.admin_service import admin_service
 from utils.decorators import admin_required
 
 admin_bp = Blueprint("admin", __name__)
@@ -19,7 +21,10 @@ def view_users() -> str:
 def view_listings() -> str:
     """Render the administrator listing page."""
 
-    return render_template("admin/listings.html")
+    return render_template(
+        "admin/listings.html",
+        listings=admin_service.get_admin_listings(),
+    )
 
 
 @admin_bp.get("/admin/requests")
