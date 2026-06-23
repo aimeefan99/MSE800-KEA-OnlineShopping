@@ -28,6 +28,29 @@ INNER JOIN users ON users.id = requests.buyer_id
 WHERE requests.seller_id = ?
 ORDER BY requests.created_at DESC, requests.id DESC
 """
+OUTGOING_REQUESTS_SQL = """
+SELECT
+    requests.id,
+    requests.listing_id,
+    requests.buyer_id,
+    requests.seller_id,
+    requests.status,
+    requests.message,
+    requests.created_at,
+    requests.updated_at,
+    listings.title AS listing_title,
+    listings.price AS listing_price,
+    listings.status AS listing_status,
+    users.display_name AS seller_name,
+    users.email AS seller_email,
+    users.phone_number AS seller_phone_number,
+    users.preferred_contact_method AS seller_contact_method
+FROM requests
+INNER JOIN listings ON listings.id = requests.listing_id
+INNER JOIN users ON users.id = requests.seller_id
+WHERE requests.buyer_id = ?
+ORDER BY requests.created_at DESC, requests.id DESC
+"""
 
 
 class TransactionService(BaseService):
@@ -117,10 +140,12 @@ class TransactionService(BaseService):
         requests = db.execute(INCOMING_REQUESTS_SQL, (seller_id,)).fetchall()
         return [self._serialize_incoming_request(request) for request in requests]
 
-    def request_history(self) -> None:
-        """Get request history for a user."""
+    def request_history(self, buyer_id: int) -> List[Dict[str, Any]]:
+        """Get purchase request history for a buyer."""
 
-        raise NotImplementedError
+        db = get_db()
+        requests = db.execute(OUTGOING_REQUESTS_SQL, (buyer_id,)).fetchall()
+        return [self._serialize_outgoing_request(request) for request in requests]
 
     def accept_request(self, seller_id: int, request_id: int) -> Tuple[bool, str]:
         """Accept a purchase request."""
@@ -155,10 +180,18 @@ class TransactionService(BaseService):
         self._mark_request_rejected(request_id, int(request["listing_id"]), was_accepted)
         return True, "Purchase request rejected."
 
-    def complete_request(self) -> None:
-        """Complete a purchase request."""
+    def complete_request(self, buyer_id: int, request_id: int) -> Tuple[bool, str]:
+        """Complete an accepted purchase request as the buyer."""
 
-        raise NotImplementedError
+        request, error_message = self._get_authorized_request_for_buyer(buyer_id, request_id)
+        if error_message is not None:
+            return False, error_message
+
+        if request["status"] != "accepted":
+            return False, "Only accepted requests can be completed."
+
+        self._mark_request_completed(request_id, int(request["listing_id"]))
+        return True, "Transaction completed successfully."
 
     def create_review(self) -> None:
         """Create a review."""
@@ -247,6 +280,39 @@ class TransactionService(BaseService):
         db.commit()
 
     @staticmethod
+    def _mark_request_completed(request_id: int, listing_id: int) -> None:
+        """Set a request completed, sell the listing, and close competing requests."""
+
+        db = get_db()
+        db.execute(
+            """
+            UPDATE requests
+            SET status = 'completed', updated_at = datetime('now')
+            WHERE id = ?
+            """,
+            (request_id,),
+        )
+        db.execute(
+            """
+            UPDATE listings
+            SET status = 'sold', updated_at = datetime('now')
+            WHERE id = ?
+            """,
+            (listing_id,),
+        )
+        db.execute(
+            """
+            UPDATE requests
+            SET status = 'rejected', updated_at = datetime('now')
+            WHERE listing_id = ?
+                AND id != ?
+                AND status IN ('pending', 'accepted')
+            """,
+            (listing_id, request_id),
+        )
+        db.commit()
+
+    @staticmethod
     def _listing_exists(listing_id: int) -> bool:
         """Check whether the requested listing exists before saving it."""
 
@@ -289,6 +355,7 @@ class TransactionService(BaseService):
             SELECT
                 requests.id,
                 requests.listing_id,
+                requests.buyer_id,
                 requests.seller_id,
                 requests.status,
                 requests.is_locked,
@@ -309,6 +376,21 @@ class TransactionService(BaseService):
 
         if int(request["seller_id"]) != seller_id:
             return None, "You can only manage requests for your own listings."
+
+        if request["is_locked"]:
+            return None, "This request is locked and cannot be changed."
+
+        return request, None
+
+    def _get_authorized_request_for_buyer(self, buyer_id: int, request_id: int):
+        """Return a request row after checking buyer ownership and lock status."""
+
+        request = self._get_request_for_action(request_id)
+        if request is None:
+            return None, "Purchase request not found."
+
+        if int(request["buyer_id"]) != buyer_id:
+            return None, "You can only manage requests you created."
 
         if request["is_locked"]:
             return None, "This request is locked and cannot be changed."
@@ -344,6 +426,22 @@ class TransactionService(BaseService):
         else:
             request["buyer_contact_method_label"] = "Email"
             request["buyer_contact_value"] = request["buyer_email"] or "Not provided"
+        return request
+
+    @staticmethod
+    def _serialize_outgoing_request(row) -> Dict[str, Any]:
+        """Convert a buyer request row to template-friendly values."""
+
+        request = dict(row)
+        request["listing_price_label"] = "{0:.2f}".format(request["listing_price"])
+        request["status_label"] = request["status"].title()
+        request["listing_status_label"] = request["listing_status"].title()
+        if request["seller_contact_method"] == "phone":
+            request["seller_contact_method_label"] = "Phone"
+            request["seller_contact_value"] = request["seller_phone_number"] or "Not provided"
+        else:
+            request["seller_contact_method_label"] = "Email"
+            request["seller_contact_value"] = request["seller_email"] or "Not provided"
         return request
 
 

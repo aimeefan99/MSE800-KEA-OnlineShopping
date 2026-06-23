@@ -83,7 +83,8 @@ def incoming_requests() -> str:
 def request_history() -> str:
     """Render request history page."""
 
-    return render_template("request_history.html")
+    requests = transaction_service.request_history(session["user_id"])
+    return render_template("request_history.html", requests=requests)
 
 
 @transaction_bp.post("/requests/<int:request_id>/accept")
@@ -111,7 +112,9 @@ def reject_request(request_id: int) -> str:
 def complete_request(request_id: int) -> str:
     """Handle transaction completion."""
 
-    return f"TODO: complete request {request_id}"
+    success, message = transaction_service.complete_request(session["user_id"], request_id)
+    flash(message, "success" if success else "danger")
+    return redirect(url_for("transactions.request_history"))
 
 
 @transaction_bp.post("/reviews/create")
