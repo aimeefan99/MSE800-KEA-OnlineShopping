@@ -15,7 +15,7 @@ from flask import (
 )
 from services.listing_service import listing_service
 from services.transaction_service import transaction_service
-from utils.decorators import login_required
+from utils.decorators import login_required, marketplace_user_required
 from utils.listing_images import (
     attach_listing_image_sources,
     resolve_listing_image_url,
@@ -83,7 +83,7 @@ def view_listing_detail(listing_id: int) -> str:
 
 
 @listing_bp.get("/listings/create")
-@login_required
+@marketplace_user_required
 def create_listing_page() -> str:
     """Render the create listing page."""
     return render_template(
@@ -95,7 +95,7 @@ def create_listing_page() -> str:
 
 
 @listing_bp.post("/listings/create")
-@login_required
+@marketplace_user_required
 def create_listing() -> str:
     """Handle listing creation."""
     success, error_message, form_data, listing_id = listing_service.create_listing(
@@ -117,7 +117,7 @@ def create_listing() -> str:
 
 
 @listing_bp.get("/listings/<int:listing_id>/edit")
-@login_required
+@marketplace_user_required
 def edit_listing_page(listing_id: int) -> str:
     """Render the edit listing page with pre-filled details."""
     item = listing_service.get_listing_detail(listing_id)
@@ -138,7 +138,7 @@ def edit_listing_page(listing_id: int) -> str:
 
 
 @listing_bp.post("/listings/<int:listing_id>/edit")
-@login_required
+@marketplace_user_required
 def handle_edit_listing(listing_id: int) -> str:
     """Process data when someone submits changes to their item."""
     title = request.form.get("title", "").strip()
@@ -174,7 +174,7 @@ def handle_edit_listing(listing_id: int) -> str:
 
 
 @listing_bp.post("/listings/<int:listing_id>/delete")
-@login_required
+@marketplace_user_required
 def delete_listing(listing_id: int) -> str:
     """Delete an item completely if requested by its owner."""
     success = listing_service.delete_listing(listing_id, session["user_id"])

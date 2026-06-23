@@ -3,7 +3,7 @@
 from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 
 from services.profile_service import profile_service
-from utils.decorators import login_required
+from utils.decorators import marketplace_user_required
 
 profile_bp = Blueprint("profiles", __name__)
 
@@ -19,7 +19,7 @@ def view_public_profile(user_id: int) -> str:
 
 
 @profile_bp.get("/profile/edit")
-@login_required
+@marketplace_user_required
 def edit_profile_page() -> str:
     """Render the edit profile page."""
 
@@ -33,7 +33,7 @@ def edit_profile_page() -> str:
 
 
 @profile_bp.post("/profile/edit")
-@login_required
+@marketplace_user_required
 def edit_profile() -> str:
     """Handle profile edit submission."""
 

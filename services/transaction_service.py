@@ -4,6 +4,14 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from models.db import get_db
 from services.base_service import BaseService
+from utils.constants import (
+    CONTACT_METHOD_PHONE,
+    LISTING_STATUS_AVAILABLE,
+    LISTING_STATUS_PENDING,
+    REQUEST_STATUS_ACCEPTED,
+    REQUEST_STATUS_PENDING,
+    REQUEST_STATUS_REJECTED,
+)
 
 INCOMING_REQUESTS_SQL = """
 SELECT
@@ -26,6 +34,26 @@ FROM requests
 INNER JOIN listings ON listings.id = requests.listing_id
 INNER JOIN users ON users.id = requests.buyer_id
 WHERE requests.seller_id = ?
+ORDER BY requests.created_at DESC, requests.id DESC
+"""
+OUTGOING_REQUESTS_SQL = """
+SELECT
+    requests.id,
+    requests.listing_id,
+    requests.buyer_id,
+    requests.seller_id,
+    requests.status,
+    requests.message,
+    requests.created_at,
+    requests.updated_at,
+    listings.title AS listing_title,
+    listings.price AS listing_price,
+    listings.status AS listing_status,
+    users.display_name AS seller_name
+FROM requests
+INNER JOIN listings ON listings.id = requests.listing_id
+INNER JOIN users ON users.id = requests.seller_id
+WHERE requests.buyer_id = ?
 ORDER BY requests.created_at DESC, requests.id DESC
 """
 
@@ -99,7 +127,7 @@ class TransactionService(BaseService):
         if listing is None:
             return False, "Listing not found."
 
-        if listing["status"] != "available":
+        if listing["status"] != LISTING_STATUS_AVAILABLE:
             return False, "This listing is not available for purchase requests."
 
         seller_id = int(listing["seller_id"])
@@ -122,9 +150,9 @@ class TransactionService(BaseService):
                 created_at,
                 updated_at
             )
-            VALUES (?, ?, ?, 'pending', 0, ?, datetime('now'), datetime('now'))
+            VALUES (?, ?, ?, ?, 0, ?, datetime('now'), datetime('now'))
             """,
-            (listing_id, buyer_id, seller_id, message.strip() or None),
+            (listing_id, buyer_id, seller_id, REQUEST_STATUS_PENDING, message.strip() or None),
         )
         db.commit()
         return True, "Purchase request submitted."
@@ -136,37 +164,20 @@ class TransactionService(BaseService):
         requests = db.execute(INCOMING_REQUESTS_SQL, (seller_id,)).fetchall()
         return [self._serialize_incoming_request(request) for request in requests]
 
-    def request_history(self, buyer_id: int) -> List[Dict[str, Any]]:
-        """Get request history for a buyer."""
+    def request_history(self, user_id: int) -> Dict[str, List[Dict[str, Any]]]:
+        """Get the current user's sent and received request views for the request hub."""
 
         db = get_db()
-        requests = db.execute(
-            """
-            SELECT
-                requests.id,
-                requests.listing_id,
-                requests.buyer_id,
-                requests.seller_id,
-                requests.status,
-                requests.message,
-                requests.created_at,
-                requests.updated_at,
-                listings.title AS listing_title,
-                listings.price AS listing_price,
-                listings.status AS listing_status,
-                users.display_name AS seller_name,
-                users.email AS seller_email,
-                users.phone_number AS seller_phone_number,
-                users.preferred_contact_method AS seller_contact_method
-            FROM requests
-            INNER JOIN listings ON listings.id = requests.listing_id
-            INNER JOIN users ON users.id = requests.seller_id
-            WHERE requests.buyer_id = ?
-            ORDER BY requests.created_at DESC, requests.id DESC
-            """,
-            (buyer_id,),
-        ).fetchall()
-        return [self._serialize_buyer_request(row) for row in requests]
+        outgoing_requests = db.execute(OUTGOING_REQUESTS_SQL, (user_id,)).fetchall()
+        incoming_requests = db.execute(INCOMING_REQUESTS_SQL, (user_id,)).fetchall()
+        return {
+            "outgoing_requests": [
+                self._serialize_outgoing_request(request) for request in outgoing_requests
+            ],
+            "incoming_requests": [
+                self._serialize_incoming_request(request) for request in incoming_requests
+            ],
+        }
 
     def accept_request(self, seller_id: int, request_id: int) -> Tuple[bool, str]:
         """Accept a purchase request."""
@@ -175,10 +186,10 @@ class TransactionService(BaseService):
         if error_message is not None:
             return False, error_message
 
-        if request["status"] != "pending":
+        if request["status"] != REQUEST_STATUS_PENDING:
             return False, "Only pending requests can be accepted."
 
-        if request["listing_status"] != "available":
+        if request["listing_status"] != LISTING_STATUS_AVAILABLE:
             return False, "This listing is not available for accepting a request."
 
         if self._listing_has_accepted_request(int(request["listing_id"])):
@@ -194,10 +205,10 @@ class TransactionService(BaseService):
         if error_message is not None:
             return False, error_message
 
-        if request["status"] not in ("pending", "accepted"):
+        if request["status"] not in (REQUEST_STATUS_PENDING, REQUEST_STATUS_ACCEPTED):
             return False, "Only pending or accepted requests can be rejected."
 
-        was_accepted = request["status"] == "accepted"
+        was_accepted = request["status"] == REQUEST_STATUS_ACCEPTED
         self._mark_request_rejected(request_id, int(request["listing_id"]), was_accepted)
         return True, "Purchase request rejected."
 
@@ -257,18 +268,18 @@ class TransactionService(BaseService):
         db.execute(
             """
             UPDATE requests
-            SET status = 'accepted', updated_at = datetime('now')
+            SET status = ?, updated_at = datetime('now')
             WHERE id = ?
             """,
-            (request_id,),
+            (REQUEST_STATUS_ACCEPTED, request_id),
         )
         db.execute(
             """
             UPDATE listings
-            SET status = 'pending', updated_at = datetime('now')
+            SET status = ?, updated_at = datetime('now')
             WHERE id = ?
             """,
-            (listing_id,),
+            (LISTING_STATUS_PENDING, listing_id),
         )
         db.commit()
 
@@ -284,19 +295,19 @@ class TransactionService(BaseService):
         db.execute(
             """
             UPDATE requests
-            SET status = 'rejected', updated_at = datetime('now')
+            SET status = ?, updated_at = datetime('now')
             WHERE id = ?
             """,
-            (request_id,),
+            (REQUEST_STATUS_REJECTED, request_id),
         )
         if was_accepted:
             db.execute(
                 """
                 UPDATE listings
-                SET status = 'available', updated_at = datetime('now')
+                SET status = ?, updated_at = datetime('now')
                 WHERE id = ?
                 """,
-                (listing_id,),
+                (LISTING_STATUS_AVAILABLE, listing_id),
             )
         db.commit()
 
@@ -359,9 +370,9 @@ class TransactionService(BaseService):
             """
             SELECT id
             FROM requests
-            WHERE buyer_id = ? AND listing_id = ? AND status = 'pending'
+            WHERE buyer_id = ? AND listing_id = ? AND status = ?
             """,
-            (buyer_id, listing_id),
+            (buyer_id, listing_id, REQUEST_STATUS_PENDING),
         ).fetchone()
         return request is not None
 
@@ -426,9 +437,9 @@ class TransactionService(BaseService):
             """
             SELECT id
             FROM requests
-            WHERE listing_id = ? AND status = 'accepted'
+            WHERE listing_id = ? AND status = ?
             """,
-            (listing_id,),
+            (listing_id, REQUEST_STATUS_ACCEPTED),
         ).fetchone()
         return request is not None
 
@@ -440,7 +451,7 @@ class TransactionService(BaseService):
         request["listing_price_label"] = "{0:.2f}".format(request["listing_price"])
         request["status_label"] = request["status"].title()
         request["listing_status_label"] = request["listing_status"].title()
-        if request["buyer_contact_method"] == "phone":
+        if request["buyer_contact_method"] == CONTACT_METHOD_PHONE:
             request["buyer_contact_method_label"] = "Phone"
             request["buyer_contact_value"] = request["buyer_phone_number"] or "Not provided"
         else:
@@ -459,19 +470,13 @@ class TransactionService(BaseService):
         return favorite
 
     @staticmethod
-    def _serialize_buyer_request(row) -> Dict[str, Any]:
+    def _serialize_outgoing_request(row) -> Dict[str, Any]:
         """Convert a buyer request row to template-friendly values."""
 
         request = dict(row)
         request["listing_price_label"] = "{0:.2f}".format(request["listing_price"])
         request["status_label"] = request["status"].title()
         request["listing_status_label"] = request["listing_status"].title()
-        if request["seller_contact_method"] == "phone":
-            request["seller_contact_method_label"] = "Phone"
-            request["seller_contact_value"] = request["seller_phone_number"] or "Not provided"
-        else:
-            request["seller_contact_method_label"] = "Email"
-            request["seller_contact_value"] = request["seller_email"] or "Not provided"
         return request
 
 transaction_service = TransactionService()

@@ -15,16 +15,18 @@ body {
 .listing-card-image,
 .listing-detail-image {
     width: 100%;
-    object-fit: cover;
     background: linear-gradient(135deg, #eef2f6, #dde6f0);
 }
 
 .listing-card-image {
     height: 240px;
+    object-fit: cover;
 }
 
 .listing-detail-image {
+    display: block;
     max-height: 560px;
+    object-fit: contain;
 }
 
 .listing-price {

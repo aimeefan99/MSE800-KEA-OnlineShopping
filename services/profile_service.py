@@ -4,6 +4,11 @@ from typing import Any, Dict, Mapping, Optional, Tuple
 
 from models.db import get_db
 from services.base_service import BaseService
+from utils.constants import (
+    CONTACT_METHOD_PHONE,
+    LISTING_STATUS_AVAILABLE,
+    LISTING_STATUS_SOLD,
+)
 
 
 class ProfileService(BaseService):
@@ -23,8 +28,8 @@ class ProfileService(BaseService):
                 users.email,
                 users.phone_number,
                 users.created_at,
-                COUNT(CASE WHEN listings.status = 'available' THEN 1 END) AS active_listing_count,
-                COUNT(CASE WHEN listings.status = 'sold' THEN 1 END) AS sold_listing_count
+                COUNT(CASE WHEN listings.status = ? THEN 1 END) AS active_listing_count,
+                COUNT(CASE WHEN listings.status = ? THEN 1 END) AS sold_listing_count
             FROM users
             LEFT JOIN listings ON listings.seller_id = users.id
             WHERE users.id = ?
@@ -37,7 +42,7 @@ class ProfileService(BaseService):
                 users.phone_number,
                 users.created_at
             """,
-            (user_id,),
+            (LISTING_STATUS_AVAILABLE, LISTING_STATUS_SOLD, user_id),
         ).fetchone()
         if profile is None:
             return None
@@ -89,10 +94,10 @@ class ProfileService(BaseService):
 
         # Profile updates keep the same contact-method rule used at registration.
         preferred_contact_method = cleaned_data["preferred_contact_method"]
-        if preferred_contact_method not in {"email", "phone"}:
+        if preferred_contact_method not in {"email", CONTACT_METHOD_PHONE}:
             return "Please select a valid contact method."
 
-        if preferred_contact_method == "phone" and not cleaned_data["phone_number"]:
+        if preferred_contact_method == CONTACT_METHOD_PHONE and not cleaned_data["phone_number"]:
             return "Phone number is required when phone is selected."
         return None
 
@@ -136,7 +141,7 @@ class ProfileService(BaseService):
         profile = dict(row)
         profile["bio"] = profile.get("bio") or "No public bio provided yet."
         profile["member_since_label"] = str(profile["created_at"])[:10]
-        if profile["preferred_contact_method"] == "phone":
+        if profile["preferred_contact_method"] == CONTACT_METHOD_PHONE:
             profile["preferred_contact_method_label"] = "Phone"
             profile["public_contact_value"] = profile.get("phone_number") or "Not provided"
         else:

@@ -2,58 +2,61 @@
 
 {% block content %}
 <section class="mb-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
-        <div>
-            <p class="text-uppercase small text-muted mb-1">Buyer Requests</p>
-            <h1 class="mb-2">Request History</h1>
-            <p class="text-muted mb-0">Track your purchase requests and transaction status.</p>
-        </div>
-        <a class="btn btn-outline-primary" href="{{ url_for('listings.browse_listings') }}">
-            Browse Listings
-        </a>
-    </div>
+    <p class="text-uppercase small text-muted mb-1">Requests</p>
+    <h1 class="mb-2">My Requests</h1>
+    <p class="text-muted mb-0">
+        Track requests you sent as a buyer and requests you received on your own listings.
+    </p>
 </section>
 
-{% if requests %}
-    <div class="row g-4">
-        {% for purchase_request in requests %}
-            <div class="col-12">
-                <article class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
-                            <div>
-                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                                    <h2 class="h4 mb-0">{{ purchase_request.listing_title }}</h2>
-                                    <span class="badge text-bg-warning">
-                                        {{ purchase_request.status_label }}
-                                    </span>
-                                    <span class="badge text-bg-light border">
-                                        Listing {{ purchase_request.listing_status_label }}
-                                    </span>
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-end gap-3 mb-3">
+        <div>
+            <h2 class="h4 mb-1">Sent Requests</h2>
+            <p class="text-muted mb-0">Requests you submitted for items you want to buy.</p>
+        </div>
+    </div>
+
+    {% if outgoing_requests %}
+        <div class="row g-4">
+            {% for purchase_request in outgoing_requests %}
+                <div class="col-12">
+                    <article class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                                <div>
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                        <h3 class="h4 mb-0">{{ purchase_request.listing_title }}</h3>
+                                        <span class="badge text-bg-warning">
+                                            {{ purchase_request.status_label }}
+                                        </span>
+                                        <span class="badge text-bg-light border">
+                                            Listing {{ purchase_request.listing_status_label }}
+                                        </span>
+                                    </div>
+                                    <p class="text-muted mb-2">
+                                        Seller {{ purchase_request.seller_name }}
+                                        · submitted on {{ purchase_request.created_at }}
+                                    </p>
+                                    <p class="listing-price text-success fw-bold mb-0">
+                                        ${{ purchase_request.listing_price_label }} NZD
+                                    </p>
                                 </div>
-                                <p class="text-muted mb-2">
-                                    Requested from {{ purchase_request.seller_name }}
-                                    on {{ purchase_request.created_at }}
-                                </p>
-                                <p class="listing-price text-success fw-bold mb-0">
-                                    ${{ purchase_request.listing_price_label }} NZD
-                                </p>
-                            </div>
-                            <div class="text-lg-end">
-                                <a
-                                    class="btn btn-outline-primary btn-sm"
-                                    href="{{
-                                        url_for(
-                                            'listings.view_listing_detail',
-                                            listing_id=purchase_request.listing_id
-                                        )
-                                    }}"
-                                >
-                                    View Listing
-                                </a>
-                                {% if purchase_request.status == "accepted" %}
-                                    <div class="d-flex justify-content-lg-end gap-2 mt-2">
+                                <div class="text-lg-end">
+                                    <a
+                                        class="btn btn-outline-primary btn-sm"
+                                        href="{{
+                                            url_for(
+                                                'listings.view_listing_detail',
+                                                listing_id=purchase_request.listing_id
+                                            )
+                                        }}"
+                                    >
+                                        View Listing
+                                    </a>
+                                    {% if purchase_request.status == "accepted" %}
                                         <form
+                                            class="mt-2"
                                             action="{{
                                                 url_for(
                                                     'transactions.complete_request',
@@ -66,44 +69,120 @@
                                                 Mark Complete
                                             </button>
                                         </form>
-                                    </div>
-                                {% endif %}
+                                    {% endif %}
+                                </div>
                             </div>
+
+                            {% if purchase_request.message %}
+                                <div class="mt-3">
+                                    <span class="text-muted d-block">Message</span>
+                                    <p class="mb-0">{{ purchase_request.message }}</p>
+                                </div>
+                            {% endif %}
                         </div>
-
-                        <hr>
-
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <span class="text-muted d-block">Seller</span>
-                                <strong>{{ purchase_request.seller_name }}</strong>
-                            </div>
-                            <div class="col-md-4">
-                                <span class="text-muted d-block">
-                                    {{ purchase_request.seller_contact_method_label }}
-                                </span>
-                                <strong>{{ purchase_request.seller_contact_value }}</strong>
-                            </div>
-                            <div class="col-md-4">
-                                <span class="text-muted d-block">Request ID</span>
-                                <strong>#{{ purchase_request.id }}</strong>
-                            </div>
-                        </div>
-
-                        {% if purchase_request.message %}
-                            <div class="mt-3">
-                                <span class="text-muted d-block">Message</span>
-                                <p class="mb-0">{{ purchase_request.message }}</p>
-                            </div>
-                        {% endif %}
-                    </div>
-                </article>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 text-center">
+                <h3 class="h4 mb-2">No sent requests yet</h3>
+                <p class="text-muted mb-0">
+                    When you submit purchase requests from item detail pages, they will appear here.
+                </p>
             </div>
-        {% endfor %}
+        </div>
+    {% endif %}
+</section>
+
+<section>
+    <div class="d-flex justify-content-between align-items-end gap-3 mb-3">
+        <div>
+            <h2 class="h4 mb-1">Incoming Requests</h2>
+            <p class="text-muted mb-0">Requests submitted by buyers for listings you own.</p>
+        </div>
     </div>
-{% else %}
-    <div class="alert alert-info">
-        <p class="mb-0">You haven't submitted any purchase requests yet.</p>
-    </div>
-{% endif %}
+
+    {% if incoming_requests %}
+        <div class="row g-4">
+            {% for purchase_request in incoming_requests %}
+                <div class="col-12">
+                    <article class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                                <div>
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                        <h3 class="h4 mb-0">{{ purchase_request.listing_title }}</h3>
+                                        <span class="badge text-bg-warning">
+                                            {{ purchase_request.status_label }}
+                                        </span>
+                                        <span class="badge text-bg-light border">
+                                            Listing {{ purchase_request.listing_status_label }}
+                                        </span>
+                                    </div>
+                                    <p class="text-muted mb-2">
+                                        Buyer {{ purchase_request.buyer_name }}
+                                        · submitted on {{ purchase_request.created_at }}
+                                    </p>
+                                    <p class="listing-price text-success fw-bold mb-0">
+                                        ${{ purchase_request.listing_price_label }} NZD
+                                    </p>
+                                </div>
+                                <div class="text-lg-end">
+                                    <a
+                                        class="btn btn-outline-primary btn-sm"
+                                        href="{{
+                                            url_for(
+                                                'listings.view_listing_detail',
+                                                listing_id=purchase_request.listing_id
+                                            )
+                                        }}"
+                                    >
+                                        View Listing
+                                    </a>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <span class="text-muted d-block">Buyer</span>
+                                    <strong>{{ purchase_request.buyer_name }}</strong>
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="text-muted d-block">
+                                        {{ purchase_request.buyer_contact_method_label }}
+                                    </span>
+                                    <strong>{{ purchase_request.buyer_contact_value }}</strong>
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="text-muted d-block">Request ID</span>
+                                    <strong>#{{ purchase_request.id }}</strong>
+                                </div>
+                            </div>
+
+                            {% if purchase_request.message %}
+                                <div class="mt-3">
+                                    <span class="text-muted d-block">Message</span>
+                                    <p class="mb-0">{{ purchase_request.message }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 text-center">
+                <h3 class="h4 mb-2">No incoming requests yet</h3>
+                <p class="text-muted mb-0">
+                    Buyer requests for listings you own will appear here.
+                </p>
+            </div>
+        </div>
+    {% endif %}
+</section>
 {% endblock %}
