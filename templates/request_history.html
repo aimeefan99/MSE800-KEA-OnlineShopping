@@ -54,6 +54,22 @@
                                     >
                                         View Listing
                                     </a>
+                                    {% if purchase_request.status == "accepted" %}
+                                        <form
+                                            class="mt-2"
+                                            action="{{
+                                                url_for(
+                                                    'transactions.complete_request',
+                                                    request_id=purchase_request.id
+                                                )
+                                            }}"
+                                            method="post"
+                                        >
+                                            <button class="btn btn-success btn-sm" type="submit">
+                                                Mark Complete
+                                            </button>
+                                        </form>
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -125,6 +141,41 @@
                                     >
                                         View Listing
                                     </a>
+                                    {% if purchase_request.status in ["pending", "accepted"] %}
+                                        <div class="d-flex justify-content-lg-end gap-2 mt-2">
+                                            {% if purchase_request.status == "pending" %}
+                                                <form
+                                                    action="{{
+                                                        url_for(
+                                                            'transactions.accept_request',
+                                                            request_id=purchase_request.id
+                                                        )
+                                                    }}"
+                                                    method="post"
+                                                >
+                                                    <button class="btn btn-success btn-sm" type="submit">
+                                                        Accept
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                            <form
+                                                action="{{
+                                                    url_for(
+                                                        'transactions.reject_request',
+                                                        request_id=purchase_request.id
+                                                    )
+                                                }}"
+                                                method="post"
+                                            >
+                                                <button
+                                                    class="btn btn-outline-danger btn-sm"
+                                                    type="submit"
+                                                >
+                                                    Reject
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
 
