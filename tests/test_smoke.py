@@ -141,6 +141,29 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("Available Camera", page)
         self.assertNotIn("Sold Bike", page)
 
+    def test_homepage_rule_uses_recent_interest_category(self) -> None:
+        """Protect the rule that homepage discovery follows recent category interest."""
+
+        self.client.get("/listings?category_id=2")
+        response = self.client.get("/")
+        page = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Fresh listings related to your recent interest in", page)
+        self.assertIn("Available Tennis Racket", page)
+        self.assertNotIn("Available Camera", page)
+
+    def test_recommendation_api_returns_recent_interest_listing_results(self) -> None:
+        """Protect the documented homepage recommendation endpoint."""
+
+        self.client.get("/listings?category_id=2")
+        response = self.client.get("/recommendations/homepage")
+        listings = response.get_json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(listings, list)
+        self.assertEqual(["Available Tennis Racket"], [item["title"] for item in listings])
+        self.assertNotIn("is_personalized", response.get_data(as_text=True))
+
     def test_favorite_rule_same_listing_cannot_be_saved_twice(self) -> None:
         """Protect the rule that favorites are unique per user and listing."""
 
@@ -293,6 +316,19 @@ class SmokeTestCase(unittest.TestCase):
                     LISTING_STATUS_SOLD,
                     "2026-06-04T09:00:00",
                     "2026-06-04T09:00:00",
+                ),
+                (
+                    3,
+                    3,
+                    2,
+                    "uploads/missing-racket.jpg",
+                    "Available Tennis Racket",
+                    "Lightweight sports racket",
+                    "used",
+                    45.0,
+                    LISTING_STATUS_AVAILABLE,
+                    "2026-06-06T10:00:00",
+                    "2026-06-06T10:00:00",
                 ),
             ],
         )
