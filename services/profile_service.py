@@ -161,7 +161,10 @@ class ProfileService(BaseService):
         db = get_db()
         summary = db.execute(
             """
-            SELECT COUNT(*) AS review_count, AVG(score) AS average_score
+            SELECT
+                COUNT(*) AS review_count,
+                AVG(score) AS average_score,
+                SUM(CASE WHEN score >= 4 THEN 1 ELSE 0 END) AS positive_review_count
             FROM reviews
             WHERE reviewed_user_id = ?
             """,
@@ -184,11 +187,26 @@ class ProfileService(BaseService):
         ).fetchall()
 
         profile["review_count"] = int(summary["review_count"])
+        positive_review_count = int(summary["positive_review_count"] or 0)
         average_score = summary["average_score"]
         profile["average_score_label"] = (
             "{0:.1f}".format(average_score) if average_score is not None else "No ratings yet"
         )
+        profile["positive_feedback_label"] = ProfileService._format_positive_feedback(
+            profile["review_count"],
+            positive_review_count,
+        )
         profile["recent_reviews"] = [dict(review) for review in reviews]
+
+    @staticmethod
+    def _format_positive_feedback(review_count: int, positive_review_count: int) -> str:
+        """Return the positive feedback percentage for public profile display."""
+
+        if review_count == 0:
+            return "No feedback yet"
+
+        positive_feedback_rate = positive_review_count / review_count
+        return "{0:.0%}".format(positive_feedback_rate)
 
     @staticmethod
     def _attach_completed_transaction_count(profile: Dict[str, Any], user_id: int) -> None:

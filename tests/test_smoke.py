@@ -211,7 +211,9 @@ class SmokeTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Average Rating", page)
         self.assertIn("Completed Trades", page)
+        self.assertIn("Positive Feedback", page)
         self.assertIn("5.0", page)
+        self.assertIn("100%", page)
         self.assertIn("Friendly seller and smooth pickup.", page)
 
     def test_recommendation_api_returns_recent_interest_listing_results(self) -> None:
