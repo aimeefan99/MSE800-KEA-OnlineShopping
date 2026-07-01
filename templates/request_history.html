@@ -35,7 +35,18 @@
                                         </span>
                                     </div>
                                     <p class="text-muted mb-2">
-                                        Seller {{ purchase_request.seller_name }}
+                                        Seller
+                                        <a
+                                            class="text-decoration-none"
+                                            href="{{
+                                                url_for(
+                                                    'profiles.view_public_profile',
+                                                    user_id=purchase_request.seller_id
+                                                )
+                                            }}"
+                                        >
+                                            {{ purchase_request.seller_name }}
+                                        </a>
                                         · submitted on {{ purchase_request.created_at }}
                                     </p>
                                     <p class="listing-price text-success fw-bold mb-0">
@@ -79,6 +90,9 @@
                                     <p class="mb-0">{{ purchase_request.message }}</p>
                                 </div>
                             {% endif %}
+
+                            {% set review_form_prefix = "outgoing" %}
+                            {% include "_review_form.html" %}
                         </div>
                     </article>
                 </div>
@@ -122,7 +136,18 @@
                                         </span>
                                     </div>
                                     <p class="text-muted mb-2">
-                                        Buyer {{ purchase_request.buyer_name }}
+                                        Buyer
+                                        <a
+                                            class="text-decoration-none"
+                                            href="{{
+                                                url_for(
+                                                    'profiles.view_public_profile',
+                                                    user_id=purchase_request.buyer_id
+                                                )
+                                            }}"
+                                        >
+                                            {{ purchase_request.buyer_name }}
+                                        </a>
                                         · submitted on {{ purchase_request.created_at }}
                                     </p>
                                     <p class="listing-price text-success fw-bold mb-0">
@@ -184,7 +209,19 @@
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <span class="text-muted d-block">Buyer</span>
-                                    <strong>{{ purchase_request.buyer_name }}</strong>
+                                    <strong>
+                                        <a
+                                            class="text-decoration-none"
+                                            href="{{
+                                                url_for(
+                                                    'profiles.view_public_profile',
+                                                    user_id=purchase_request.buyer_id
+                                                )
+                                            }}"
+                                        >
+                                            {{ purchase_request.buyer_name }}
+                                        </a>
+                                    </strong>
                                 </div>
                                 <div class="col-md-4">
                                     <span class="text-muted d-block">
@@ -204,6 +241,9 @@
                                     <p class="mb-0">{{ purchase_request.message }}</p>
                                 </div>
                             {% endif %}
+
+                            {% set review_form_prefix = "incoming" %}
+                            {% include "_review_form.html" %}
                         </div>
                     </article>
                 </div>

@@ -152,6 +152,68 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("Available Tennis Racket", page)
         self.assertNotIn("Available Camera", page)
 
+    def test_review_rule_completed_transaction_can_be_reviewed_once(self) -> None:
+        """Protect the rule that completed transactions can receive one review."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        history_page = self.client.get("/requests/history").get_data(as_text=True)
+        self.assertIn("Review", history_page)
+        self.assertIn("/profiles/3", history_page)
+
+        first_response = self.client.post(
+            "/reviews/create",
+            data={
+                "request_id": 1,
+                "reviewed_user_id": 3,
+                "score": 5,
+                "comment": "Friendly seller and smooth pickup.",
+            },
+            follow_redirects=True,
+        )
+        second_response = self.client.post(
+            "/reviews/create",
+            data={
+                "request_id": 1,
+                "reviewed_user_id": 3,
+                "score": 4,
+                "comment": "Trying to review twice.",
+            },
+            follow_redirects=True,
+        )
+
+        self.assertIn("Review submitted successfully.", first_response.get_data(as_text=True))
+        self.assertIn(
+            "You have already reviewed this completed transaction.",
+            second_response.get_data(as_text=True),
+        )
+
+        self._login_as(3, ROLE_USER, "Seller")
+        seller_history_page = self.client.get("/requests/history").get_data(as_text=True)
+        self.assertIn("Review", seller_history_page)
+        self.assertIn("/profiles/1", seller_history_page)
+
+    def test_profile_rule_public_profile_shows_review_summary(self) -> None:
+        """Protect the rule that public profiles show completed transaction reviews."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        self.client.post(
+            "/reviews/create",
+            data={
+                "request_id": 1,
+                "reviewed_user_id": 3,
+                "score": 5,
+                "comment": "Friendly seller and smooth pickup.",
+            },
+        )
+
+        response = self.client.get("/profiles/3")
+        page = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Average Rating", page)
+        self.assertIn("Completed Trades", page)
+        self.assertIn("5.0", page)
+        self.assertIn("Friendly seller and smooth pickup.", page)
+
     def test_recommendation_api_returns_recent_interest_listing_results(self) -> None:
         """Protect the documented homepage recommendation endpoint."""
 
@@ -330,7 +392,47 @@ class SmokeTestCase(unittest.TestCase):
                     "2026-06-06T10:00:00",
                     "2026-06-06T10:00:00",
                 ),
+                (
+                    4,
+                    3,
+                    1,
+                    "uploads/missing-monitor.jpg",
+                    "Sold Monitor",
+                    "Completed transaction monitor",
+                    "used",
+                    150.0,
+                    LISTING_STATUS_SOLD,
+                    "2026-06-03T10:00:00",
+                    "2026-06-03T10:00:00",
+                ),
             ],
+        )
+        connection.execute(
+            """
+            INSERT INTO requests (
+                id,
+                listing_id,
+                buyer_id,
+                seller_id,
+                status,
+                is_locked,
+                message,
+                created_at,
+                updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                1,
+                4,
+                1,
+                3,
+                "completed",
+                0,
+                "Completed purchase",
+                "2026-06-07T10:00:00",
+                "2026-06-07T10:00:00",
+            ),
         )
         connection.commit()
         connection.close()

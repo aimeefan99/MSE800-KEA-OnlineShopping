@@ -8,6 +8,7 @@ from utils.constants import (
     CONTACT_METHOD_PHONE,
     LISTING_STATUS_AVAILABLE,
     LISTING_STATUS_SOLD,
+    REQUEST_STATUS_COMPLETED,
 )
 
 
@@ -46,7 +47,11 @@ class ProfileService(BaseService):
         ).fetchone()
         if profile is None:
             return None
-        return self._serialize_public_profile(profile)
+
+        profile_data = self._serialize_public_profile(profile)
+        self._attach_review_summary(profile_data, user_id)
+        self._attach_completed_transaction_count(profile_data, user_id)
+        return profile_data
 
     def get_edit_profile_data(self, user_id: int) -> Optional[Dict[str, Any]]:
         """Get editable profile data for the current user."""
@@ -148,6 +153,60 @@ class ProfileService(BaseService):
             profile["preferred_contact_method_label"] = "Email"
             profile["public_contact_value"] = profile.get("email") or "Not provided"
         return profile
+
+    @staticmethod
+    def _attach_review_summary(profile: Dict[str, Any], user_id: int) -> None:
+        """Attach public trust indicators from completed transaction reviews."""
+
+        db = get_db()
+        summary = db.execute(
+            """
+            SELECT COUNT(*) AS review_count, AVG(score) AS average_score
+            FROM reviews
+            WHERE reviewed_user_id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+        reviews = db.execute(
+            """
+            SELECT
+                reviews.score,
+                reviews.comment,
+                reviews.created_at,
+                users.display_name AS reviewer_name
+            FROM reviews
+            INNER JOIN users ON users.id = reviews.reviewer_id
+            WHERE reviews.reviewed_user_id = ?
+            ORDER BY reviews.created_at DESC, reviews.id DESC
+            LIMIT 3
+            """,
+            (user_id,),
+        ).fetchall()
+
+        profile["review_count"] = int(summary["review_count"])
+        average_score = summary["average_score"]
+        profile["average_score_label"] = (
+            "{0:.1f}".format(average_score) if average_score is not None else "No ratings yet"
+        )
+        profile["recent_reviews"] = [dict(review) for review in reviews]
+
+    @staticmethod
+    def _attach_completed_transaction_count(profile: Dict[str, Any], user_id: int) -> None:
+        """Attach completed request count where the user was buyer or seller."""
+
+        db = get_db()
+        result = db.execute(
+            """
+            SELECT COUNT(*) AS completed_transaction_count
+            FROM requests
+            WHERE status = ?
+                AND (buyer_id = ? OR seller_id = ?)
+            """,
+            (REQUEST_STATUS_COMPLETED, user_id, user_id),
+        ).fetchone()
+        profile["completed_transaction_count"] = int(
+            result["completed_transaction_count"]
+        )
 
 
 profile_service = ProfileService()
