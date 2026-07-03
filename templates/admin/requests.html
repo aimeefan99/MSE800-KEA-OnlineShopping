@@ -1,8 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section>
-  <h1>Admin Requests</h1>
-  <p>Administrator request record page placeholder.</p>
+<section class="mb-4">
+    <p class="text-uppercase small text-muted mb-1">Administrator</p>
+    <h1 class="mb-2">Request Records</h1>
+    <p class="text-muted mb-0">
+        Monitor buyer-seller request activity across the platform.
+    </p>
 </section>
+
+{% set active_section = 'requests' %}
+{% include "admin/_management_nav.html" %}
+
+{% set empty_title = "No request records found" %}
+{% set empty_message = "There are no buyer-seller requests to review right now." %}
+{% include "admin/_request_table.html" %}
 {% endblock %}
