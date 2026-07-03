@@ -35,7 +35,10 @@ def view_listings() -> str:
 def view_requests() -> str:
     """Render the administrator request page."""
 
-    return render_template("admin/requests.html")
+    return render_template(
+        "admin/requests.html",
+        requests=admin_service.get_admin_requests(),
+    )
 
 
 @admin_bp.get("/admin/requests/completed")
@@ -69,4 +72,6 @@ def lock_user_account(user_id: int) -> str:
 def lock_request_record(request_id: int) -> str:
     """Handle administrator request lock."""
 
-    return f"TODO: admin lock request {request_id}"
+    success, message = admin_service.lock_request_record(request_id)
+    flash(message, "success" if success else "danger")
+    return redirect(url_for("admin.view_requests"))
