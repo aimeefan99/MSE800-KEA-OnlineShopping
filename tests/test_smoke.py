@@ -132,6 +132,34 @@ class SmokeTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.headers["Location"], "/login")
 
+    def test_admin_request_records_page_lists_request_activity(self) -> None:
+        """Protect the rule that administrators can monitor request records."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.get("/admin/requests")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Request Records", page)
+        self.assertIn("Available Camera", page)
+        self.assertIn("Sold Bike", page)
+        self.assertIn("Pending", page)
+        self.assertIn("Completed", page)
+
+    def test_admin_completed_request_records_page_lists_only_completed_activity(self) -> None:
+        """Protect the rule that administrators can monitor completed transactions."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.get("/admin/requests/completed")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Completed Request Records", page)
+        self.assertIn("Sold Bike", page)
+        self.assertIn("Completed", page)
+        self.assertNotIn("Available Camera", page)
+        self.assertNotIn("Pending", page)
+
     def test_browse_rule_public_list_page_hides_sold_listings(self) -> None:
         """Protect the rule that sold items stay out of normal browse results."""
 
@@ -343,6 +371,46 @@ class SmokeTestCase(unittest.TestCase):
                     LISTING_STATUS_AVAILABLE,
                     "2026-06-06T10:00:00",
                     "2026-06-06T10:00:00",
+                ),
+            ],
+        )
+        connection.executemany(
+            """
+            INSERT INTO requests (
+                id,
+                listing_id,
+                buyer_id,
+                seller_id,
+                status,
+                is_locked,
+                message,
+                created_at,
+                updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    1,
+                    1,
+                    1,
+                    3,
+                    "pending",
+                    0,
+                    "Interested in the camera",
+                    "2026-06-07T10:00:00",
+                    "2026-06-07T10:00:00",
+                ),
+                (
+                    2,
+                    2,
+                    1,
+                    3,
+                    "completed",
+                    0,
+                    "Completed bike purchase",
+                    "2026-06-08T10:00:00",
+                    "2026-06-08T10:00:00",
                 ),
             ],
         )
