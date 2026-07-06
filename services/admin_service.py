@@ -129,10 +129,30 @@ class AdminService(BaseService):
 
         raise NotImplementedError
 
-    def lock_request_record(self) -> None:
+    def lock_request_record(self, request_id: int) -> Tuple[bool, str]:
         """Lock a request record."""
 
-        raise NotImplementedError
+        db = get_db()
+        request = db.execute(
+            "SELECT id, is_locked FROM requests WHERE id = ?",
+            (request_id,),
+        ).fetchone()
+        if request is None:
+            return False, "Request record not found."
+
+        if request["is_locked"]:
+            return True, "Request record is already locked."
+
+        db.execute(
+            """
+            UPDATE requests
+            SET is_locked = 1, updated_at = datetime('now')
+            WHERE id = ?
+            """,
+            (request_id,),
+        )
+        db.commit()
+        return True, "Request record locked for review."
 
     def _get_admin_request_rows(
         self,

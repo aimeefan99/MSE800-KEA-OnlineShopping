@@ -132,6 +132,16 @@ class SmokeTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.headers["Location"], "/login")
 
+    def test_admin_request_rule_admin_can_view_request_records(self) -> None:
+        """Protect the rule that administrators can review request records."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.get("/admin/requests")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Request Management", page)
+
     def test_admin_request_records_page_lists_request_activity(self) -> None:
         """Protect the rule that administrators can monitor request records."""
 
@@ -140,11 +150,44 @@ class SmokeTestCase(unittest.TestCase):
         page = response.get_data(as_text=True)
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Request Records", page)
+        self.assertIn("Request Management", page)
         self.assertIn("Available Camera", page)
         self.assertIn("Sold Bike", page)
+        self.assertIn("Open", page)
         self.assertIn("Pending", page)
         self.assertIn("Completed", page)
+
+    def test_admin_request_rule_admin_can_lock_request_without_changing_result(self) -> None:
+        """Protect the rule that request locks freeze records without status changes."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.post(
+            "/admin/requests/1/lock",
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Request record locked for review.", page)
+        self.assertIn("Locked", page)
+        self.assertEqual("accepted", self._get_request_status(1))
+
+    def test_admin_request_rule_locked_request_cannot_be_completed(self) -> None:
+        """Protect the rule that locked request records cannot keep changing."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        self.client.post("/admin/requests/1/lock")
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.post(
+            "/requests/1/complete",
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("This request is locked and cannot be changed.", page)
+        self.assertEqual("accepted", self._get_request_status(1))
 
     def test_admin_completed_request_records_page_lists_only_completed_activity(self) -> None:
         """Protect the rule that administrators can monitor completed transactions."""
@@ -182,6 +225,7 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("Completed Transactions", page)
         self.assertIn("Sold Bike", page)
         self.assertIn("Completed", page)
+
     def test_homepage_rule_uses_recent_category_interest(self) -> None:
         """Protect the rule that recent browsing improves homepage recommendations."""
 
@@ -266,6 +310,17 @@ class SmokeTestCase(unittest.TestCase):
             session["user_id"] = user_id
             session["role"] = role
             session["display_name"] = display_name
+
+    def _get_request_status(self, request_id: int) -> str:
+        """Return a request status directly from the isolated test database."""
+
+        connection = sqlite3.connect(self.database_path)
+        request = connection.execute(
+            "SELECT status FROM requests WHERE id = ?",
+            (request_id,),
+        ).fetchone()
+        connection.close()
+        return request[0]
 
     def _initialize_database(self) -> None:
         """Create the schema and seed the smallest useful demo dataset."""
@@ -419,9 +474,9 @@ class SmokeTestCase(unittest.TestCase):
                     1,
                     1,
                     3,
-                    "pending",
+                    "accepted",
                     0,
-                    "Interested in the camera",
+                    "Please hold this for review.",
                     "2026-06-07T10:00:00",
                     "2026-06-07T10:00:00",
                 ),
@@ -436,34 +491,18 @@ class SmokeTestCase(unittest.TestCase):
                     "2026-06-08T10:00:00",
                     "2026-06-08T10:00:00",
                 ),
+                (
+                    3,
+                    1,
+                    1,
+                    3,
+                    "pending",
+                    0,
+                    "Interested in the camera",
+                    "2026-06-09T10:00:00",
+                    "2026-06-09T10:00:00",
+                ),
             ],
-        )
-        connection.execute(
-            """
-            INSERT INTO requests (
-                id,
-                listing_id,
-                buyer_id,
-                seller_id,
-                status,
-                is_locked,
-                message,
-                created_at,
-                updated_at
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                1,
-                2,
-                1,
-                3,
-                "completed",
-                0,
-                "Completed purchase",
-                "2026-06-07T10:00:00",
-                "2026-06-07T10:00:00",
-            ),
         )
         connection.commit()
         connection.close()
