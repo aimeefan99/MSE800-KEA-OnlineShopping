@@ -90,6 +90,7 @@ def request_history() -> str:
         "request_history.html",
         outgoing_requests=request_views["outgoing_requests"],
         incoming_requests=request_views["incoming_requests"],
+        summary=request_views["summary"],
     )
 
 

@@ -169,6 +169,19 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("Available Camera", page)
         self.assertNotIn("Sold Bike", page)
 
+    def test_request_history_rule_tracks_user_activity(self) -> None:
+        """Protect the rule that users can track request and transaction activity."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.get("/requests/history")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Sent Requests", page)
+        self.assertIn("Incoming Requests", page)
+        self.assertIn("Completed Transactions", page)
+        self.assertIn("Sold Bike", page)
+        self.assertIn("Completed", page)
     def test_homepage_rule_uses_recent_category_interest(self) -> None:
         """Protect the rule that recent browsing improves homepage recommendations."""
 
@@ -424,6 +437,33 @@ class SmokeTestCase(unittest.TestCase):
                     "2026-06-08T10:00:00",
                 ),
             ],
+        )
+        connection.execute(
+            """
+            INSERT INTO requests (
+                id,
+                listing_id,
+                buyer_id,
+                seller_id,
+                status,
+                is_locked,
+                message,
+                created_at,
+                updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                1,
+                2,
+                1,
+                3,
+                "completed",
+                0,
+                "Completed purchase",
+                "2026-06-07T10:00:00",
+                "2026-06-07T10:00:00",
+            ),
         )
         connection.commit()
         connection.close()
