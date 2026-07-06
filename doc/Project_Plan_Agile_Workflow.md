@@ -338,6 +338,8 @@ Deployment / DevOps Tasks:
 
 Detailed User Stories:
 
+- `Priority: Medium | Should Have` As a project team, we want to document how Māori principles and Māori Data Sovereignty are considered in our project so that our cultural, ethical, and data-handling decisions are clearly explained.
+
 - Core user stories are reviewed, prioritised, and translated into backlog items for implementation.
 - This sprint makes sure the following development work is based on clear user needs, agreed scope boundaries, and a shared system structure.
 
@@ -624,6 +626,7 @@ Detailed User Stories:
 - `Priority: Low | Could Have` As an administrator, I want to lock a request record when necessary so that a problematic case can be frozen for review without manually changing its result.
 - `Priority: Medium | Should Have` As a user, I want the main platform pages to be easier to use so that buying, selling, and browsing feel smoother.
 - `Priority: Medium | Should Have` As a user, I want homepage recommendations to be improved after testing so that the feature quality feels more useful in practice.
+- `Priority: Low | Could Have` As a visitor, I want to see bilingual interface labels so that the platform feels more inclusive and culturally aware.
 
 Expected Output:
 

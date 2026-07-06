@@ -35,9 +35,9 @@ def create_app() -> Flask:
     def home() -> str:
         """Render the homepage."""
 
-        recent_category_id = session.get("recent_interest_category_id")
         recommendations = recommendation_service.get_homepage_recommendations(
-            recent_category_id
+            session.get("recent_interest_category_ids", []),
+            session.get("user_id"),
         )
         recommendations["listings"] = attach_listing_image_sources(
             recommendations["listings"]

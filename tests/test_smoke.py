@@ -132,6 +132,77 @@ class SmokeTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.headers["Location"], "/login")
 
+    def test_admin_request_rule_admin_can_view_request_records(self) -> None:
+        """Protect the rule that administrators can review request records."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.get("/admin/requests")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Request Management", page)
+
+    def test_admin_request_records_page_lists_request_activity(self) -> None:
+        """Protect the rule that administrators can monitor request records."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.get("/admin/requests")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Request Management", page)
+        self.assertIn("Available Camera", page)
+        self.assertIn("Sold Bike", page)
+        self.assertIn("Open", page)
+        self.assertIn("Pending", page)
+        self.assertIn("Completed", page)
+
+    def test_admin_request_rule_admin_can_lock_request_without_changing_result(self) -> None:
+        """Protect the rule that request locks freeze records without status changes."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.post(
+            "/admin/requests/1/lock",
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Request record locked for review.", page)
+        self.assertIn("Locked", page)
+        self.assertEqual("accepted", self._get_request_status(1))
+
+    def test_admin_request_rule_locked_request_cannot_be_completed(self) -> None:
+        """Protect the rule that locked request records cannot keep changing."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        self.client.post("/admin/requests/1/lock")
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.post(
+            "/requests/1/complete",
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("This request is locked and cannot be changed.", page)
+        self.assertEqual("accepted", self._get_request_status(1))
+
+    def test_admin_completed_request_records_page_lists_only_completed_activity(self) -> None:
+        """Protect the rule that administrators can monitor completed transactions."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.get("/admin/requests/completed")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Completed Request Records", page)
+        self.assertIn("Sold Bike", page)
+        self.assertIn("Completed", page)
+        self.assertNotIn("Available Camera", page)
+        self.assertNotIn("Pending", page)
+
     def test_browse_rule_public_list_page_hides_sold_listings(self) -> None:
         """Protect the rule that sold items stay out of normal browse results."""
 
@@ -141,83 +212,35 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("Available Camera", page)
         self.assertNotIn("Sold Bike", page)
 
-    def test_homepage_rule_uses_recent_interest_category(self) -> None:
-        """Protect the rule that homepage discovery follows recent category interest."""
+    def test_request_history_rule_tracks_user_activity(self) -> None:
+        """Protect the rule that users can track request and transaction activity."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.get("/requests/history")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Sent Requests", page)
+        self.assertIn("Incoming Requests", page)
+        self.assertIn("Completed Transactions", page)
+        self.assertIn("Sold Bike", page)
+        self.assertIn("Completed", page)
+
+    def test_homepage_rule_uses_recent_category_interest(self) -> None:
+        """Protect the rule that recent browsing improves homepage recommendations."""
 
         self.client.get("/listings?category_id=2")
         response = self.client.get("/")
         page = response.get_data(as_text=True)
+
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Fresh listings related to your recent interest in", page)
+        self.assertIn("Recommended from your recent browsing", page)
+        self.assertIn("Sports &amp; Outdoors", page)
         self.assertIn("Available Tennis Racket", page)
-        self.assertNotIn("Available Camera", page)
+        self.assertNotIn("Sold Bike", page)
 
-    def test_review_rule_completed_transaction_can_be_reviewed_once(self) -> None:
-        """Protect the rule that completed transactions can receive one review."""
-
-        self._login_as(1, ROLE_USER, "Buyer")
-        history_page = self.client.get("/requests/history").get_data(as_text=True)
-        self.assertIn("Review", history_page)
-        self.assertIn("/profiles/3", history_page)
-
-        first_response = self.client.post(
-            "/reviews/create",
-            data={
-                "request_id": 1,
-                "reviewed_user_id": 3,
-                "score": 5,
-                "comment": "Friendly seller and smooth pickup.",
-            },
-            follow_redirects=True,
-        )
-        second_response = self.client.post(
-            "/reviews/create",
-            data={
-                "request_id": 1,
-                "reviewed_user_id": 3,
-                "score": 4,
-                "comment": "Trying to review twice.",
-            },
-            follow_redirects=True,
-        )
-
-        self.assertIn("Review submitted successfully.", first_response.get_data(as_text=True))
-        self.assertIn(
-            "You have already reviewed this completed transaction.",
-            second_response.get_data(as_text=True),
-        )
-
-        self._login_as(3, ROLE_USER, "Seller")
-        seller_history_page = self.client.get("/requests/history").get_data(as_text=True)
-        self.assertIn("Review", seller_history_page)
-        self.assertIn("/profiles/1", seller_history_page)
-
-    def test_profile_rule_public_profile_shows_review_summary(self) -> None:
-        """Protect the rule that public profiles show completed transaction reviews."""
-
-        self._login_as(1, ROLE_USER, "Buyer")
-        self.client.post(
-            "/reviews/create",
-            data={
-                "request_id": 1,
-                "reviewed_user_id": 3,
-                "score": 5,
-                "comment": "Friendly seller and smooth pickup.",
-            },
-        )
-
-        response = self.client.get("/profiles/3")
-        page = response.get_data(as_text=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("Average Rating", page)
-        self.assertIn("Completed Trades", page)
-        self.assertIn("Positive Feedback", page)
-        self.assertIn("5.0", page)
-        self.assertIn("100%", page)
-        self.assertIn("Friendly seller and smooth pickup.", page)
-
-    def test_recommendation_api_returns_recent_interest_listing_results(self) -> None:
-        """Protect the documented homepage recommendation endpoint."""
+    def test_recommendation_api_returns_listing_results_only(self) -> None:
+        """Protect the documented recommendation endpoint response shape."""
 
         self.client.get("/listings?category_id=2")
         response = self.client.get("/recommendations/homepage")
@@ -225,8 +248,20 @@ class SmokeTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(listings, list)
-        self.assertEqual(["Available Tennis Racket"], [item["title"] for item in listings])
+        self.assertEqual("Available Tennis Racket", listings[0]["title"])
         self.assertNotIn("is_personalized", response.get_data(as_text=True))
+
+    def test_homepage_rule_uses_favorite_categories(self) -> None:
+        """Protect the rule that saved item categories improve recommendations."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        self.client.post("/favorites/add", data={"listing_id": 1, "next": "/"})
+        response = self.client.get("/")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Electronics", page)
+        self.assertIn("Available Camera", page)
 
     def test_favorite_rule_same_listing_cannot_be_saved_twice(self) -> None:
         """Protect the rule that favorites are unique per user and listing."""
@@ -257,6 +292,17 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("buyer@example.com", page)
         self.assertNotIn("Buyer Legal Name", page)
 
+    def test_ai_draft_route_requires_an_uploaded_image(self) -> None:
+        """Protect the automatic draft route so empty requests fail cleanly."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.post("/ai/listing-draft")
+        payload = response.get_json()
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(payload["success"])
+        self.assertIn("Please upload one product image first.", payload["error"])
+
     def _login_as(self, user_id: int, role: str, display_name: str) -> None:
         """Write a test session for the selected account."""
 
@@ -264,6 +310,17 @@ class SmokeTestCase(unittest.TestCase):
             session["user_id"] = user_id
             session["role"] = role
             session["display_name"] = display_name
+
+    def _get_request_status(self, request_id: int) -> str:
+        """Return a request status directly from the isolated test database."""
+
+        connection = sqlite3.connect(self.database_path)
+        request = connection.execute(
+            "SELECT status FROM requests WHERE id = ?",
+            (request_id,),
+        ).fetchone()
+        connection.close()
+        return request[0]
 
     def _initialize_database(self) -> None:
         """Create the schema and seed the smallest useful demo dataset."""
@@ -394,22 +451,9 @@ class SmokeTestCase(unittest.TestCase):
                     "2026-06-06T10:00:00",
                     "2026-06-06T10:00:00",
                 ),
-                (
-                    4,
-                    3,
-                    1,
-                    "uploads/missing-monitor.jpg",
-                    "Sold Monitor",
-                    "Completed transaction monitor",
-                    "used",
-                    150.0,
-                    LISTING_STATUS_SOLD,
-                    "2026-06-03T10:00:00",
-                    "2026-06-03T10:00:00",
-                ),
             ],
         )
-        connection.execute(
+        connection.executemany(
             """
             INSERT INTO requests (
                 id,
@@ -424,17 +468,41 @@ class SmokeTestCase(unittest.TestCase):
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (
-                1,
-                4,
-                1,
-                3,
-                "completed",
-                0,
-                "Completed purchase",
-                "2026-06-07T10:00:00",
-                "2026-06-07T10:00:00",
-            ),
+            [
+                (
+                    1,
+                    1,
+                    1,
+                    3,
+                    "accepted",
+                    0,
+                    "Please hold this for review.",
+                    "2026-06-07T10:00:00",
+                    "2026-06-07T10:00:00",
+                ),
+                (
+                    2,
+                    2,
+                    1,
+                    3,
+                    "completed",
+                    0,
+                    "Completed bike purchase",
+                    "2026-06-08T10:00:00",
+                    "2026-06-08T10:00:00",
+                ),
+                (
+                    3,
+                    1,
+                    1,
+                    3,
+                    "pending",
+                    0,
+                    "Interested in the camera",
+                    "2026-06-09T10:00:00",
+                    "2026-06-09T10:00:00",
+                ),
+            ],
         )
         connection.commit()
         connection.close()

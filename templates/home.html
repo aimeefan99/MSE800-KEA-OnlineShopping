@@ -8,8 +8,7 @@
             <h1 class="mb-2">Discover Items</h1>
             {% if recommendations.is_personalized %}
                 <p class="text-muted mb-0">
-                    Fresh listings related to your recent interest in
-                    {{ recommendations.interest_category.name }}.
+                    Recommended from your recent browsing and saved item categories.
                 </p>
             {% else %}
                 <p class="text-muted mb-0">
@@ -22,6 +21,16 @@
         </a>
     </div>
 </section>
+
+{% if recommendations.interest_categories %}
+    <section class="mb-4">
+        <div class="d-flex flex-wrap gap-2">
+            {% for category_name in recommendations.interest_categories %}
+                <span class="badge text-bg-light border">{{ category_name }}</span>
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}
 
 {% if recommendations.listings %}
     <div class="row g-4">

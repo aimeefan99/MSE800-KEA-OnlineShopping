@@ -183,6 +183,42 @@ class TransactionService(BaseService):
                 self._serialize_incoming_request(request, user_id)
                 for request in incoming_requests
             ],
+            "summary": self._get_request_history_summary(user_id),
+        }
+
+    @staticmethod
+    def _get_request_history_summary(user_id: int) -> Dict[str, int]:
+        """Return request and completed transaction counts for the activity hub."""
+
+        db = get_db()
+        summary = db.execute(
+            """
+            SELECT
+                COUNT(CASE WHEN buyer_id = ? THEN 1 END) AS sent_request_count,
+                COUNT(CASE WHEN seller_id = ? THEN 1 END) AS incoming_request_count,
+                COUNT(
+                    CASE
+                        WHEN status = ? AND (buyer_id = ? OR seller_id = ?)
+                        THEN 1
+                    END
+                ) AS completed_transaction_count
+            FROM requests
+            WHERE buyer_id = ? OR seller_id = ?
+            """,
+            (
+                user_id,
+                user_id,
+                REQUEST_STATUS_COMPLETED,
+                user_id,
+                user_id,
+                user_id,
+                user_id,
+            ),
+        ).fetchone()
+        return {
+            "sent_request_count": int(summary["sent_request_count"]),
+            "incoming_request_count": int(summary["incoming_request_count"]),
+            "completed_transaction_count": int(summary["completed_transaction_count"]),
         }
 
     def accept_request(self, seller_id: int, request_id: int) -> Tuple[bool, str]:
