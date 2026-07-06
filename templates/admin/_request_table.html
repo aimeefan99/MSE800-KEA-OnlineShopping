@@ -1,0 +1,81 @@
+{% if requests %}
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Listing</th>
+                        <th scope="col">Buyer</th>
+                        <th scope="col">Seller</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Review Lock</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for purchase_request in requests %}
+                        <tr>
+                            <td>{{ purchase_request.id }}</td>
+                            <td>
+                                <a
+                                    class="text-decoration-none"
+                                    href="{{
+                                        url_for(
+                                            'listings.view_listing_detail',
+                                            listing_id=purchase_request.listing_id
+                                        )
+                                    }}"
+                                >
+                                    {{ purchase_request.listing_title }}
+                                </a>
+                            </td>
+                            <td>
+                                <a
+                                    class="text-decoration-none"
+                                    href="{{
+                                        url_for(
+                                            'profiles.view_public_profile',
+                                            user_id=purchase_request.buyer_id
+                                        )
+                                    }}"
+                                >
+                                    {{ purchase_request.buyer_name }}
+                                </a>
+                            </td>
+                            <td>
+                                <a
+                                    class="text-decoration-none"
+                                    href="{{
+                                        url_for(
+                                            'profiles.view_public_profile',
+                                            user_id=purchase_request.seller_id
+                                        )
+                                    }}"
+                                >
+                                    {{ purchase_request.seller_name }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge text-bg-light border">
+                                    {{ purchase_request.status_label }}
+                                </span>
+                            </td>
+                            <td>{{ purchase_request.lock_status_label }}</td>
+                            <td>${{ purchase_request.listing_price_label }}</td>
+                            <td>{{ purchase_request.updated_at_label }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4 text-center">
+            <h2 class="h4 mb-2">{{ empty_title }}</h2>
+            <p class="text-muted mb-0">{{ empty_message }}</p>
+        </div>
+    </div>
+{% endif %}

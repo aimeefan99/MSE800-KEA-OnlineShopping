@@ -46,7 +46,10 @@ def view_requests() -> str:
 def view_completed_requests() -> str:
     """Render the administrator completed request page."""
 
-    return render_template("admin/completed_requests.html")
+    return render_template(
+        "admin/completed_requests.html",
+        requests=admin_service.get_admin_completed_requests(),
+    )
 
 
 @admin_bp.post("/admin/listings/<int:listing_id>/delete")

@@ -74,6 +74,7 @@ Each sprint is expected to deliver a testable and reviewable increment so the sy
 | FR-33 | Could Have | Secondary Administrative and Usability Enhancements | As a user, I want to view my request or transaction history so that I can track my activity on the platform. |
 | FR-34 | Could Have | Secondary Administrative and Usability Enhancements | As a user, I want to view another user's profile so that I can understand credibility before responding to a request. |
 | FR-35 | Could Have | Secondary Administrative and Usability Enhancements | As a user, I want to set my preferred contact method to email or phone so that other users know the best way to contact me. |
+| FR-36 | Could Have | Secondary Administrative and Usability Enhancements | As a visitor, I want to see bilingual interface labels so that the platform feels more inclusive and culturally aware. |
 
 ## Non-Functional Requirements
 

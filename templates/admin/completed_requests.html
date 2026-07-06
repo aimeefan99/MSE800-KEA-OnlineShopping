@@ -1,8 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section>
-  <h1>Admin Completed Requests</h1>
-  <p>Administrator completed request record page placeholder.</p>
+<section class="mb-4">
+    <p class="text-uppercase small text-muted mb-1">Administrator</p>
+    <h1 class="mb-2">Completed Request Records</h1>
+    <p class="text-muted mb-0">
+        Monitor completed requests that represent finished platform transactions.
+    </p>
 </section>
+
+{% set active_section = 'completed_requests' %}
+{% include "admin/_management_nav.html" %}
+
+{% set empty_title = "No completed request records found" %}
+{% set empty_message = "Completed buyer-seller requests will appear here." %}
+{% include "admin/_request_table.html" %}
 {% endblock %}

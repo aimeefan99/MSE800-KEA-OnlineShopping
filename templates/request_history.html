@@ -10,6 +10,29 @@
 </section>
 
 <section class="mb-5">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="rounded-4 bg-light p-3 h-100">
+                <span class="text-muted d-block mb-1">Sent Requests</span>
+                <strong>{{ summary.sent_request_count }}</strong>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rounded-4 bg-light p-3 h-100">
+                <span class="text-muted d-block mb-1">Incoming Requests</span>
+                <strong>{{ summary.incoming_request_count }}</strong>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rounded-4 bg-light p-3 h-100">
+                <span class="text-muted d-block mb-1">Completed Transactions</span>
+                <strong>{{ summary.completed_transaction_count }}</strong>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-5">
     <div class="d-flex justify-content-between align-items-end gap-3 mb-3">
         <div>
             <h2 class="h4 mb-1">Sent Requests</h2>

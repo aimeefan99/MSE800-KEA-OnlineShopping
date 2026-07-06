@@ -67,7 +67,7 @@ Fields:
 - `image_url` - single listing image path or URL in the first version
 - `title` - listing title
 - `description` - listing description
-- `condition` - `new`, `like new`, `good`, or `fair`
+- `condition` - `new` or `used`
 - `price` - listing price
 - `status` - `available`, `pending`, or `sold`
 - `created_at` - creation timestamp
