@@ -28,12 +28,11 @@ The project follows an **Agile software development methodology** and applies ob
 
 ### AI One-Click Listing Assistant
 
-Generates a draft product listing from a single uploaded product image using the OpenAI API. The generated draft includes:
+Generates a draft product listing from a single uploaded product image using the Gemini API. The generated draft includes:
 
 - Product title
 - Category
 - Description
-- Suggested price
 
 The user can review and edit the generated information before publishing the listing.
 
@@ -56,7 +55,7 @@ Instead of showing the same fixed homepage content to every user, the platform p
 - Backend: Python, Flask
 - Frontend: HTML, CSS, Bootstrap
 - Database: SQLite
-- AI Integration: OpenAI API
+- AI Integration: Gemini API
 - Containerization and Deployment: Docker, Kubernetes
 - Version Control: GitHub
 - Project Management: Jira
@@ -116,6 +115,12 @@ project-root/
 pip install -r requirements.txt
 ```
 
+Set the Gemini API key before using automatic AI listing drafts:
+
+```bash
+export GEMINI_API_KEY="your_api_key_here"
+```
+
 ### 2. Initialise the Database
 
 ```bash
@@ -131,7 +136,7 @@ python3 app.py
 The development server runs at:
 
 ```
-http://127.0.0.1:5000
+http://127.0.0.1:5001
 ```
 
 ### 4. Run Code Quality Check
