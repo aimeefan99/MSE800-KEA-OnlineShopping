@@ -136,6 +136,7 @@ def edit_listing_page(listing_id: int) -> str:
     return render_template(
         "edit_listing.html",
         listing=item,
+        listing_image_src=resolve_listing_image_url(item["image_url"]),
         categories=listing_service.get_category_options(),
         condition_options=listing_service.get_condition_options(),
         status_options=listing_service.get_status_options(),
@@ -168,6 +169,7 @@ def handle_edit_listing(listing_id: int) -> str:
         condition,
         price,
         status,
+        request.files.get("image"),
     )
     
     if success:

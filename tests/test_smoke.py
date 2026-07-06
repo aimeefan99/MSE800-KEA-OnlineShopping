@@ -15,6 +15,7 @@ import sqlite3
 import sys
 import tempfile
 import unittest
+from io import BytesIO
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -66,7 +67,14 @@ class SmokeTestCase(unittest.TestCase):
         """Protect the rule that admin accounts do not participate in trading flows."""
 
         self._login_as(2, ROLE_ADMIN, "Admin")
-        for path in ["/profile/edit", "/favorites", "/listings/create", "/requests/history"]:
+        for path in [
+            "/account",
+            "/account/listings",
+            "/profile/edit",
+            "/favorites",
+            "/listings/create",
+            "/requests/history",
+        ]:
             response = self.client.get(path, follow_redirects=False)
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.headers["Location"], "/")
@@ -226,6 +234,79 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("Sold Bike", page)
         self.assertIn("Completed", page)
 
+    def test_account_rule_marketplace_user_can_open_account_page(self) -> None:
+        """Protect the rule that marketplace users can reach the account area."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.get("/account")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Account", page)
+        self.assertIn("Profile", page)
+        self.assertIn("My Listings", page)
+        self.assertIn("Save Changes", page)
+
+    def test_account_rule_my_listings_page_shows_only_owned_items(self) -> None:
+        """Protect the rule that users only manage listings they created."""
+
+        self._login_as(3, ROLE_USER, "Seller")
+        response = self.client.get("/account/listings")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("My Listings", page)
+        self.assertIn("Available Camera", page)
+        self.assertIn("Sold Bike", page)
+        self.assertIn("Available Tennis Racket", page)
+        self.assertIn("Delete", page)
+        self.assertIn("Open the listing detail page to review or edit this item.", page)
+
+    def test_account_rule_buyer_sees_empty_state_when_no_owned_listings_exist(self) -> None:
+        """Protect the empty-state path for marketplace users without listings."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.get("/account/listings")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("No listings created yet", page)
+        self.assertNotIn("Available Camera", page)
+
+    def test_listing_rule_owner_can_replace_listing_image(self) -> None:
+        """Protect the rule that sellers can upload a new image when editing a listing."""
+
+        self._login_as(3, ROLE_USER, "Seller")
+        original_image_url = self._get_listing_image_url(1)
+        response = self.client.post(
+            "/listings/1/edit",
+            data={
+                "title": "Available Camera",
+                "category_id": "1",
+                "price": "1000.00",
+                "condition": "used",
+                "status": "available",
+                "description": "Good camera listing",
+                "image": (BytesIO(b"replacement-image"), "camera-updated.jpg"),
+            },
+            content_type="multipart/form-data",
+            follow_redirects=False,
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertNotEqual(original_image_url, self._get_listing_image_url(1))
+
+    def test_listing_rule_owner_detail_page_hides_favorite_action(self) -> None:
+        """Protect the rule that sellers do not favorite their own listings."""
+
+        self._login_as(3, ROLE_USER, "Seller")
+        response = self.client.get("/listings/1")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Back to My Listings", page)
+        self.assertNotIn("Add to Favorites", page)
+
     def test_homepage_rule_uses_recent_category_interest(self) -> None:
         """Protect the rule that recent browsing improves homepage recommendations."""
 
@@ -321,6 +402,17 @@ class SmokeTestCase(unittest.TestCase):
         ).fetchone()
         connection.close()
         return request[0]
+
+    def _get_listing_image_url(self, listing_id: int) -> str:
+        """Return a listing image path directly from the isolated test database."""
+
+        connection = sqlite3.connect(self.database_path)
+        listing = connection.execute(
+            "SELECT image_url FROM listings WHERE id = ?",
+            (listing_id,),
+        ).fetchone()
+        connection.close()
+        return listing[0]
 
     def _initialize_database(self) -> None:
         """Create the schema and seed the smallest useful demo dataset."""
