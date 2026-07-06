@@ -25,7 +25,10 @@
                 </a>
                 {% if session.get("user_id") %}
                     {% if session.get("role") == "admin" %}
-                        <a class="nav-link" href="/admin/listings">Management</a>
+                        <a class="nav-link nav-link-bilingual" href="/admin/listings">
+                            <span class="nav-link-primary">Management</span>
+                            <span class="nav-link-secondary">Whakahaere</span>
+                        </a>
                     {% else %}
                         <a class="nav-link nav-link-bilingual" href="/listings/create">
                             <span class="nav-link-primary">Create Listing</span>
@@ -39,9 +42,9 @@
                             <span class="nav-link-primary">Requests</span>
                             <span class="nav-link-secondary">Tono</span>
                         </a>
-                        <a class="nav-link nav-link-bilingual" href="/profile/edit">
-                            <span class="nav-link-primary">Profile</span>
-                            <span class="nav-link-secondary">Kōtaha</span>
+                        <a class="nav-link nav-link-bilingual" href="/account">
+                            <span class="nav-link-primary">Account</span>
+                            <span class="nav-link-secondary">Pūkete</span>
                         </a>
                     {% endif %}
                     <form action="{{ url_for('auth.logout') }}" method="post" class="d-inline">

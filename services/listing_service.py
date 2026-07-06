@@ -38,18 +38,6 @@ LEGACY_CONDITION_MAP = {
     "good": "used",
     "fair": "used",
 }
-UPDATE_LISTING_SQL = """
-UPDATE listings
-SET
-    category_id = ?,
-    title = ?,
-    description = ?,
-    condition = ?,
-    price = ?,
-    status = ?,
-    updated_at = ?
-WHERE id = ?
-"""
 LISTING_DETAIL_SQL = """
 SELECT
     listings.id,
@@ -91,6 +79,33 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
 class ListingService(BaseService):
     """Handle listing-related business logic."""
+
+    def get_user_listings(self, user_id: int) -> List[Dict[str, Any]]:
+        """Return all listings created by one marketplace user."""
+
+        listings = get_db().execute(
+            """
+            SELECT
+                listings.id,
+                listings.seller_id,
+                listings.title,
+                listings.description,
+                listings.condition,
+                listings.price,
+                listings.image_url,
+                listings.status,
+                listings.created_at,
+                categories.name AS category_name,
+                users.display_name AS seller_name
+            FROM listings
+            INNER JOIN categories ON categories.id = listings.category_id
+            INNER JOIN users ON users.id = listings.seller_id
+            WHERE listings.seller_id = ?
+            ORDER BY listings.created_at DESC, listings.id DESC
+            """,
+            (user_id,),
+        ).fetchall()
+        return [self._serialize_listing_row(listing) for listing in listings]
 
     def get_category_options(self) -> List[Dict[str, Any]]:
         """Get available category options for listing forms."""
@@ -146,9 +161,16 @@ class ListingService(BaseService):
         condition: str,
         price: float,
         status: str,
+        image_file: Optional[FileStorage] = None,
     ) -> bool:
         """Update an item's details, but only if the user making the request is the owner!"""
-        if status not in STATUS_OPTIONS:
+        if status not in STATUS_OPTIONS or condition not in CONDITION_OPTIONS:
+            return False
+
+        if price <= 0:
+            return False
+
+        if not self._category_exists(str(category_id)):
             return False
 
         db = get_db()
@@ -158,10 +180,27 @@ class ListingService(BaseService):
         if not item or item["seller_id"] != user_id:
             return False
 
+        image_url = item["image_url"]
+        # Keep the current photo unless the seller uploads a replacement image.
+        if image_file is not None and image_file.filename:
+            image_url = self._save_image_file(image_file)
+
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         db.execute(
-            UPDATE_LISTING_SQL,
-            (category_id, title, description, condition, price, status, now_str, listing_id)
+            """
+            UPDATE listings
+            SET
+                category_id = ?,
+                image_url = ?,
+                title = ?,
+                description = ?,
+                condition = ?,
+                price = ?,
+                status = ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (category_id, image_url, title, description, condition, price, status, now_str, listing_id)
         )
         db.commit()
         return True

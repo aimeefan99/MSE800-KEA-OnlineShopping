@@ -5,7 +5,31 @@
   <div class="col-md-8">
     <h2 class="mb-4">Edit Your Listing</h2>
     
-    <form action="{{ url_for('listings.handle_edit_listing', listing_id=listing.id) }}" method="POST">
+    <form
+      action="{{ url_for('listings.handle_edit_listing', listing_id=listing.id) }}"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-3">
+          <div class="row g-3 align-items-start">
+            <div class="col-md-7">
+              <label class="form-label d-block">Current Image</label>
+              <img
+                src="{{ listing_image_src }}"
+                alt="{{ listing.title }}"
+                class="img-fluid rounded border w-100"
+                style="max-height: 320px; object-fit: contain;"
+              >
+            </div>
+            <div class="col-md-5">
+              <label class="form-label" for="image">Replace Product Image</label>
+              <input class="form-control" id="image" name="image" type="file" accept="image/*">
+              <div class="form-text">Leave this empty if you want to keep the current image.</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="mb-3">
         <label class="form-label">Product Title</label>
         <input type="text" name="title" class="form-control" value="{{ listing.title }}" required>
