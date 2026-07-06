@@ -163,7 +163,10 @@ class TransactionService(BaseService):
 
         db = get_db()
         requests = db.execute(INCOMING_REQUESTS_SQL, (seller_id,)).fetchall()
-        return [self._serialize_incoming_request(request) for request in requests]
+        return [
+            self._serialize_incoming_request(request, seller_id)
+            for request in requests
+        ]
 
     def request_history(self, user_id: int) -> Dict[str, List[Dict[str, Any]]]:
         """Get the current user's sent and received request views for the request hub."""
@@ -173,10 +176,12 @@ class TransactionService(BaseService):
         incoming_requests = db.execute(INCOMING_REQUESTS_SQL, (user_id,)).fetchall()
         return {
             "outgoing_requests": [
-                self._serialize_outgoing_request(request) for request in outgoing_requests
+                self._serialize_outgoing_request(request, user_id)
+                for request in outgoing_requests
             ],
             "incoming_requests": [
-                self._serialize_incoming_request(request) for request in incoming_requests
+                self._serialize_incoming_request(request, user_id)
+                for request in incoming_requests
             ],
             "summary": self._get_request_history_summary(user_id),
         }
@@ -262,10 +267,52 @@ class TransactionService(BaseService):
         self._mark_request_completed(request_id, int(request["listing_id"]))
         return True, "Transaction completed successfully."
 
-    def create_review(self) -> None:
+    def create_review(
+        self,
+        reviewer_id: int,
+        request_id: Optional[int],
+        reviewed_user_id: Optional[int],
+        score: Optional[int],
+        comment: str = "",
+    ) -> Tuple[bool, str]:
         """Create a review."""
 
-        raise NotImplementedError
+        if request_id is None or reviewed_user_id is None or score is None:
+            return False, "Please complete all required review fields."
+
+        request = self._get_request_for_action(request_id)
+        if request is None:
+            return False, "Purchase request not found."
+
+        validation_error = self._validate_review_participants(
+            request,
+            reviewer_id,
+            reviewed_user_id,
+            score,
+        )
+        if validation_error is not None:
+            return False, validation_error
+
+        if self._review_exists(request_id, reviewer_id, reviewed_user_id):
+            return False, "You have already reviewed this completed transaction."
+
+        db = get_db()
+        db.execute(
+            """
+            INSERT INTO reviews (
+                request_id,
+                reviewer_id,
+                reviewed_user_id,
+                score,
+                comment,
+                created_at
+            )
+            VALUES (?, ?, ?, ?, ?, datetime('now'))
+            """,
+            (request_id, reviewer_id, reviewed_user_id, score, comment.strip() or None),
+        )
+        db.commit()
+        return True, "Review submitted successfully."
 
     def get_favorite_id(self, user_id: int, listing_id: int) -> Optional[int]:
         """Return the favorite record id when the listing is already saved by the user."""
@@ -481,7 +528,46 @@ class TransactionService(BaseService):
         return request is not None
 
     @staticmethod
-    def _serialize_incoming_request(row) -> Dict[str, Any]:
+    def _validate_review_participants(
+        request,
+        reviewer_id: int,
+        reviewed_user_id: int,
+        score: int,
+    ) -> Optional[str]:
+        """Check that a review is allowed for the completed transaction."""
+
+        if request["status"] != REQUEST_STATUS_COMPLETED:
+            return "Only completed transactions can be reviewed."
+
+        if score < 1 or score > 5:
+            return "Review score must be between 1 and 5."
+
+        buyer_id = int(request["buyer_id"])
+        seller_id = int(request["seller_id"])
+        if reviewer_id not in (buyer_id, seller_id):
+            return "You can only review transactions you participated in."
+
+        expected_reviewed_user_id = seller_id if reviewer_id == buyer_id else buyer_id
+        if reviewed_user_id != expected_reviewed_user_id:
+            return "You can only review the other user in this transaction."
+        return None
+
+    @staticmethod
+    def _review_exists(request_id: int, reviewer_id: int, reviewed_user_id: int) -> bool:
+        """Check whether this reviewer already reviewed the other party."""
+
+        db = get_db()
+        review = db.execute(
+            """
+            SELECT id
+            FROM reviews
+            WHERE request_id = ? AND reviewer_id = ? AND reviewed_user_id = ?
+            """,
+            (request_id, reviewer_id, reviewed_user_id),
+        ).fetchone()
+        return review is not None
+
+    def _serialize_incoming_request(self, row, current_user_id: int) -> Dict[str, Any]:
         """Convert an incoming request row to template-friendly values."""
 
         request = dict(row)
@@ -494,6 +580,12 @@ class TransactionService(BaseService):
         else:
             request["buyer_contact_method_label"] = "Email"
             request["buyer_contact_value"] = request["buyer_email"] or "Not provided"
+        self._attach_review_state(
+            request,
+            current_user_id,
+            int(request["buyer_id"]),
+            request["buyer_name"],
+        )
         return request
 
     @staticmethod
@@ -506,14 +598,40 @@ class TransactionService(BaseService):
         favorite["price_label"] = "{0:.2f}".format(favorite["price"])
         return favorite
 
-    @staticmethod
-    def _serialize_outgoing_request(row) -> Dict[str, Any]:
+    def _serialize_outgoing_request(self, row, current_user_id: int) -> Dict[str, Any]:
         """Convert a buyer request row to template-friendly values."""
 
         request = dict(row)
         request["listing_price_label"] = "{0:.2f}".format(request["listing_price"])
         request["status_label"] = request["status"].title()
         request["listing_status_label"] = request["listing_status"].title()
+        self._attach_review_state(
+            request,
+            current_user_id,
+            int(request["seller_id"]),
+            request["seller_name"],
+        )
         return request
+
+    def _attach_review_state(
+        self,
+        request: Dict[str, Any],
+        current_user_id: int,
+        reviewed_user_id: int,
+        reviewed_user_name: str,
+    ) -> None:
+        """Attach review form state for a request history card."""
+
+        request["reviewed_user_id"] = reviewed_user_id
+        request["reviewed_user_name"] = reviewed_user_name
+        request["has_reviewed"] = self._review_exists(
+            int(request["id"]),
+            current_user_id,
+            reviewed_user_id,
+        )
+        request["can_review"] = (
+            request["status"] == REQUEST_STATUS_COMPLETED
+            and not request["has_reviewed"]
+        )
 
 transaction_service = TransactionService()

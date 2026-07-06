@@ -129,4 +129,12 @@ def complete_request(request_id: int) -> str:
 def create_review() -> str:
     """Handle review submission."""
 
-    return "TODO: create review"
+    success, message = transaction_service.create_review(
+        session["user_id"],
+        request.form.get("request_id", type=int),
+        request.form.get("reviewed_user_id", type=int),
+        request.form.get("score", type=int),
+        request.form.get("comment", ""),
+    )
+    flash(message, "success" if success else "danger")
+    return redirect(url_for("transactions.request_history"))
