@@ -2,6 +2,38 @@ body {
     background-color: #f8f9fa;
 }
 
+.nav-link-bilingual {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.25;
+}
+
+.nav-link-primary {
+    font-weight: 600;
+    font-size: 1.12rem;
+}
+
+.nav-link-secondary {
+    font-size: 0.94rem;
+    color: #6c757d;
+}
+
+.bilingual-welcome {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.bilingual-welcome-primary {
+    font-weight: 500;
+}
+
+.bilingual-welcome-secondary {
+    font-size: 0.95rem;
+    color: #495057;
+}
+
 .listing-card {
     color: inherit;
     transition: transform 0.18s ease, box-shadow 0.18s ease;
