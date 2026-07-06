@@ -235,6 +235,17 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("buyer@example.com", page)
         self.assertNotIn("Buyer Legal Name", page)
 
+    def test_ai_draft_route_requires_an_uploaded_image(self) -> None:
+        """Protect the automatic draft route so empty requests fail cleanly."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.post("/ai/listing-draft")
+        payload = response.get_json()
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(payload["success"])
+        self.assertIn("Please upload one product image first.", payload["error"])
+
     def _login_as(self, user_id: int, role: str, display_name: str) -> None:
         """Write a test session for the selected account."""
 
