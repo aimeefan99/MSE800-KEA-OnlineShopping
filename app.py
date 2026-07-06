@@ -1,6 +1,6 @@
 """Application entry point for the second-hand trading platform."""
 
-from flask import Flask, render_template
+from flask import Flask, render_template, session
 
 from config import Config
 from models.db import close_db
@@ -11,6 +11,8 @@ from routes.listing_routes import listing_bp
 from routes.profile_routes import profile_bp
 from routes.recommendation_routes import recommendation_bp
 from routes.transaction_routes import transaction_bp
+from services.recommendation_service import recommendation_service
+from utils.listing_images import attach_listing_image_sources
 
 
 def create_app() -> Flask:
@@ -33,7 +35,14 @@ def create_app() -> Flask:
     def home() -> str:
         """Render the homepage."""
 
-        return render_template("home.html")
+        recommendations = recommendation_service.get_homepage_recommendations(
+            session.get("recent_interest_category_ids", []),
+            session.get("user_id"),
+        )
+        recommendations["listings"] = attach_listing_image_sources(
+            recommendations["listings"]
+        )
+        return render_template("home.html", recommendations=recommendations)
 
     return app
 

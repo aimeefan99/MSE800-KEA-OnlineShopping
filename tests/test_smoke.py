@@ -132,6 +132,34 @@ class SmokeTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.headers["Location"], "/login")
 
+    def test_admin_request_records_page_lists_request_activity(self) -> None:
+        """Protect the rule that administrators can monitor request records."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.get("/admin/requests")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Request Records", page)
+        self.assertIn("Available Camera", page)
+        self.assertIn("Sold Bike", page)
+        self.assertIn("Pending", page)
+        self.assertIn("Completed", page)
+
+    def test_admin_completed_request_records_page_lists_only_completed_activity(self) -> None:
+        """Protect the rule that administrators can monitor completed transactions."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.get("/admin/requests/completed")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Completed Request Records", page)
+        self.assertIn("Sold Bike", page)
+        self.assertIn("Completed", page)
+        self.assertNotIn("Available Camera", page)
+        self.assertNotIn("Pending", page)
+
     def test_browse_rule_public_list_page_hides_sold_listings(self) -> None:
         """Protect the rule that sold items stay out of normal browse results."""
 
@@ -154,6 +182,42 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("Completed Transactions", page)
         self.assertIn("Sold Bike", page)
         self.assertIn("Completed", page)
+    def test_homepage_rule_uses_recent_category_interest(self) -> None:
+        """Protect the rule that recent browsing improves homepage recommendations."""
+
+        self.client.get("/listings?category_id=2")
+        response = self.client.get("/")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Recommended from your recent browsing", page)
+        self.assertIn("Sports &amp; Outdoors", page)
+        self.assertIn("Available Tennis Racket", page)
+        self.assertNotIn("Sold Bike", page)
+
+    def test_recommendation_api_returns_listing_results_only(self) -> None:
+        """Protect the documented recommendation endpoint response shape."""
+
+        self.client.get("/listings?category_id=2")
+        response = self.client.get("/recommendations/homepage")
+        listings = response.get_json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(listings, list)
+        self.assertEqual("Available Tennis Racket", listings[0]["title"])
+        self.assertNotIn("is_personalized", response.get_data(as_text=True))
+
+    def test_homepage_rule_uses_favorite_categories(self) -> None:
+        """Protect the rule that saved item categories improve recommendations."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        self.client.post("/favorites/add", data={"listing_id": 1, "next": "/"})
+        response = self.client.get("/")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Electronics", page)
+        self.assertIn("Available Camera", page)
 
     def test_favorite_rule_same_listing_cannot_be_saved_twice(self) -> None:
         """Protect the rule that favorites are unique per user and listing."""
@@ -183,6 +247,17 @@ class SmokeTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("buyer@example.com", page)
         self.assertNotIn("Buyer Legal Name", page)
+
+    def test_ai_draft_route_requires_an_uploaded_image(self) -> None:
+        """Protect the automatic draft route so empty requests fail cleanly."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.post("/ai/listing-draft")
+        payload = response.get_json()
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(payload["success"])
+        self.assertIn("Please upload one product image first.", payload["error"])
 
     def _login_as(self, user_id: int, role: str, display_name: str) -> None:
         """Write a test session for the selected account."""
@@ -307,6 +382,59 @@ class SmokeTestCase(unittest.TestCase):
                     LISTING_STATUS_SOLD,
                     "2026-06-04T09:00:00",
                     "2026-06-04T09:00:00",
+                ),
+                (
+                    3,
+                    3,
+                    2,
+                    "uploads/missing-racket.jpg",
+                    "Available Tennis Racket",
+                    "Lightweight sports racket",
+                    "used",
+                    45.0,
+                    LISTING_STATUS_AVAILABLE,
+                    "2026-06-06T10:00:00",
+                    "2026-06-06T10:00:00",
+                ),
+            ],
+        )
+        connection.executemany(
+            """
+            INSERT INTO requests (
+                id,
+                listing_id,
+                buyer_id,
+                seller_id,
+                status,
+                is_locked,
+                message,
+                created_at,
+                updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    1,
+                    1,
+                    1,
+                    3,
+                    "pending",
+                    0,
+                    "Interested in the camera",
+                    "2026-06-07T10:00:00",
+                    "2026-06-07T10:00:00",
+                ),
+                (
+                    2,
+                    2,
+                    1,
+                    3,
+                    "completed",
+                    0,
+                    "Completed bike purchase",
+                    "2026-06-08T10:00:00",
+                    "2026-06-08T10:00:00",
                 ),
             ],
         )
