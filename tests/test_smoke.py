@@ -474,6 +474,33 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("buyer@example.com", page)
         self.assertNotIn("Buyer Legal Name", page)
 
+    def test_profile_rule_public_profile_shows_trust_indicators(self) -> None:
+        """Protect the rule that public profiles show reliability indicators."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        self.client.post(
+            "/reviews/create",
+            data={
+                "request_id": 2,
+                "reviewed_user_id": 3,
+                "score": 5,
+                "comment": "Smooth trade.",
+            },
+        )
+
+        response = self.client.get("/profiles/3")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Completed Trades", page)
+        self.assertIn("Average Rating", page)
+        self.assertIn("Positive Feedback", page)
+        self.assertIn("Reviews", page)
+        self.assertIn("1", page)
+        self.assertIn("5.0", page)
+        self.assertIn("100%", page)
+        self.assertIn("Smooth trade.", page)
+
     def test_ai_draft_route_requires_an_uploaded_image(self) -> None:
         """Protect the automatic draft route so empty requests fail cleanly."""
 
