@@ -180,6 +180,22 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("Locked", page)
         self.assertEqual("accepted", self._get_request_status(1))
 
+    def test_admin_request_rule_admin_can_unlock_request_record(self) -> None:
+        """Protect the rule that administrators can reopen locked request records."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        self.client.post("/admin/requests/1/lock")
+        response = self.client.post(
+            "/admin/requests/1/unlock",
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Request record unlocked.", page)
+        self.assertIn("Open", page)
+        self.assertEqual("accepted", self._get_request_status(1))
+
     def test_admin_request_rule_locked_request_cannot_be_completed(self) -> None:
         """Protect the rule that locked request records cannot keep changing."""
 
@@ -196,6 +212,79 @@ class SmokeTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("This request is locked and cannot be changed.", page)
         self.assertEqual("accepted", self._get_request_status(1))
+
+    def test_review_rule_completed_transaction_can_be_reviewed_once(self) -> None:
+        """Protect the rule that completed transactions can receive one review."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        first_response = self.client.post(
+            "/reviews/create",
+            data={
+                "request_id": 2,
+                "reviewed_user_id": 3,
+                "score": 5,
+                "comment": "Smooth trade.",
+            },
+            follow_redirects=True,
+        )
+        second_response = self.client.post(
+            "/reviews/create",
+            data={
+                "request_id": 2,
+                "reviewed_user_id": 3,
+                "score": 5,
+                "comment": "Smooth trade.",
+            },
+            follow_redirects=True,
+        )
+
+        self.assertIn("Review submitted successfully.", first_response.get_data(as_text=True))
+        self.assertIn(
+            "You have already reviewed this completed transaction.",
+            second_response.get_data(as_text=True),
+        )
+        self.assertEqual(1, self._get_review_count())
+
+    def test_review_rule_locked_completed_transaction_cannot_be_reviewed(self) -> None:
+        """Protect the rule that locked requests cannot receive new reviews."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        self.client.post("/admin/requests/2/lock")
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.post(
+            "/reviews/create",
+            data={
+                "request_id": 2,
+                "reviewed_user_id": 3,
+                "score": 5,
+                "comment": "Smooth trade.",
+            },
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertIn("This request is locked and cannot be reviewed.", page)
+        self.assertEqual(0, self._get_review_count())
+
+    def test_review_rule_non_completed_transaction_cannot_be_reviewed(self) -> None:
+        """Protect the rule that reviews are limited to completed transactions."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.post(
+            "/reviews/create",
+            data={
+                "request_id": 1,
+                "reviewed_user_id": 3,
+                "score": 5,
+                "comment": "Trying too early.",
+            },
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertIn("Only completed transactions can be reviewed.", page)
+        self.assertEqual(0, self._get_review_count())
 
     def test_admin_completed_request_records_page_lists_only_completed_activity(self) -> None:
         """Protect the rule that administrators can monitor completed transactions."""
@@ -235,16 +324,28 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("Completed", page)
 
     def test_account_rule_marketplace_user_can_open_account_page(self) -> None:
-        """Protect the rule that marketplace users can reach the account area."""
+        """Protect the rule that account opens the user's public profile first."""
 
         self._login_as(1, ROLE_USER, "Buyer")
         response = self.client.get("/account")
         page = response.get_data(as_text=True)
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Account", page)
-        self.assertIn("Profile", page)
+        self.assertIn("Public Profile", page)
+        self.assertIn("Buyer", page)
+        self.assertIn("Edit Profile", page)
         self.assertIn("My Listings", page)
+        self.assertNotIn("Save Changes", page)
+
+    def test_account_rule_edit_profile_page_keeps_form_separate(self) -> None:
+        """Protect the rule that profile edits stay behind the edit action."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.get("/profile/edit")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("My Profile", page)
         self.assertIn("Save Changes", page)
 
     def test_account_rule_my_listings_page_shows_only_owned_items(self) -> None:
@@ -402,6 +503,14 @@ class SmokeTestCase(unittest.TestCase):
         ).fetchone()
         connection.close()
         return request[0]
+
+    def _get_review_count(self) -> int:
+        """Return the number of reviews in the isolated test database."""
+
+        connection = sqlite3.connect(self.database_path)
+        review_count = connection.execute("SELECT COUNT(*) FROM reviews").fetchone()[0]
+        connection.close()
+        return review_count
 
     def _get_listing_image_url(self, listing_id: int) -> str:
         """Return a listing image path directly from the isolated test database."""

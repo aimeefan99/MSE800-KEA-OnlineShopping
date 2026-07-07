@@ -1,14 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% if is_own_profile %}
+    {% include "_account_nav.html" %}
+{% endif %}
+
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <section class="mb-4">
-            <p class="text-uppercase small text-muted mb-1">Public Profile</p>
-            <h1 class="mb-2">{{ profile.display_name }}</h1>
-            <p class="text-muted mb-0">
-                View basic seller information before making or accepting a request.
-            </p>
+        <section class="mb-4 d-flex flex-column flex-md-row gap-3 justify-content-between">
+            <div>
+                <p class="text-uppercase small text-muted mb-1">Public Profile</p>
+                <h1 class="mb-2">{{ profile.display_name }}</h1>
+                <p class="text-muted mb-0">
+                    View basic seller information before making or accepting a request.
+                </p>
+            </div>
+            {% if is_own_profile %}
+                <div class="flex-shrink-0">
+                    <a
+                        class="btn btn-primary"
+                        href="{{ url_for('profiles.edit_profile_page') }}"
+                    >
+                        Edit Profile
+                    </a>
+                </div>
+            {% endif %}
         </section>
 
         <div class="card border-0 shadow-sm">
@@ -54,7 +70,9 @@
 
                 <div class="mb-4">
                     <h2 class="h5">Public Contact Preference</h2>
-                    <p class="mb-1 text-body-secondary">{{ profile.preferred_contact_method_label }}</p>
+                    <p class="mb-1 text-body-secondary">
+                        {{ profile.preferred_contact_method_label }}
+                    </p>
                     <p class="mb-0"><strong>{{ profile.public_contact_value }}</strong></p>
                 </div>
 
@@ -70,7 +88,8 @@
                 <div>
                     <h2 class="h5">Reviews</h2>
                     <p class="text-body-secondary mb-3">
-                        {{ profile.review_count }} review{% if profile.review_count != 1 %}s{% endif %}
+                        {{ profile.review_count }}
+                        review{% if profile.review_count != 1 %}s{% endif %}
                         from completed transactions.
                     </p>
                     {% if profile.recent_reviews %}

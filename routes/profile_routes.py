@@ -17,21 +17,17 @@ def view_public_profile(user_id: int) -> str:
     profile_data = profile_service.get_public_profile(user_id)
     if profile_data is None:
         abort(404)
-    return render_template("profile.html", profile=profile_data)
+    return render_template(
+        "profile.html",
+        profile=profile_data,
+        is_own_profile=profile_data["id"] == session.get("user_id"),
+    )
 
 
 @profile_bp.get("/profile/edit")
 @marketplace_user_required
 def edit_profile_page() -> str:
-    """Keep the legacy profile edit route pointing to the account area."""
-
-    return redirect(url_for("profiles.account_page"))
-
-
-@profile_bp.get("/account")
-@marketplace_user_required
-def account_page() -> str:
-    """Render the account profile section."""
+    """Render the account profile edit form."""
 
     profile_data = profile_service.get_edit_profile_data(session["user_id"])
     if profile_data is None:
@@ -41,6 +37,24 @@ def account_page() -> str:
     return render_template(
         "edit_profile.html",
         form_data=profile_data,
+        active_account_section="profile",
+    )
+
+
+@profile_bp.get("/account")
+@marketplace_user_required
+def account_page() -> str:
+    """Render the current user's public profile first."""
+
+    profile_data = profile_service.get_public_profile(session["user_id"])
+    if profile_data is None:
+        flash("User not found.", "danger")
+        return redirect(url_for("home"))
+
+    return render_template(
+        "profile.html",
+        profile=profile_data,
+        is_own_profile=True,
         active_account_section="profile",
     )
 
@@ -64,7 +78,10 @@ def edit_profile() -> str:
     """Handle profile edit submission."""
 
     # Keep validation and persistence in the service layer.
-    success, error_message, form_data = profile_service.edit_profile(session["user_id"], request.form)
+    success, error_message, form_data = profile_service.edit_profile(
+        session["user_id"],
+        request.form,
+    )
     if not success:
         flash(error_message, "danger")
         return render_template(

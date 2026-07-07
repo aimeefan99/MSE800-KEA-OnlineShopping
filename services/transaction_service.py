@@ -21,6 +21,7 @@ SELECT
     requests.buyer_id,
     requests.seller_id,
     requests.status,
+    requests.is_locked,
     requests.message,
     requests.created_at,
     requests.updated_at,
@@ -44,6 +45,7 @@ SELECT
     requests.buyer_id,
     requests.seller_id,
     requests.status,
+    requests.is_locked,
     requests.message,
     requests.created_at,
     requests.updated_at,
@@ -539,6 +541,9 @@ class TransactionService(BaseService):
         if request["status"] != REQUEST_STATUS_COMPLETED:
             return "Only completed transactions can be reviewed."
 
+        if request["is_locked"]:
+            return "This request is locked and cannot be reviewed."
+
         if score < 1 or score > 5:
             return "Review score must be between 1 and 5."
 
@@ -631,6 +636,7 @@ class TransactionService(BaseService):
         )
         request["can_review"] = (
             request["status"] == REQUEST_STATUS_COMPLETED
+            and not request["is_locked"]
             and not request["has_reviewed"]
         )
 

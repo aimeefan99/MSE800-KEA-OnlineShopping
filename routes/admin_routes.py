@@ -78,3 +78,13 @@ def lock_request_record(request_id: int) -> str:
     success, message = admin_service.lock_request_record(request_id)
     flash(message, "success" if success else "danger")
     return redirect(url_for("admin.view_requests"))
+
+
+@admin_bp.post("/admin/requests/<int:request_id>/unlock")
+@admin_required
+def unlock_request_record(request_id: int) -> str:
+    """Handle administrator request unlock."""
+
+    success, message = admin_service.unlock_request_record(request_id)
+    flash(message, "success" if success else "danger")
+    return redirect(url_for("admin.view_requests"))

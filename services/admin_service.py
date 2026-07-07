@@ -132,6 +132,17 @@ class AdminService(BaseService):
     def lock_request_record(self, request_id: int) -> Tuple[bool, str]:
         """Lock a request record."""
 
+        return self._set_request_lock(request_id, True)
+
+    def unlock_request_record(self, request_id: int) -> Tuple[bool, str]:
+        """Unlock a request record."""
+
+        return self._set_request_lock(request_id, False)
+
+    @staticmethod
+    def _set_request_lock(request_id: int, should_lock: bool) -> Tuple[bool, str]:
+        """Update the review lock state for a request record."""
+
         db = get_db()
         request = db.execute(
             "SELECT id, is_locked FROM requests WHERE id = ?",
@@ -140,19 +151,25 @@ class AdminService(BaseService):
         if request is None:
             return False, "Request record not found."
 
-        if request["is_locked"]:
+        if should_lock and request["is_locked"]:
             return True, "Request record is already locked."
 
+        if not should_lock and not request["is_locked"]:
+            return True, "Request record is already open."
+
+        lock_value = 1 if should_lock else 0
         db.execute(
             """
             UPDATE requests
-            SET is_locked = 1, updated_at = datetime('now')
+            SET is_locked = ?, updated_at = datetime('now')
             WHERE id = ?
             """,
-            (request_id,),
+            (lock_value, request_id),
         )
         db.commit()
-        return True, "Request record locked for review."
+        if should_lock:
+            return True, "Request record locked for review."
+        return True, "Request record unlocked."
 
     def _get_admin_request_rows(
         self,
