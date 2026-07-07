@@ -88,6 +88,7 @@ class ListingService(BaseService):
             SELECT
                 listings.id,
                 listings.seller_id,
+                listings.category_id,
                 listings.title,
                 listings.description,
                 listings.condition,
@@ -200,7 +201,17 @@ class ListingService(BaseService):
                 updated_at = ?
             WHERE id = ?
             """,
-            (category_id, image_url, title, description, condition, price, status, now_str, listing_id)
+            (
+                category_id,
+                image_url,
+                title,
+                description,
+                condition,
+                price,
+                status,
+                now_str,
+                listing_id,
+            )
         )
         db.commit()
         return True
@@ -228,6 +239,7 @@ class ListingService(BaseService):
             SELECT
                 listings.id,
                 listings.seller_id,
+                listings.category_id,
                 listings.title,
                 listings.description,
                 listings.condition,

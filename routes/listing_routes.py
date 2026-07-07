@@ -36,10 +36,15 @@ def browse_listings() -> str:
         "min_price": request.args.get("min_price", "").strip(),
         "max_price": request.args.get("max_price", "").strip(),
     }
+    listings = listing_service.browse_listings(filters)
     if filters["category_id"].isdigit():
         _remember_interest_category(int(filters["category_id"]))
+    elif filters["keyword"]:
+        _remember_interest_categories(
+            int(listing["category_id"])
+            for listing in listings
+        )
 
-    listings = listing_service.browse_listings(filters)
     return render_template(
         "listings.html",
         listings=attach_listing_image_sources(listings),
@@ -196,12 +201,26 @@ def delete_listing(listing_id: int) -> str:
 def _remember_interest_category(category_id: int) -> None:
     """Remember recent category interests for homepage recommendations."""
 
+    _remember_interest_categories([category_id])
+
+
+def _remember_interest_categories(category_ids) -> None:
+    """Remember recent category interests from browsing or search results."""
+
     recent_category_ids = session.get("recent_interest_category_ids", [])
+    new_category_ids = []
+    for category_id in category_ids:
+        if category_id > 0 and category_id not in new_category_ids:
+            new_category_ids.append(category_id)
+
+    if not new_category_ids:
+        return
+
     recent_category_ids = [
         existing_category_id
         for existing_category_id in recent_category_ids
-        if existing_category_id != category_id
+        if existing_category_id not in new_category_ids
     ]
     session["recent_interest_category_ids"] = (
-        [category_id] + recent_category_ids
+        new_category_ids + recent_category_ids
     )[:RECENT_INTEREST_LIMIT]
