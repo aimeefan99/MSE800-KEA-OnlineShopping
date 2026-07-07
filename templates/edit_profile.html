@@ -68,13 +68,17 @@
                             <option value="">Select contact method</option>
                             <option
                                 value="email"
-                                {% if form_data.get('preferred_contact_method') == 'email' %}selected{% endif %}
+                                {% if form_data.get('preferred_contact_method') == 'email' %}
+                                    selected
+                                {% endif %}
                             >
                                 Email
                             </option>
                             <option
                                 value="phone"
-                                {% if form_data.get('preferred_contact_method') == 'phone' %}selected{% endif %}
+                                {% if form_data.get('preferred_contact_method') == 'phone' %}
+                                    selected
+                                {% endif %}
                             >
                                 Phone
                             </option>

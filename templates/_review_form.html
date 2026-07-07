@@ -1,0 +1,64 @@
+<hr>
+{% if purchase_request.has_review %}
+    <p class="mb-0 text-body-secondary">
+        You reviewed {{ purchase_request.reviewed_user_name }} for this transaction.
+    </p>
+{% else %}
+    <form
+        class="row g-3 align-items-end"
+        action="{{ url_for('transactions.create_review') }}"
+        method="post"
+    >
+        <input
+            type="hidden"
+            name="request_id"
+            value="{{ purchase_request.id }}"
+        >
+        <input
+            type="hidden"
+            name="reviewed_user_id"
+            value="{{ purchase_request.reviewed_user_id }}"
+        >
+        <div class="col-md-3">
+            <label
+                class="form-label"
+                for="{{ review_form_id_prefix }}_score_{{ purchase_request.id }}"
+            >
+                Rating
+            </label>
+            <select
+                class="form-select"
+                id="{{ review_form_id_prefix }}_score_{{ purchase_request.id }}"
+                name="score"
+                required
+            >
+                <option value="">Choose</option>
+                <option value="5">5</option>
+                <option value="4">4</option>
+                <option value="3">3</option>
+                <option value="2">2</option>
+                <option value="1">1</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label
+                class="form-label"
+                for="{{ review_form_id_prefix }}_comment_{{ purchase_request.id }}"
+            >
+                Review
+            </label>
+            <input
+                class="form-control"
+                id="{{ review_form_id_prefix }}_comment_{{ purchase_request.id }}"
+                name="comment"
+                maxlength="300"
+                placeholder="Optional comment for {{ purchase_request.reviewed_user_name }}"
+            >
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-primary w-100" type="submit">
+                Submit Review
+            </button>
+        </div>
+    </form>
+{% endif %}

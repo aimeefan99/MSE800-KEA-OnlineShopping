@@ -24,7 +24,17 @@
                         <a class="nav-link" href="/listings/create">Sell</a>
                         <a class="nav-link" href="/favorites">Favorites</a>
                         <a class="nav-link" href="/requests/history">Requests</a>
-                        <a class="nav-link" href="/profile/edit">Profile</a>
+                        <a
+                            class="nav-link"
+                            href="{{
+                                url_for(
+                                    'profiles.view_public_profile',
+                                    user_id=session.get('user_id')
+                                )
+                            }}"
+                        >
+                            Profile
+                        </a>
                     {% endif %}
                     <form action="{{ url_for('auth.logout') }}" method="post" class="d-inline">
                         <button class="btn btn-link nav-link p-0" type="submit">Logout</button>

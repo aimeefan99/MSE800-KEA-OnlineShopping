@@ -23,10 +23,14 @@
                 <div class="col-12">
                     <article class="card border-0 shadow-sm">
                         <div class="card-body p-4">
-                            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                            <div
+                                class="d-flex flex-column flex-lg-row justify-content-between gap-3"
+                            >
                                 <div>
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                                        <h3 class="h4 mb-0">{{ purchase_request.listing_title }}</h3>
+                                        <h3 class="h4 mb-0">
+                                            {{ purchase_request.listing_title }}
+                                        </h3>
                                         <span class="badge text-bg-warning">
                                             {{ purchase_request.status_label }}
                                         </span>
@@ -38,6 +42,17 @@
                                         Seller {{ purchase_request.seller_name }}
                                         · submitted on {{ purchase_request.created_at }}
                                     </p>
+                                    <a
+                                        class="btn btn-outline-secondary btn-sm"
+                                        href="{{
+                                            url_for(
+                                                'profiles.view_public_profile',
+                                                user_id=purchase_request.seller_id
+                                            )
+                                        }}"
+                                    >
+                                        View Seller Profile
+                                    </a>
                                     <p class="listing-price text-success fw-bold mb-0">
                                         ${{ purchase_request.listing_price_label }} NZD
                                     </p>
@@ -79,6 +94,11 @@
                                     <p class="mb-0">{{ purchase_request.message }}</p>
                                 </div>
                             {% endif %}
+
+                            {% if purchase_request.status == "completed" %}
+                                {% set review_form_id_prefix = "outgoing" %}
+                                {% include "_review_form.html" %}
+                            {% endif %}
                         </div>
                     </article>
                 </div>
@@ -110,10 +130,14 @@
                 <div class="col-12">
                     <article class="card border-0 shadow-sm">
                         <div class="card-body p-4">
-                            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                            <div
+                                class="d-flex flex-column flex-lg-row justify-content-between gap-3"
+                            >
                                 <div>
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                                        <h3 class="h4 mb-0">{{ purchase_request.listing_title }}</h3>
+                                        <h3 class="h4 mb-0">
+                                            {{ purchase_request.listing_title }}
+                                        </h3>
                                         <span class="badge text-bg-warning">
                                             {{ purchase_request.status_label }}
                                         </span>
@@ -153,7 +177,10 @@
                                                     }}"
                                                     method="post"
                                                 >
-                                                    <button class="btn btn-success btn-sm" type="submit">
+                                                    <button
+                                                        class="btn btn-success btn-sm"
+                                                        type="submit"
+                                                    >
                                                         Accept
                                                     </button>
                                                 </form>
@@ -184,7 +211,16 @@
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <span class="text-muted d-block">Buyer</span>
-                                    <strong>{{ purchase_request.buyer_name }}</strong>
+                                    <a
+                                        href="{{
+                                            url_for(
+                                                'profiles.view_public_profile',
+                                                user_id=purchase_request.buyer_id
+                                            )
+                                        }}"
+                                    >
+                                        <strong>{{ purchase_request.buyer_name }}</strong>
+                                    </a>
                                 </div>
                                 <div class="col-md-4">
                                     <span class="text-muted d-block">
@@ -203,6 +239,11 @@
                                     <span class="text-muted d-block">Message</span>
                                     <p class="mb-0">{{ purchase_request.message }}</p>
                                 </div>
+                            {% endif %}
+
+                            {% if purchase_request.status == "completed" %}
+                                {% set review_form_id_prefix = "incoming" %}
+                                {% include "_review_form.html" %}
                             {% endif %}
                         </div>
                     </article>

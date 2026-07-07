@@ -235,6 +235,50 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("buyer@example.com", page)
         self.assertNotIn("Buyer Legal Name", page)
 
+    def test_profile_rule_public_profile_shows_trust_indicators(self) -> None:
+        """Protect the rule that public profiles show practical trust information."""
+
+        response = self.client.get("/profiles/3")
+        page = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Completed Transactions", page)
+        self.assertIn(">1<", page)
+        self.assertIn("Average Rating", page)
+        self.assertIn("5.0 / 5", page)
+        self.assertIn("100% positive", page)
+        self.assertIn("Smooth completed sale.", page)
+
+    def test_review_rule_completed_transaction_can_be_reviewed_once(self) -> None:
+        """Protect the rule that reviews can be submitted after completed transactions."""
+
+        self._login_as(3, ROLE_USER, "Seller")
+        first_response = self.client.post(
+            "/reviews/create",
+            data={
+                "request_id": 2,
+                "reviewed_user_id": 1,
+                "score": 4,
+                "comment": "Prompt buyer.",
+            },
+            follow_redirects=True,
+        )
+        second_response = self.client.post(
+            "/reviews/create",
+            data={
+                "request_id": 2,
+                "reviewed_user_id": 1,
+                "score": 4,
+                "comment": "Prompt buyer.",
+            },
+            follow_redirects=True,
+        )
+
+        self.assertIn("Review submitted successfully.", first_response.get_data(as_text=True))
+        self.assertIn(
+            "You have already reviewed this transaction.",
+            second_response.get_data(as_text=True),
+        )
+
     def _login_as(self, user_id: int, role: str, display_name: str) -> None:
         """Write a test session for the selected account."""
 
@@ -411,6 +455,31 @@ class SmokeTestCase(unittest.TestCase):
                     "Completed bike purchase",
                     "2026-06-08T10:00:00",
                     "2026-06-08T10:00:00",
+                ),
+            ],
+        )
+        connection.executemany(
+            """
+            INSERT INTO reviews (
+                id,
+                request_id,
+                reviewer_id,
+                reviewed_user_id,
+                score,
+                comment,
+                created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    1,
+                    2,
+                    1,
+                    3,
+                    5,
+                    "Smooth completed sale.",
+                    "2026-06-09T10:00:00",
                 ),
             ],
         )

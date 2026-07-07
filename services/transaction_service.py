@@ -1,6 +1,7 @@
 """Transaction-related service logic for favorites, requests, and reviews."""
 
-from typing import Any, Dict, List, Optional, Tuple
+import sqlite3
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 from models.db import get_db
 from services.base_service import BaseService
@@ -9,6 +10,7 @@ from utils.constants import (
     LISTING_STATUS_AVAILABLE,
     LISTING_STATUS_PENDING,
     REQUEST_STATUS_ACCEPTED,
+    REQUEST_STATUS_COMPLETED,
     REQUEST_STATUS_PENDING,
     REQUEST_STATUS_REJECTED,
 )
@@ -29,7 +31,14 @@ SELECT
     users.display_name AS buyer_name,
     users.email AS buyer_email,
     users.phone_number AS buyer_phone_number,
-    users.preferred_contact_method AS buyer_contact_method
+    users.preferred_contact_method AS buyer_contact_method,
+    EXISTS (
+        SELECT 1
+        FROM reviews
+        WHERE reviews.request_id = requests.id
+            AND reviews.reviewer_id = requests.seller_id
+            AND reviews.reviewed_user_id = requests.buyer_id
+    ) AS has_review
 FROM requests
 INNER JOIN listings ON listings.id = requests.listing_id
 INNER JOIN users ON users.id = requests.buyer_id
@@ -49,12 +58,30 @@ SELECT
     listings.title AS listing_title,
     listings.price AS listing_price,
     listings.status AS listing_status,
-    users.display_name AS seller_name
+    users.display_name AS seller_name,
+    EXISTS (
+        SELECT 1
+        FROM reviews
+        WHERE reviews.request_id = requests.id
+            AND reviews.reviewer_id = requests.buyer_id
+            AND reviews.reviewed_user_id = requests.seller_id
+    ) AS has_review
 FROM requests
 INNER JOIN listings ON listings.id = requests.listing_id
 INNER JOIN users ON users.id = requests.seller_id
 WHERE requests.buyer_id = ?
 ORDER BY requests.created_at DESC, requests.id DESC
+"""
+INSERT_REVIEW_SQL = """
+INSERT INTO reviews (
+    request_id,
+    reviewer_id,
+    reviewed_user_id,
+    score,
+    comment,
+    created_at
+)
+VALUES (?, ?, ?, ?, ?, datetime('now'))
 """
 
 
@@ -219,16 +246,130 @@ class TransactionService(BaseService):
         if error_message is not None:
             return False, error_message
 
-        if request["status"] != "accepted":
+        if request["status"] != REQUEST_STATUS_ACCEPTED:
             return False, "Only accepted requests can be completed."
 
         self._mark_request_completed(request_id, int(request["listing_id"]))
         return True, "Transaction completed successfully."
 
-    def create_review(self) -> None:
-        """Create a review."""
+    def create_review(
+        self,
+        reviewer_id: int,
+        form_data: Mapping[str, str],
+    ) -> Tuple[bool, str]:
+        """Create one review for the other party in a completed request."""
 
-        raise NotImplementedError
+        review_data = self._clean_review_data(form_data)
+        validation_error = self._validate_review_fields(review_data)
+        if validation_error is not None:
+            return False, validation_error
+
+        request = self._get_request_for_action(review_data["request_id"])
+        if request is None:
+            return False, "Purchase request not found."
+
+        request_error = self._validate_review_request(reviewer_id, request, review_data)
+        if request_error is not None:
+            return False, request_error
+
+        return self._insert_review(reviewer_id, review_data)
+
+    @classmethod
+    def _clean_review_data(cls, form_data: Mapping[str, str]) -> Dict[str, Any]:
+        """Normalize review form values."""
+
+        return {
+            "request_id": cls._read_positive_int(form_data.get("request_id")),
+            "reviewed_user_id": cls._read_positive_int(form_data.get("reviewed_user_id")),
+            "score": cls._read_positive_int(form_data.get("score")),
+            "comment": form_data.get("comment", "").strip(),
+        }
+
+    @staticmethod
+    def _validate_review_fields(review_data: Mapping[str, Any]) -> Optional[str]:
+        """Check required review form values."""
+
+        required_fields = ["request_id", "reviewed_user_id", "score"]
+        if not all(review_data.get(field) is not None for field in required_fields):
+            return "Please complete all required review fields."
+
+        score = int(review_data["score"])
+        if score < 1 or score > 5:
+            return "Review score must be between 1 and 5."
+        return None
+
+    @staticmethod
+    def _validate_review_request(
+        reviewer_id: int,
+        request,
+        review_data: Mapping[str, Any],
+    ) -> Optional[str]:
+        """Check whether the completed request can be reviewed by this user."""
+
+        if request["is_locked"]:
+            return "This request is locked and cannot be reviewed."
+
+        if request["status"] != REQUEST_STATUS_COMPLETED:
+            return "Only completed transactions can be reviewed."
+
+        expected_reviewed_user_id = TransactionService._get_reviewed_user_id(
+            reviewer_id,
+            request,
+        )
+        if expected_reviewed_user_id is None:
+            return "You can only review transactions you participated in."
+
+        if int(review_data["reviewed_user_id"]) != expected_reviewed_user_id:
+            return "You can only review the other party in this transaction."
+        return None
+
+    @staticmethod
+    def _get_reviewed_user_id(reviewer_id: int, request) -> Optional[int]:
+        """Return the other party in the request for this reviewer."""
+
+        buyer_id = int(request["buyer_id"])
+        seller_id = int(request["seller_id"])
+        if reviewer_id == buyer_id:
+            return seller_id
+        if reviewer_id == seller_id:
+            return buyer_id
+        return None
+
+    @staticmethod
+    def _insert_review(
+        reviewer_id: int,
+        review_data: Mapping[str, Any],
+    ) -> Tuple[bool, str]:
+        """Persist a validated review record."""
+
+        db = get_db()
+        try:
+            insert_values = TransactionService._get_review_insert_values(
+                reviewer_id,
+                review_data,
+            )
+            db.execute(INSERT_REVIEW_SQL, insert_values)
+            db.commit()
+        except sqlite3.IntegrityError:
+            db.rollback()
+            return False, "You have already reviewed this transaction."
+
+        return True, "Review submitted successfully."
+
+    @staticmethod
+    def _get_review_insert_values(
+        reviewer_id: int,
+        review_data: Mapping[str, Any],
+    ) -> Tuple[int, int, int, int, Optional[str]]:
+        """Build database values for a review insert."""
+
+        return (
+            review_data["request_id"],
+            reviewer_id,
+            review_data["reviewed_user_id"],
+            review_data["score"],
+            review_data["comment"] or None,
+        )
 
     def get_favorite_id(self, user_id: int, listing_id: int) -> Optional[int]:
         """Return the favorite record id when the listing is already saved by the user."""
@@ -444,6 +585,18 @@ class TransactionService(BaseService):
         return request is not None
 
     @staticmethod
+    def _read_positive_int(value: Optional[str]) -> Optional[int]:
+        """Parse a form value into a positive integer."""
+
+        try:
+            parsed_value = int(value or "")
+        except ValueError:
+            return None
+        if parsed_value <= 0:
+            return None
+        return parsed_value
+
+    @staticmethod
     def _serialize_incoming_request(row) -> Dict[str, Any]:
         """Convert an incoming request row to template-friendly values."""
 
@@ -451,6 +604,9 @@ class TransactionService(BaseService):
         request["listing_price_label"] = "{0:.2f}".format(request["listing_price"])
         request["status_label"] = request["status"].title()
         request["listing_status_label"] = request["listing_status"].title()
+        request["reviewed_user_id"] = request["buyer_id"]
+        request["reviewed_user_name"] = request["buyer_name"]
+        request["has_review"] = bool(request["has_review"])
         if request["buyer_contact_method"] == CONTACT_METHOD_PHONE:
             request["buyer_contact_method_label"] = "Phone"
             request["buyer_contact_value"] = request["buyer_phone_number"] or "Not provided"
@@ -477,6 +633,9 @@ class TransactionService(BaseService):
         request["listing_price_label"] = "{0:.2f}".format(request["listing_price"])
         request["status_label"] = request["status"].title()
         request["listing_status_label"] = request["listing_status"].title()
+        request["reviewed_user_id"] = request["seller_id"]
+        request["reviewed_user_name"] = request["seller_name"]
+        request["has_review"] = bool(request["has_review"])
         return request
 
 transaction_service = TransactionService()

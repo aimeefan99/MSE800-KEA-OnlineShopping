@@ -8,6 +8,7 @@ from utils.constants import (
     CONTACT_METHOD_PHONE,
     LISTING_STATUS_AVAILABLE,
     LISTING_STATUS_SOLD,
+    REQUEST_STATUS_COMPLETED,
 )
 
 
@@ -46,7 +47,9 @@ class ProfileService(BaseService):
         ).fetchone()
         if profile is None:
             return None
-        return self._serialize_public_profile(profile)
+        public_profile = self._serialize_public_profile(profile)
+        public_profile.update(self._get_trust_summary(user_id))
+        return public_profile
 
     def get_edit_profile_data(self, user_id: int) -> Optional[Dict[str, Any]]:
         """Get editable profile data for the current user."""
@@ -148,6 +151,113 @@ class ProfileService(BaseService):
             profile["preferred_contact_method_label"] = "Email"
             profile["public_contact_value"] = profile.get("email") or "Not provided"
         return profile
+
+    @staticmethod
+    def _get_trust_summary(user_id: int) -> Dict[str, Any]:
+        """Return public trust indicators for a profile."""
+
+        review_stats = ProfileService._get_review_stats(user_id)
+        recent_reviews = ProfileService._get_recent_reviews(user_id)
+        return ProfileService._serialize_trust_summary(
+            ProfileService._count_completed_transactions(user_id),
+            review_stats,
+            recent_reviews,
+        )
+
+    @staticmethod
+    def _count_completed_transactions(user_id: int) -> int:
+        """Count completed requests where the user was buyer or seller."""
+
+        db = get_db()
+        count_row = db.execute(
+            """
+            SELECT COUNT(*) AS transaction_count
+            FROM requests
+            WHERE status = ?
+                AND (buyer_id = ? OR seller_id = ?)
+            """,
+            (REQUEST_STATUS_COMPLETED, user_id, user_id),
+        ).fetchone()
+        return int(count_row["transaction_count"] or 0)
+
+    @staticmethod
+    def _get_review_stats(user_id: int):
+        """Fetch rating and positive feedback totals for a user."""
+
+        db = get_db()
+        return db.execute(
+            """
+            SELECT
+                COUNT(*) AS review_count,
+                AVG(score) AS average_rating,
+                SUM(CASE WHEN score >= 4 THEN 1 ELSE 0 END) AS positive_review_count
+            FROM reviews
+            WHERE reviewed_user_id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+    @staticmethod
+    def _get_recent_reviews(user_id: int):
+        """Fetch the newest public reviews for a user."""
+
+        db = get_db()
+        return db.execute(
+            """
+            SELECT
+                reviews.score,
+                reviews.comment,
+                reviews.created_at,
+                users.display_name AS reviewer_name
+            FROM reviews
+            INNER JOIN users ON users.id = reviews.reviewer_id
+            WHERE reviews.reviewed_user_id = ?
+            ORDER BY reviews.created_at DESC, reviews.id DESC
+            LIMIT 3
+            """,
+            (user_id,),
+        ).fetchall()
+
+    @staticmethod
+    def _serialize_trust_summary(
+        completed_transaction_count: int,
+        review_stats,
+        recent_reviews,
+    ) -> Dict[str, Any]:
+        """Convert trust query results into template-friendly values."""
+
+        review_count = int(review_stats["review_count"] or 0)
+        average_rating = review_stats["average_rating"]
+        positive_rate = ProfileService._calculate_positive_feedback_rate(
+            review_count,
+            review_stats["positive_review_count"],
+        )
+        return {
+            "completed_transaction_count": completed_transaction_count,
+            "review_count": review_count,
+            "average_rating_label": (
+                "{0:.1f} / 5".format(float(average_rating))
+                if average_rating is not None
+                else "No ratings yet"
+            ),
+            "positive_feedback_label": (
+                "{0}% positive".format(positive_rate)
+                if positive_rate is not None
+                else "No feedback yet"
+            ),
+            "recent_reviews": [dict(review) for review in recent_reviews],
+        }
+
+    @staticmethod
+    def _calculate_positive_feedback_rate(
+        review_count: int,
+        positive_review_count,
+    ) -> Optional[int]:
+        """Calculate the percentage of reviews scored four or higher."""
+
+        if review_count == 0:
+            return None
+        return round((int(positive_review_count or 0) / review_count) * 100)
 
 
 profile_service = ProfileService()

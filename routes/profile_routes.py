@@ -15,7 +15,8 @@ def view_public_profile(user_id: int) -> str:
     profile_data = profile_service.get_public_profile(user_id)
     if profile_data is None:
         abort(404)
-    return render_template("profile.html", profile=profile_data)
+    is_owner = session.get("user_id") == user_id
+    return render_template("profile.html", is_owner=is_owner, profile=profile_data)
 
 
 @profile_bp.get("/profile/edit")
@@ -38,7 +39,10 @@ def edit_profile() -> str:
     """Handle profile edit submission."""
 
     # Keep validation and persistence in the service layer.
-    success, error_message, form_data = profile_service.edit_profile(session["user_id"], request.form)
+    success, error_message, form_data = profile_service.edit_profile(
+        session["user_id"],
+        request.form,
+    )
     if not success:
         flash(error_message, "danger")
         return render_template("edit_profile.html", form_data=form_data)
@@ -46,4 +50,4 @@ def edit_profile() -> str:
     # Keep the navbar display name aligned with the saved profile value.
     session["display_name"] = form_data["display_name"]
     flash("Profile updated successfully.", "success")
-    return redirect(url_for("profiles.edit_profile_page"))
+    return redirect(url_for("profiles.view_public_profile", user_id=session["user_id"]))
