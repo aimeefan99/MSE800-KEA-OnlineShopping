@@ -119,6 +119,56 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("buyer@example.com", page)
         self.assertIn("admin@example.com", page)
 
+    def test_admin_user_rule_admin_can_lock_marketplace_user_account(self) -> None:
+        """Protect the rule that administrators can lock unsafe user accounts."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.post(
+            "/admin/users/1/lock",
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("User account locked.", page)
+        self.assertIn("Locked", page)
+        self.assertEqual(1, self._get_user_lock_status(1))
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        blocked_response = self.client.get("/favorites", follow_redirects=False)
+        self.assertEqual(blocked_response.status_code, 302)
+        self.assertEqual(blocked_response.headers["Location"], "/login")
+
+    def test_admin_user_rule_admin_accounts_are_protected_from_user_lock(self) -> None:
+        """Protect the rule that administrator accounts cannot be locked this way."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.post(
+            "/admin/users/2/lock",
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Administrator accounts cannot be changed from this page.", page)
+        self.assertEqual(0, self._get_user_lock_status(2))
+
+    def test_admin_user_rule_admin_can_unlock_marketplace_user_account(self) -> None:
+        """Protect the rule that administrators can reopen locked user accounts."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        self.client.post("/admin/users/1/lock")
+        response = self.client.post(
+            "/admin/users/1/unlock",
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("User account unlocked.", page)
+        self.assertIn("Active", page)
+        self.assertEqual(0, self._get_user_lock_status(1))
+
     def test_admin_delete_rule_admin_can_remove_listing_from_management(self) -> None:
         """Protect the rule that administrators can delete inappropriate listings."""
 
@@ -530,6 +580,17 @@ class SmokeTestCase(unittest.TestCase):
         ).fetchone()
         connection.close()
         return request[0]
+
+    def _get_user_lock_status(self, user_id: int) -> int:
+        """Return the user lock flag from the isolated test database."""
+
+        connection = sqlite3.connect(self.database_path)
+        user = connection.execute(
+            "SELECT is_locked FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+        connection.close()
+        return user[0]
 
     def _get_review_count(self) -> int:
         """Return the number of reviews in the isolated test database."""

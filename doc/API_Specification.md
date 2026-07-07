@@ -391,6 +391,14 @@ Rules:
 | Access rule | administrator only |
 | Effect | prevent normal platform actions for that user |
 
+### Unlock User Account
+
+| Item | Definition |
+|---|---|
+| Route | `POST /admin/users/<user_id>/unlock` |
+| Access rule | administrator only |
+| Effect | allow a locked marketplace user account to use normal platform actions again |
+
 ### Lock Request Record
 
 | Item | Definition |

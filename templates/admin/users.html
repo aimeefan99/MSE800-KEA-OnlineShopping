@@ -25,6 +25,7 @@
                         <th scope="col">Status</th>
                         <th scope="col">Contact Method</th>
                         <th scope="col">Joined</th>
+                        <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,6 +42,49 @@
                             <td>{{ user.account_status_label }}</td>
                             <td>{{ user.preferred_contact_method_label }}</td>
                             <td>{{ user.created_at_label }}</td>
+                            <td>
+                                {% if user.role == "admin" %}
+                                    <span class="text-muted">Protected</span>
+                                {% elif user.is_locked %}
+                                    <form
+                                        action="{{
+                                            url_for(
+                                                'admin.unlock_user_account',
+                                                user_id=user.id
+                                            )
+                                        }}"
+                                        method="post"
+                                        class="d-inline"
+                                        onsubmit="return confirm('Unlock this user account?')"
+                                    >
+                                        <button
+                                            type="submit"
+                                            class="btn btn-outline-secondary btn-sm"
+                                        >
+                                            Unlock
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <form
+                                        action="{{
+                                            url_for(
+                                                'admin.lock_user_account',
+                                                user_id=user.id
+                                            )
+                                        }}"
+                                        method="post"
+                                        class="d-inline"
+                                        onsubmit="return confirm('Lock this user account?')"
+                                    >
+                                        <button
+                                            type="submit"
+                                            class="btn btn-outline-danger btn-sm"
+                                        >
+                                            Lock
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
