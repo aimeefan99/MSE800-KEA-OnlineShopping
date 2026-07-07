@@ -323,6 +323,7 @@ class SmokeTestCase(unittest.TestCase):
     def test_recommendation_api_returns_listing_results_only(self) -> None:
         """Protect the documented recommendation endpoint response shape."""
 
+        self.client.get("/listings?category_id=1")
         self.client.get("/listings?category_id=2")
         response = self.client.get("/recommendations/homepage")
         listings = response.get_json()
@@ -330,6 +331,7 @@ class SmokeTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(listings, list)
         self.assertEqual("Available Tennis Racket", listings[0]["title"])
+        self.assertEqual("Available Laptop", listings[1]["title"])
         self.assertNotIn("is_personalized", response.get_data(as_text=True))
 
     def test_homepage_rule_uses_favorite_categories(self) -> None:
@@ -529,6 +531,19 @@ class SmokeTestCase(unittest.TestCase):
                     LISTING_STATUS_SOLD,
                     "2026-06-04T09:00:00",
                     "2026-06-04T09:00:00",
+                ),
+                (
+                    4,
+                    3,
+                    1,
+                    "uploads/missing-laptop.jpg",
+                    "Available Laptop",
+                    "Newer electronics listing",
+                    "used",
+                    700.0,
+                    LISTING_STATUS_AVAILABLE,
+                    "2026-06-07T10:00:00",
+                    "2026-06-07T10:00:00",
                 ),
                 (
                     3,
