@@ -115,7 +115,15 @@ project-root/
 pip install -r requirements.txt
 ```
 
-Set the Gemini API key before using automatic AI listing drafts:
+Create a local environment file before running the project:
+
+```bash
+cp .env.example .env
+```
+
+Then update any values you need, especially the secret key and AI API key.
+
+You can also set environment variables directly in the shell if preferred. For example:
 
 ```bash
 export GEMINI_API_KEY="your_api_key_here"
@@ -124,20 +132,30 @@ export GEMINI_API_KEY="your_api_key_here"
 ### 2. Initialise the Database
 
 ```bash
-python3 scripts/init_db.py
+python scripts/init_db.py
 ```
 
 ### 3. Start the Application
 
 ```bash
-python3 app.py
+python app.py
 ```
 
-The development server runs at:
+By default, the development server runs at:
 
 ```
 http://127.0.0.1:5001
 ```
+
+Key runtime settings are now managed outside hard-coded source files through environment
+variables, including:
+
+- `SECRET_KEY`
+- `DATABASE_PATH`
+- `UPLOAD_FOLDER`
+- `APP_HOST`
+- `APP_PORT`
+- `GEMINI_API_KEY`
 
 ### 4. Run Code Quality Check
 

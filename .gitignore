@@ -3,4 +3,6 @@
 .uv-cache/
 .uv-python/
 .DS_Store
+.env
+.env.local
 doc/Jira_Sprint2_to_Sprint5.md

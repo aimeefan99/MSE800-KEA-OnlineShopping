@@ -51,4 +51,8 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run(
+        host=app.config["APP_HOST"],
+        port=app.config["APP_PORT"],
+        debug=app.config["DEBUG"],
+    )
