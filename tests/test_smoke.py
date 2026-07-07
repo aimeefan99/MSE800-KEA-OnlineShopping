@@ -499,15 +499,25 @@ class SmokeTestCase(unittest.TestCase):
     def test_homepage_rule_uses_recent_keyword_search_interest(self) -> None:
         """Protect the rule that recent search behaviour improves recommendations."""
 
-        self.client.get("/listings?keyword=tennis")
+        self.client.get("/listings?keyword=cloting")
         response = self.client.get("/")
         page = response.get_data(as_text=True)
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("Recommended from your recent browsing", page)
-        self.assertIn("Sports &amp; Outdoors", page)
-        self.assertIn("Available Tennis Racket", page)
+        self.assertIn("Clothing &amp; Fashion", page)
         self.assertNotIn("Sold Bike", page)
+
+    def test_homepage_rule_uses_common_search_term_categories(self) -> None:
+        """Protect the rule that common item searches map to useful categories."""
+
+        self.client.get("/listings?keyword=camera")
+        response = self.client.get("/")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Electronics", page)
+        self.assertIn("Available Camera", page)
 
     def test_recommendation_api_returns_listing_results_only(self) -> None:
         """Protect the documented recommendation endpoint response shape."""

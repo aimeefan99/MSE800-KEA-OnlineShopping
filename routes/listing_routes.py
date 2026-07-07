@@ -40,10 +40,7 @@ def browse_listings() -> str:
     if filters["category_id"].isdigit():
         _remember_interest_category(int(filters["category_id"]))
     elif filters["keyword"]:
-        _remember_interest_categories(
-            int(listing["category_id"])
-            for listing in listings
-        )
+        _remember_search_interest_categories(filters["keyword"], listings)
 
     return render_template(
         "listings.html",
@@ -202,6 +199,14 @@ def _remember_interest_category(category_id: int) -> None:
     """Remember recent category interests for homepage recommendations."""
 
     _remember_interest_categories([category_id])
+
+
+def _remember_search_interest_categories(keyword: str, listings) -> None:
+    """Remember category interests found from keyword search behaviour."""
+
+    category_ids = listing_service.get_search_interest_category_ids(keyword)
+    category_ids.extend(int(listing["category_id"]) for listing in listings)
+    _remember_interest_categories(category_ids)
 
 
 def _remember_interest_categories(category_ids) -> None:
