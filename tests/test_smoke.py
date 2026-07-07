@@ -424,6 +424,31 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("No listings created yet", page)
         self.assertNotIn("Available Camera", page)
 
+    def test_listing_rule_expanded_category_options_are_available(self) -> None:
+        """Protect the rule that second-hand categories cover common item types."""
+
+        expected_categories = [
+            "Home &amp; Living",
+            "Clothing &amp; Fashion",
+            "Books &amp; Media",
+            "Beauty &amp; Health",
+            "Hobbies &amp; Toys",
+            "Vehicles &amp; Bicycles",
+            "Other",
+        ]
+
+        browse_response = self.client.get("/listings")
+        browse_page = browse_response.get_data(as_text=True)
+        self._login_as(3, ROLE_USER, "Seller")
+        create_response = self.client.get("/listings/create")
+        create_page = create_response.get_data(as_text=True)
+
+        self.assertEqual(browse_response.status_code, 200)
+        self.assertEqual(create_response.status_code, 200)
+        for category in expected_categories:
+            self.assertIn(category, browse_page)
+            self.assertIn(category, create_page)
+
     def test_listing_rule_owner_can_replace_listing_image(self) -> None:
         """Protect the rule that sellers can upload a new image when editing a listing."""
 
