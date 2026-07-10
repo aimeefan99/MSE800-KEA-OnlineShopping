@@ -173,6 +173,17 @@ class SmokeTestCase(unittest.TestCase):
         locked_page = self.client.get("/admin/requests").get_data(as_text=True)
         self.assertIn("status-badge--locked", locked_page)
 
+    def test_theme_styles_alerts_with_kea_feedback_colours(self) -> None:
+        """Protect themed flash and status alert styles."""
+
+        stylesheet = (PROJECT_ROOT / "static" / "css" / "main.css").read_text()
+
+        self.assertIn(".alert-success", stylesheet)
+        self.assertIn(".alert-danger", stylesheet)
+        self.assertIn(".alert-warning", stylesheet)
+        self.assertIn(".alert-info", stylesheet)
+        self.assertIn("box-shadow: 0 0.65rem 1.25rem var(--kea-shadow);", stylesheet)
+
     def test_admin_user_rule_admin_can_lock_marketplace_user_account(self) -> None:
         """Protect the rule that administrators can lock unsafe user accounts."""
 
