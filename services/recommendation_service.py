@@ -117,19 +117,20 @@ class RecommendationService(BaseService):
         interest_category_ids: Sequence[int],
         user_id: Optional[int],
     ) -> List[Dict[str, Any]]:
-        """Return available listings from interest categories."""
+        """Return available listings grouped by interest recency."""
 
-        if not interest_category_ids:
-            return []
-
-        placeholders = ", ".join("?" for _ in interest_category_ids)
-        where_clause = "listings.category_id IN ({0})".format(placeholders)
-        return self._get_available_listings(
-            where_clause,
-            list(interest_category_ids),
-            user_id,
-            [],
-        )
+        matching_listings: List[Dict[str, Any]] = []
+        for category_id in interest_category_ids:
+            category_listings = self._get_available_listings(
+                "listings.category_id = ?",
+                [category_id],
+                user_id,
+                [listing["id"] for listing in matching_listings],
+            )
+            matching_listings.extend(category_listings)
+            if len(matching_listings) >= HOMEPAGE_RECOMMENDATION_LIMIT:
+                break
+        return matching_listings[:HOMEPAGE_RECOMMENDATION_LIMIT]
 
     def _get_recent_available_listings(
         self,
@@ -195,14 +196,21 @@ class RecommendationService(BaseService):
         placeholders = ", ".join("?" for _ in category_ids)
         categories = get_db().execute(
             """
-            SELECT name
+            SELECT id, name
             FROM categories
             WHERE id IN ({0})
-            ORDER BY name
             """.format(placeholders),
             list(category_ids),
         ).fetchall()
-        return [str(category["name"]) for category in categories]
+        category_names = {
+            int(category["id"]): str(category["name"])
+            for category in categories
+        }
+        return [
+            category_names[category_id]
+            for category_id in category_ids
+            if category_id in category_names
+        ]
 
 
 recommendation_service = RecommendationService()
