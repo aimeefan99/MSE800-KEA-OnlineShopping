@@ -51,9 +51,7 @@
                 </div>
 
                 <h2 class="h5">Description</h2>
-                <p class="mb-4 text-body-secondary" style="white-space: pre-wrap;">
-                    {{ listing.description }}
-                </p>
+                <p class="mb-4 text-body-secondary" style="white-space: pre-wrap;">{{ listing.description }}</p>
 
                 <div class="card border-0 bg-light-subtle mb-4">
                     <div class="card-body">
@@ -113,9 +111,12 @@
                 {% if session.get("role") != "admin" %}
                     <div class="mb-3">
                         {% if session.get("user_id") == listing.seller_id %}
-                            <button class="btn btn-outline-secondary w-100" type="button" disabled>
-                                Your Listing
-                            </button>
+                            <a
+                                class="btn btn-outline-primary w-100"
+                                href="{{ url_for('profiles.account_listings_page') }}"
+                            >
+                                Back to My Listings
+                            </a>
                         {% elif session.get("user_id") %}
                             {% if request_status == "pending" %}
                                 <button class="btn btn-outline-secondary w-100" type="button" disabled>
@@ -153,7 +154,8 @@
                         {% endif %}
                     </div>
 
-                    {% if session.get("user_id") %}
+                    {% if session.get("user_id") == listing.seller_id %}
+                    {% elif session.get("user_id") %}
                         <form method="post" action="{{ url_for('transactions.add_favorite') }}">
                             <input type="hidden" name="listing_id" value="{{ listing.id }}">
                             <input

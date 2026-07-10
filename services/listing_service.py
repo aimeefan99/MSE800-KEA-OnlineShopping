@@ -31,6 +31,26 @@ DEFAULT_CATEGORIES = [
     "Vehicles & Bicycles",
     "Other",
 ]
+CATEGORY_SEARCH_ALIASES = {
+    "Electronics": [
+        "camera",
+        "phone",
+        "iphone",
+        "laptop",
+        "console",
+        "controller",
+        "tv",
+    ],
+    "Clothing & Fashion": [
+        "clothing",
+        "clothes",
+        "cloting",
+        "fashion",
+        "shoes",
+        "boots",
+        "skirt",
+    ],
+}
 CONDITION_OPTIONS = LISTING_CONDITIONS
 STATUS_OPTIONS = LISTING_STATUSES
 LEGACY_CONDITION_MAP = {
@@ -38,18 +58,6 @@ LEGACY_CONDITION_MAP = {
     "good": "used",
     "fair": "used",
 }
-UPDATE_LISTING_SQL = """
-UPDATE listings
-SET
-    category_id = ?,
-    title = ?,
-    description = ?,
-    condition = ?,
-    price = ?,
-    status = ?,
-    updated_at = ?
-WHERE id = ?
-"""
 LISTING_DETAIL_SQL = """
 SELECT
     listings.id,
@@ -92,6 +100,34 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 class ListingService(BaseService):
     """Handle listing-related business logic."""
 
+    def get_user_listings(self, user_id: int) -> List[Dict[str, Any]]:
+        """Return all listings created by one marketplace user."""
+
+        listings = get_db().execute(
+            """
+            SELECT
+                listings.id,
+                listings.seller_id,
+                listings.category_id,
+                listings.title,
+                listings.description,
+                listings.condition,
+                listings.price,
+                listings.image_url,
+                listings.status,
+                listings.created_at,
+                categories.name AS category_name,
+                users.display_name AS seller_name
+            FROM listings
+            INNER JOIN categories ON categories.id = listings.category_id
+            INNER JOIN users ON users.id = listings.seller_id
+            WHERE listings.seller_id = ?
+            ORDER BY listings.created_at DESC, listings.id DESC
+            """,
+            (user_id,),
+        ).fetchall()
+        return [self._serialize_listing_row(listing) for listing in listings]
+
     def get_category_options(self) -> List[Dict[str, Any]]:
         """Get available category options for listing forms."""
         # Seed the category table once so the form has valid options to render.
@@ -99,6 +135,29 @@ class ListingService(BaseService):
         db = get_db()
         categories = db.execute("SELECT id, name FROM categories ORDER BY name").fetchall()
         return [dict(category) for category in categories]
+
+    def get_search_interest_category_ids(self, keyword: str) -> List[int]:
+        """Return category ids inferred from a search keyword."""
+
+        normalized_keyword = keyword.strip().lower()
+        if not normalized_keyword:
+            return []
+
+        self._ensure_default_categories()
+        matched_category_names = [
+            category_name
+            for category_name, aliases in CATEGORY_SEARCH_ALIASES.items()
+            if self._keyword_matches_category(normalized_keyword, category_name, aliases)
+        ]
+        if not matched_category_names:
+            return []
+
+        placeholders = ", ".join("?" for _ in matched_category_names)
+        categories = get_db().execute(
+            "SELECT id FROM categories WHERE name IN ({0})".format(placeholders),
+            matched_category_names,
+        ).fetchall()
+        return [int(category["id"]) for category in categories]
 
     @staticmethod
     def get_condition_options() -> List[str]:
@@ -109,6 +168,17 @@ class ListingService(BaseService):
     def get_status_options() -> List[str]:
         """Get allowed listing status values."""
         return STATUS_OPTIONS
+
+    @staticmethod
+    def _keyword_matches_category(
+        keyword: str,
+        category_name: str,
+        aliases: List[str],
+    ) -> bool:
+        """Return whether a search keyword points to a category."""
+
+        category_label = category_name.lower()
+        return keyword in category_label or any(alias in keyword for alias in aliases)
 
     def create_listing(
         self,
@@ -146,9 +216,16 @@ class ListingService(BaseService):
         condition: str,
         price: float,
         status: str,
+        image_file: Optional[FileStorage] = None,
     ) -> bool:
         """Update an item's details, but only if the user making the request is the owner!"""
-        if status not in STATUS_OPTIONS:
+        if status not in STATUS_OPTIONS or condition not in CONDITION_OPTIONS:
+            return False
+
+        if price <= 0:
+            return False
+
+        if not self._category_exists(str(category_id)):
             return False
 
         db = get_db()
@@ -158,10 +235,37 @@ class ListingService(BaseService):
         if not item or item["seller_id"] != user_id:
             return False
 
+        image_url = item["image_url"]
+        # Keep the current photo unless the seller uploads a replacement image.
+        if image_file is not None and image_file.filename:
+            image_url = self._save_image_file(image_file)
+
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         db.execute(
-            UPDATE_LISTING_SQL,
-            (category_id, title, description, condition, price, status, now_str, listing_id)
+            """
+            UPDATE listings
+            SET
+                category_id = ?,
+                image_url = ?,
+                title = ?,
+                description = ?,
+                condition = ?,
+                price = ?,
+                status = ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (
+                category_id,
+                image_url,
+                title,
+                description,
+                condition,
+                price,
+                status,
+                now_str,
+                listing_id,
+            )
         )
         db.commit()
         return True
@@ -189,6 +293,7 @@ class ListingService(BaseService):
             SELECT
                 listings.id,
                 listings.seller_id,
+                listings.category_id,
                 listings.title,
                 listings.description,
                 listings.condition,

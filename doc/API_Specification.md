@@ -391,6 +391,14 @@ Rules:
 | Access rule | administrator only |
 | Effect | prevent normal platform actions for that user |
 
+### Unlock User Account
+
+| Item | Definition |
+|---|---|
+| Route | `POST /admin/users/<user_id>/unlock` |
+| Access rule | administrator only |
+| Effect | allow a locked marketplace user account to use normal platform actions again |
+
 ### Lock Request Record
 
 | Item | Definition |
@@ -399,8 +407,16 @@ Rules:
 | Access rule | administrator only |
 | Effect | freeze the target request record for review |
 
+### Unlock Request Record
+
+| Item | Definition |
+|---|---|
+| Route | `POST /admin/requests/<request_id>/unlock` |
+| Access rule | administrator only |
+| Effect | reopen a locked request record for normal review flow |
+
 Rules:
 
 - in the first version, transaction records are represented by completed `requests` records rather than a separate `transactions` table
-- the administrator may view, delete, and lock
+- the administrator may view, delete, lock, and unlock
 - the administrator must not accept, reject, or complete buyer-seller transactions on behalf of users

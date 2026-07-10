@@ -1,66 +1,68 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% if is_own_profile %}
+    {% include "_account_nav.html" %}
+{% endif %}
+
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <section class="mb-4">
-            <p class="text-uppercase small text-muted mb-1">Public Profile</p>
-            <h1 class="mb-2">{{ profile.display_name }}</h1>
-            <p class="text-muted mb-0">
-                View basic seller information before making or accepting a request.
-            </p>
-        </section>
-
-        {% if is_owner %}
-            <div class="mb-4">
-                <a
-                    class="btn btn-outline-primary btn-sm"
-                    href="{{ url_for('profiles.edit_profile_page') }}"
-                >
-                    Edit Profile
-                </a>
+        <section class="mb-4 d-flex flex-column flex-md-row gap-3 justify-content-between">
+            <div>
+                <p class="text-uppercase small text-muted mb-1">Public Profile</p>
+                <h1 class="mb-2">{{ profile.display_name }}</h1>
+                <p class="text-muted mb-0">
+                    View basic seller information before making or accepting a request.
+                </p>
             </div>
-        {% endif %}
+            {% if is_own_profile %}
+                <div class="flex-shrink-0">
+                    <a
+                        class="btn btn-primary"
+                        href="{{ url_for('profiles.edit_profile_page') }}"
+                    >
+                        Edit Profile
+                    </a>
+                </div>
+            {% endif %}
+        </section>
 
         <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
-                <div class="row g-4 mb-4">
-                    <div class="col-md-4">
+                <div class="row row-cols-1 row-cols-md-3 row-cols-lg-6 g-4 mb-4">
+                    <div class="col">
                         <div class="rounded-4 bg-light p-3 h-100">
                             <span class="text-muted d-block mb-1">Member Since</span>
                             <strong>{{ profile.member_since_label }}</strong>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col">
                         <div class="rounded-4 bg-light p-3 h-100">
                             <span class="text-muted d-block mb-1">Active Listings</span>
                             <strong>{{ profile.active_listing_count }}</strong>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col">
                         <div class="rounded-4 bg-light p-3 h-100">
                             <span class="text-muted d-block mb-1">Sold Listings</span>
                             <strong>{{ profile.sold_listing_count }}</strong>
                         </div>
                     </div>
-                </div>
-
-                <div class="row g-4 mb-4">
-                    <div class="col-md-4">
+                    <div class="col">
                         <div class="rounded-4 bg-light p-3 h-100">
-                            <span class="text-muted d-block mb-1">Completed Transactions</span>
+                            <span class="text-muted d-block mb-1">Completed Trades</span>
                             <strong>{{ profile.completed_transaction_count }}</strong>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col">
                         <div class="rounded-4 bg-light p-3 h-100">
                             <span class="text-muted d-block mb-1">Average Rating</span>
-                            <strong>{{ profile.average_rating_label }}</strong>
+                            <strong>{{ profile.average_score_label }}</strong>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col">
                         <div class="rounded-4 bg-light p-3 h-100">
-                            <span class="text-muted d-block mb-1">Feedback</span>
+                            <span class="text-muted d-block mb-1">Positive Feedback</span>
                             <strong>{{ profile.positive_feedback_label }}</strong>
                         </div>
                     </div>
@@ -84,27 +86,36 @@
                 <hr>
 
                 <div>
-                    <h2 class="h5">Recent Reviews</h2>
+                    <h2 class="h5">Reviews</h2>
+                    <p class="text-body-secondary mb-3">
+                        {{ profile.review_count }}
+                        review{% if profile.review_count != 1 %}s{% endif %}
+                        from completed transactions.
+                    </p>
                     {% if profile.recent_reviews %}
-                        <div class="vstack gap-3">
+                        <div class="d-grid gap-3">
                             {% for review in profile.recent_reviews %}
-                                <div class="border rounded-4 p-3">
-                                    <div class="d-flex justify-content-between gap-3 mb-1">
+                                <div class="rounded-4 bg-light p-3">
+                                    <div class="d-flex justify-content-between gap-3 mb-2">
                                         <strong>{{ review.reviewer_name }}</strong>
-                                        <span>{{ review.score }} / 5</span>
+                                        <span class="badge text-bg-success">
+                                            {{ review.score }}/5
+                                        </span>
                                     </div>
                                     {% if review.comment %}
-                                        <p class="mb-0 text-body-secondary">{{ review.comment }}</p>
+                                        <p class="mb-0 text-body-secondary">
+                                            {{ review.comment }}
+                                        </p>
                                     {% else %}
                                         <p class="mb-0 text-body-secondary">
-                                            No written comment provided.
+                                            No comment provided.
                                         </p>
                                     {% endif %}
                                 </div>
                             {% endfor %}
                         </div>
                     {% else %}
-                        <p class="mb-0 text-body-secondary">No public reviews yet.</p>
+                        <p class="text-body-secondary mb-0">No reviews yet.</p>
                     {% endif %}
                 </div>
             </div>

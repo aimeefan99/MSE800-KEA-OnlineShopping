@@ -1,6 +1,9 @@
 """AI listing routes."""
 
-from flask import Blueprint, render_template
+from flask import Blueprint, jsonify, render_template, request
+
+from services.ai_service import ai_listing_service
+from utils.decorators import marketplace_user_required
 
 ai_bp = Blueprint("ai", __name__)
 
@@ -13,7 +16,12 @@ def ai_listing_page() -> str:
 
 
 @ai_bp.post("/ai/listing-draft")
+@marketplace_user_required
 def generate_listing_draft() -> str:
     """Handle AI listing draft generation."""
-
-    return "TODO: generate AI listing draft"
+    success, error_message, draft = ai_listing_service.generate_listing_draft(
+        request.files.get("image")
+    )
+    if not success:
+        return jsonify({"success": False, "error": error_message}), 400
+    return jsonify({"success": True, "draft": draft})

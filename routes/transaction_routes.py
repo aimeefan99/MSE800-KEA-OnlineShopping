@@ -90,6 +90,7 @@ def request_history() -> str:
         "request_history.html",
         outgoing_requests=request_views["outgoing_requests"],
         incoming_requests=request_views["incoming_requests"],
+        summary=request_views["summary"],
     )
 
 
@@ -128,6 +129,12 @@ def complete_request(request_id: int) -> str:
 def create_review() -> str:
     """Handle review submission."""
 
-    success, message = transaction_service.create_review(session["user_id"], request.form)
+    success, message = transaction_service.create_review(
+        session["user_id"],
+        request.form.get("request_id", type=int),
+        request.form.get("reviewed_user_id", type=int),
+        request.form.get("score", type=int),
+        request.form.get("comment", ""),
+    )
     flash(message, "success" if success else "danger")
     return redirect(url_for("transactions.request_history"))

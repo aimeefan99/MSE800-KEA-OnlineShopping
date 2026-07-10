@@ -28,12 +28,11 @@ The project follows an **Agile software development methodology** and applies ob
 
 ### AI One-Click Listing Assistant
 
-Generates a draft product listing from a single uploaded product image using the OpenAI API. The generated draft includes:
+Generates a draft product listing from a single uploaded product image using the Gemini API. The generated draft includes:
 
 - Product title
 - Category
 - Description
-- Suggested price
 
 The user can review and edit the generated information before publishing the listing.
 
@@ -56,7 +55,7 @@ Instead of showing the same fixed homepage content to every user, the platform p
 - Backend: Python, Flask
 - Frontend: HTML, CSS, Bootstrap
 - Database: SQLite
-- AI Integration: OpenAI API
+- AI Integration: Gemini API
 - Containerization and Deployment: Docker, Kubernetes
 - Version Control: GitHub
 - Project Management: Jira
@@ -116,23 +115,47 @@ project-root/
 pip install -r requirements.txt
 ```
 
+Create a local environment file before running the project:
+
+```bash
+cp .env.example .env
+```
+
+Then update any values you need, especially the secret key and AI API key.
+
+You can also set environment variables directly in the shell if preferred. For example:
+
+```bash
+export GEMINI_API_KEY="your_api_key_here"
+```
+
 ### 2. Initialise the Database
 
 ```bash
-python3 scripts/init_db.py
+python scripts/init_db.py
 ```
 
 ### 3. Start the Application
 
 ```bash
-python3 app.py
+python app.py
 ```
 
-The development server runs at:
+By default, the development server runs at:
 
 ```
-http://127.0.0.1:5000
+http://127.0.0.1:5001
 ```
+
+Key runtime settings are now managed outside hard-coded source files through environment
+variables, including:
+
+- `SECRET_KEY`
+- `DATABASE_PATH`
+- `UPLOAD_FOLDER`
+- `APP_HOST`
+- `APP_PORT`
+- `GEMINI_API_KEY`
 
 ### 4. Run Code Quality Check
 
