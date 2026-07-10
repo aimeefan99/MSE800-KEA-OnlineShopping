@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Tuple
 
 from models.db import get_db
 from services.base_service import BaseService
-from utils.constants import REQUEST_STATUS_COMPLETED
+from utils.constants import REQUEST_STATUS_COMPLETED, ROLE_ADMIN
 
 ADMIN_REQUESTS_SQL = """
 SELECT
@@ -124,13 +124,64 @@ class AdminService(BaseService):
             [REQUEST_STATUS_COMPLETED],
         )
 
-    def lock_user_account(self) -> None:
+    def lock_user_account(self, user_id: int) -> Tuple[bool, str]:
         """Lock a user account."""
 
-        raise NotImplementedError
+        return self._set_user_lock(user_id, True)
+
+    def unlock_user_account(self, user_id: int) -> Tuple[bool, str]:
+        """Unlock a user account."""
+
+        return self._set_user_lock(user_id, False)
+
+    @staticmethod
+    def _set_user_lock(user_id: int, should_lock: bool) -> Tuple[bool, str]:
+        """Update the lock state for a marketplace user account."""
+
+        db = get_db()
+        user = db.execute(
+            "SELECT id, role, is_locked FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+        if user is None:
+            return False, "User account not found."
+
+        if user["role"] == ROLE_ADMIN:
+            return False, "Administrator accounts cannot be changed from this page."
+
+        if should_lock and user["is_locked"]:
+            return True, "User account is already locked."
+
+        if not should_lock and not user["is_locked"]:
+            return True, "User account is already active."
+
+        lock_value = 1 if should_lock else 0
+        db.execute(
+            """
+            UPDATE users
+            SET is_locked = ?
+            WHERE id = ?
+            """,
+            (lock_value, user_id),
+        )
+        db.commit()
+        if should_lock:
+            return True, "User account locked."
+        return True, "User account unlocked."
 
     def lock_request_record(self, request_id: int) -> Tuple[bool, str]:
         """Lock a request record."""
+
+        return self._set_request_lock(request_id, True)
+
+    def unlock_request_record(self, request_id: int) -> Tuple[bool, str]:
+        """Unlock a request record."""
+
+        return self._set_request_lock(request_id, False)
+
+    @staticmethod
+    def _set_request_lock(request_id: int, should_lock: bool) -> Tuple[bool, str]:
+        """Update the review lock state for a request record."""
 
         db = get_db()
         request = db.execute(
@@ -140,19 +191,25 @@ class AdminService(BaseService):
         if request is None:
             return False, "Request record not found."
 
-        if request["is_locked"]:
+        if should_lock and request["is_locked"]:
             return True, "Request record is already locked."
 
+        if not should_lock and not request["is_locked"]:
+            return True, "Request record is already open."
+
+        lock_value = 1 if should_lock else 0
         db.execute(
             """
             UPDATE requests
-            SET is_locked = 1, updated_at = datetime('now')
+            SET is_locked = ?, updated_at = datetime('now')
             WHERE id = ?
             """,
-            (request_id,),
+            (lock_value, request_id),
         )
         db.commit()
-        return True, "Request record locked for review."
+        if should_lock:
+            return True, "Request record locked for review."
+        return True, "Request record unlocked."
 
     def _get_admin_request_rows(
         self,

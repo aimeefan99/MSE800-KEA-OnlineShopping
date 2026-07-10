@@ -67,7 +67,19 @@ def delete_inappropriate_listing(listing_id: int) -> str:
 def lock_user_account(user_id: int) -> str:
     """Handle administrator user lock."""
 
-    return f"TODO: admin lock user {user_id}"
+    success, message = admin_service.lock_user_account(user_id)
+    flash(message, "success" if success else "danger")
+    return redirect(url_for("admin.view_users"))
+
+
+@admin_bp.post("/admin/users/<int:user_id>/unlock")
+@admin_required
+def unlock_user_account(user_id: int) -> str:
+    """Handle administrator user unlock."""
+
+    success, message = admin_service.unlock_user_account(user_id)
+    flash(message, "success" if success else "danger")
+    return redirect(url_for("admin.view_users"))
 
 
 @admin_bp.post("/admin/requests/<int:request_id>/lock")
@@ -76,5 +88,15 @@ def lock_request_record(request_id: int) -> str:
     """Handle administrator request lock."""
 
     success, message = admin_service.lock_request_record(request_id)
+    flash(message, "success" if success else "danger")
+    return redirect(url_for("admin.view_requests"))
+
+
+@admin_bp.post("/admin/requests/<int:request_id>/unlock")
+@admin_required
+def unlock_request_record(request_id: int) -> str:
+    """Handle administrator request unlock."""
+
+    success, message = admin_service.unlock_request_record(request_id)
     flash(message, "success" if success else "danger")
     return redirect(url_for("admin.view_requests"))

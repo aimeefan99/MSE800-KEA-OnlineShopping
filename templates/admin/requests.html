@@ -90,9 +90,24 @@
                             <td>{{ purchase_request.updated_at_label }}</td>
                             <td>
                                 {% if purchase_request.is_locked %}
-                                    <button class="btn btn-outline-secondary btn-sm" disabled>
-                                        Locked
-                                    </button>
+                                    <form
+                                        action="{{
+                                            url_for(
+                                                'admin.unlock_request_record',
+                                                request_id=purchase_request.id
+                                            )
+                                        }}"
+                                        method="post"
+                                        class="d-inline"
+                                        onsubmit="return confirm('Unlock this request?')"
+                                    >
+                                        <button
+                                            type="submit"
+                                            class="btn btn-outline-secondary btn-sm"
+                                        >
+                                            Unlock
+                                        </button>
+                                    </form>
                                 {% else %}
                                     <form
                                         action="{{

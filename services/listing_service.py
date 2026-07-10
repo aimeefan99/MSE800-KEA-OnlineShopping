@@ -31,6 +31,26 @@ DEFAULT_CATEGORIES = [
     "Vehicles & Bicycles",
     "Other",
 ]
+CATEGORY_SEARCH_ALIASES = {
+    "Electronics": [
+        "camera",
+        "phone",
+        "iphone",
+        "laptop",
+        "console",
+        "controller",
+        "tv",
+    ],
+    "Clothing & Fashion": [
+        "clothing",
+        "clothes",
+        "cloting",
+        "fashion",
+        "shoes",
+        "boots",
+        "skirt",
+    ],
+}
 CONDITION_OPTIONS = LISTING_CONDITIONS
 STATUS_OPTIONS = LISTING_STATUSES
 LEGACY_CONDITION_MAP = {
@@ -88,6 +108,7 @@ class ListingService(BaseService):
             SELECT
                 listings.id,
                 listings.seller_id,
+                listings.category_id,
                 listings.title,
                 listings.description,
                 listings.condition,
@@ -115,6 +136,29 @@ class ListingService(BaseService):
         categories = db.execute("SELECT id, name FROM categories ORDER BY name").fetchall()
         return [dict(category) for category in categories]
 
+    def get_search_interest_category_ids(self, keyword: str) -> List[int]:
+        """Return category ids inferred from a search keyword."""
+
+        normalized_keyword = keyword.strip().lower()
+        if not normalized_keyword:
+            return []
+
+        self._ensure_default_categories()
+        matched_category_names = [
+            category_name
+            for category_name, aliases in CATEGORY_SEARCH_ALIASES.items()
+            if self._keyword_matches_category(normalized_keyword, category_name, aliases)
+        ]
+        if not matched_category_names:
+            return []
+
+        placeholders = ", ".join("?" for _ in matched_category_names)
+        categories = get_db().execute(
+            "SELECT id FROM categories WHERE name IN ({0})".format(placeholders),
+            matched_category_names,
+        ).fetchall()
+        return [int(category["id"]) for category in categories]
+
     @staticmethod
     def get_condition_options() -> List[str]:
         """Get allowed listing condition values."""
@@ -124,6 +168,17 @@ class ListingService(BaseService):
     def get_status_options() -> List[str]:
         """Get allowed listing status values."""
         return STATUS_OPTIONS
+
+    @staticmethod
+    def _keyword_matches_category(
+        keyword: str,
+        category_name: str,
+        aliases: List[str],
+    ) -> bool:
+        """Return whether a search keyword points to a category."""
+
+        category_label = category_name.lower()
+        return keyword in category_label or any(alias in keyword for alias in aliases)
 
     def create_listing(
         self,
@@ -200,7 +255,17 @@ class ListingService(BaseService):
                 updated_at = ?
             WHERE id = ?
             """,
-            (category_id, image_url, title, description, condition, price, status, now_str, listing_id)
+            (
+                category_id,
+                image_url,
+                title,
+                description,
+                condition,
+                price,
+                status,
+                now_str,
+                listing_id,
+            )
         )
         db.commit()
         return True
@@ -228,6 +293,7 @@ class ListingService(BaseService):
             SELECT
                 listings.id,
                 listings.seller_id,
+                listings.category_id,
                 listings.title,
                 listings.description,
                 listings.condition,

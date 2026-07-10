@@ -119,6 +119,56 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("buyer@example.com", page)
         self.assertIn("admin@example.com", page)
 
+    def test_admin_user_rule_admin_can_lock_marketplace_user_account(self) -> None:
+        """Protect the rule that administrators can lock unsafe user accounts."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.post(
+            "/admin/users/1/lock",
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("User account locked.", page)
+        self.assertIn("Locked", page)
+        self.assertEqual(1, self._get_user_lock_status(1))
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        blocked_response = self.client.get("/favorites", follow_redirects=False)
+        self.assertEqual(blocked_response.status_code, 302)
+        self.assertEqual(blocked_response.headers["Location"], "/login")
+
+    def test_admin_user_rule_admin_accounts_are_protected_from_user_lock(self) -> None:
+        """Protect the rule that administrator accounts cannot be locked this way."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        response = self.client.post(
+            "/admin/users/2/lock",
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Administrator accounts cannot be changed from this page.", page)
+        self.assertEqual(0, self._get_user_lock_status(2))
+
+    def test_admin_user_rule_admin_can_unlock_marketplace_user_account(self) -> None:
+        """Protect the rule that administrators can reopen locked user accounts."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        self.client.post("/admin/users/1/lock")
+        response = self.client.post(
+            "/admin/users/1/unlock",
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("User account unlocked.", page)
+        self.assertIn("Active", page)
+        self.assertEqual(0, self._get_user_lock_status(1))
+
     def test_admin_delete_rule_admin_can_remove_listing_from_management(self) -> None:
         """Protect the rule that administrators can delete inappropriate listings."""
 
@@ -180,6 +230,22 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("Locked", page)
         self.assertEqual("accepted", self._get_request_status(1))
 
+    def test_admin_request_rule_admin_can_unlock_request_record(self) -> None:
+        """Protect the rule that administrators can reopen locked request records."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        self.client.post("/admin/requests/1/lock")
+        response = self.client.post(
+            "/admin/requests/1/unlock",
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Request record unlocked.", page)
+        self.assertIn("Open", page)
+        self.assertEqual("accepted", self._get_request_status(1))
+
     def test_admin_request_rule_locked_request_cannot_be_completed(self) -> None:
         """Protect the rule that locked request records cannot keep changing."""
 
@@ -196,6 +262,79 @@ class SmokeTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("This request is locked and cannot be changed.", page)
         self.assertEqual("accepted", self._get_request_status(1))
+
+    def test_review_rule_completed_transaction_can_be_reviewed_once(self) -> None:
+        """Protect the rule that completed transactions can receive one review."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        first_response = self.client.post(
+            "/reviews/create",
+            data={
+                "request_id": 2,
+                "reviewed_user_id": 3,
+                "score": 5,
+                "comment": "Smooth trade.",
+            },
+            follow_redirects=True,
+        )
+        second_response = self.client.post(
+            "/reviews/create",
+            data={
+                "request_id": 2,
+                "reviewed_user_id": 3,
+                "score": 5,
+                "comment": "Smooth trade.",
+            },
+            follow_redirects=True,
+        )
+
+        self.assertIn("Review submitted successfully.", first_response.get_data(as_text=True))
+        self.assertIn(
+            "You have already reviewed this completed transaction.",
+            second_response.get_data(as_text=True),
+        )
+        self.assertEqual(1, self._get_review_count())
+
+    def test_review_rule_locked_completed_transaction_cannot_be_reviewed(self) -> None:
+        """Protect the rule that locked requests cannot receive new reviews."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        self.client.post("/admin/requests/2/lock")
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.post(
+            "/reviews/create",
+            data={
+                "request_id": 2,
+                "reviewed_user_id": 3,
+                "score": 5,
+                "comment": "Smooth trade.",
+            },
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertIn("This request is locked and cannot be reviewed.", page)
+        self.assertEqual(0, self._get_review_count())
+
+    def test_review_rule_non_completed_transaction_cannot_be_reviewed(self) -> None:
+        """Protect the rule that reviews are limited to completed transactions."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.post(
+            "/reviews/create",
+            data={
+                "request_id": 1,
+                "reviewed_user_id": 3,
+                "score": 5,
+                "comment": "Trying too early.",
+            },
+            follow_redirects=True,
+        )
+        page = response.get_data(as_text=True)
+
+        self.assertIn("Only completed transactions can be reviewed.", page)
+        self.assertEqual(0, self._get_review_count())
 
     def test_admin_completed_request_records_page_lists_only_completed_activity(self) -> None:
         """Protect the rule that administrators can monitor completed transactions."""
@@ -235,16 +374,28 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("Completed", page)
 
     def test_account_rule_marketplace_user_can_open_account_page(self) -> None:
-        """Protect the rule that marketplace users can reach the account area."""
+        """Protect the rule that account opens the user's public profile first."""
 
         self._login_as(1, ROLE_USER, "Buyer")
         response = self.client.get("/account")
         page = response.get_data(as_text=True)
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Account", page)
-        self.assertIn("Profile", page)
+        self.assertIn("Public Profile", page)
+        self.assertIn("Buyer", page)
+        self.assertIn("Edit Profile", page)
         self.assertIn("My Listings", page)
+        self.assertNotIn("Save Changes", page)
+
+    def test_account_rule_edit_profile_page_keeps_form_separate(self) -> None:
+        """Protect the rule that profile edits stay behind the edit action."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        response = self.client.get("/profile/edit")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("My Profile", page)
         self.assertIn("Save Changes", page)
 
     def test_account_rule_my_listings_page_shows_only_owned_items(self) -> None:
@@ -272,6 +423,31 @@ class SmokeTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("No listings created yet", page)
         self.assertNotIn("Available Camera", page)
+
+    def test_listing_rule_expanded_category_options_are_available(self) -> None:
+        """Protect the rule that second-hand categories cover common item types."""
+
+        expected_categories = [
+            "Home &amp; Living",
+            "Clothing &amp; Fashion",
+            "Books &amp; Media",
+            "Beauty &amp; Health",
+            "Hobbies &amp; Toys",
+            "Vehicles &amp; Bicycles",
+            "Other",
+        ]
+
+        browse_response = self.client.get("/listings")
+        browse_page = browse_response.get_data(as_text=True)
+        self._login_as(3, ROLE_USER, "Seller")
+        create_response = self.client.get("/listings/create")
+        create_page = create_response.get_data(as_text=True)
+
+        self.assertEqual(browse_response.status_code, 200)
+        self.assertEqual(create_response.status_code, 200)
+        for category in expected_categories:
+            self.assertIn(category, browse_page)
+            self.assertIn(category, create_page)
 
     def test_listing_rule_owner_can_replace_listing_image(self) -> None:
         """Protect the rule that sellers can upload a new image when editing a listing."""
@@ -319,6 +495,29 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("Sports &amp; Outdoors", page)
         self.assertIn("Available Tennis Racket", page)
         self.assertNotIn("Sold Bike", page)
+
+    def test_homepage_rule_uses_recent_keyword_search_interest(self) -> None:
+        """Protect the rule that recent search behaviour improves recommendations."""
+
+        self.client.get("/listings?keyword=cloting")
+        response = self.client.get("/")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Recommended from your recent browsing", page)
+        self.assertIn("Clothing &amp; Fashion", page)
+        self.assertNotIn("Sold Bike", page)
+
+    def test_homepage_rule_uses_common_search_term_categories(self) -> None:
+        """Protect the rule that common item searches map to useful categories."""
+
+        self.client.get("/listings?keyword=camera")
+        response = self.client.get("/")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Electronics", page)
+        self.assertIn("Available Camera", page)
 
     def test_recommendation_api_returns_listing_results_only(self) -> None:
         """Protect the documented recommendation endpoint response shape."""
@@ -373,6 +572,33 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("buyer@example.com", page)
         self.assertNotIn("Buyer Legal Name", page)
 
+    def test_profile_rule_public_profile_shows_trust_indicators(self) -> None:
+        """Protect the rule that public profiles show reliability indicators."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        self.client.post(
+            "/reviews/create",
+            data={
+                "request_id": 2,
+                "reviewed_user_id": 3,
+                "score": 5,
+                "comment": "Smooth trade.",
+            },
+        )
+
+        response = self.client.get("/profiles/3")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Completed Trades", page)
+        self.assertIn("Average Rating", page)
+        self.assertIn("Positive Feedback", page)
+        self.assertIn("Reviews", page)
+        self.assertIn("1", page)
+        self.assertIn("5.0", page)
+        self.assertIn("100%", page)
+        self.assertIn("Smooth trade.", page)
+
     def test_ai_draft_route_requires_an_uploaded_image(self) -> None:
         """Protect the automatic draft route so empty requests fail cleanly."""
 
@@ -402,6 +628,25 @@ class SmokeTestCase(unittest.TestCase):
         ).fetchone()
         connection.close()
         return request[0]
+
+    def _get_user_lock_status(self, user_id: int) -> int:
+        """Return the user lock flag from the isolated test database."""
+
+        connection = sqlite3.connect(self.database_path)
+        user = connection.execute(
+            "SELECT is_locked FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+        connection.close()
+        return user[0]
+
+    def _get_review_count(self) -> int:
+        """Return the number of reviews in the isolated test database."""
+
+        connection = sqlite3.connect(self.database_path)
+        review_count = connection.execute("SELECT COUNT(*) FROM reviews").fetchone()[0]
+        connection.close()
+        return review_count
 
     def _get_listing_image_url(self, listing_id: int) -> str:
         """Return a listing image path directly from the isolated test database."""

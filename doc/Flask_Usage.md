@@ -120,7 +120,8 @@ This route uses Flask's `jsonify()` rather than rendering a page template becaus
 | `GET` | `/admin/requests` | `view_requests()` | `templates/admin/requests.html` | Shows admin request records and request lock controls. |
 | `GET` | `/admin/requests/completed` | `view_completed_requests()` | `templates/admin/completed_requests.html` | Shows completed request records only. |
 | `POST` | `/admin/listings/<listing_id>/delete` | `delete_inappropriate_listing()` | Redirect | Allows an admin to delete a listing. |
-| `POST` | `/admin/users/<user_id>/lock` | `lock_user_account()` | Text response placeholder | Placeholder route for future account locking. |
+| `POST` | `/admin/users/<user_id>/lock` | `lock_user_account()` | Redirect | Locks a marketplace user account. |
+| `POST` | `/admin/users/<user_id>/unlock` | `unlock_user_account()` | Redirect | Unlocks a marketplace user account. |
 | `POST` | `/admin/requests/<request_id>/lock` | `lock_request_record()` | Redirect | Locks a request record for review. |
 
 ### AI Listing Routes
