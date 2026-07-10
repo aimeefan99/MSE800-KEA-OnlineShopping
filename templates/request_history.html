@@ -46,14 +46,25 @@
                 <div class="col-12">
                     <article class="card border-0 shadow-sm">
                         <div class="card-body p-4">
-                            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                            <div
+                                class="
+                                    d-flex flex-column flex-lg-row
+                                    justify-content-between gap-3
+                                "
+                            >
                                 <div>
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                                        <h3 class="h4 mb-0">{{ purchase_request.listing_title }}</h3>
-                                        <span class="badge text-bg-warning">
+                                        <h3 class="h4 mb-0">
+                                            {{ purchase_request.listing_title }}
+                                        </h3>
+                                        <span class="{{ purchase_request.status_badge_class }}">
                                             {{ purchase_request.status_label }}
                                         </span>
-                                        <span class="badge text-bg-light border">
+                                        <span
+                                            class="{{
+                                                purchase_request.listing_status_badge_class
+                                            }}"
+                                        >
                                             Listing {{ purchase_request.listing_status_label }}
                                         </span>
                                     </div>
@@ -122,13 +133,14 @@
             {% endfor %}
         </div>
     {% else %}
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-4 text-center">
-                <h3 class="h4 mb-2">No sent requests yet</h3>
-                <p class="text-muted mb-0">
-                    When you submit purchase requests from item detail pages, they will appear here.
-                </p>
-            </div>
+        <div class="empty-state">
+            <h3 class="h4 mb-2">No requests yet</h3>
+            <p class="text-muted mb-3">
+                Browse listings and submit a purchase request when you find an item.
+            </p>
+            <a class="btn btn-primary" href="{{ url_for('listings.browse_listings') }}">
+                Browse Listings
+            </a>
         </div>
     {% endif %}
 </section>
@@ -147,14 +159,25 @@
                 <div class="col-12">
                     <article class="card border-0 shadow-sm">
                         <div class="card-body p-4">
-                            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                            <div
+                                class="
+                                    d-flex flex-column flex-lg-row
+                                    justify-content-between gap-3
+                                "
+                            >
                                 <div>
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                                        <h3 class="h4 mb-0">{{ purchase_request.listing_title }}</h3>
-                                        <span class="badge text-bg-warning">
+                                        <h3 class="h4 mb-0">
+                                            {{ purchase_request.listing_title }}
+                                        </h3>
+                                        <span class="{{ purchase_request.status_badge_class }}">
                                             {{ purchase_request.status_label }}
                                         </span>
-                                        <span class="badge text-bg-light border">
+                                        <span
+                                            class="{{
+                                                purchase_request.listing_status_badge_class
+                                            }}"
+                                        >
                                             Listing {{ purchase_request.listing_status_label }}
                                         </span>
                                     </div>
@@ -201,7 +224,10 @@
                                                     }}"
                                                     method="post"
                                                 >
-                                                    <button class="btn btn-success btn-sm" type="submit">
+                                                <button
+                                                    class="btn btn-success btn-sm"
+                                                    type="submit"
+                                                >
                                                         Accept
                                                     </button>
                                                 </form>
@@ -273,13 +299,17 @@
             {% endfor %}
         </div>
     {% else %}
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-4 text-center">
-                <h3 class="h4 mb-2">No incoming requests yet</h3>
-                <p class="text-muted mb-0">
-                    Buyer requests for listings you own will appear here.
-                </p>
-            </div>
+        <div class="empty-state">
+            <h3 class="h4 mb-2">No incoming requests yet</h3>
+            <p class="text-muted mb-3">
+                Create a listing so interested buyers can send purchase requests.
+            </p>
+            <a
+                class="btn btn-primary"
+                href="{{ url_for('listings.create_listing_page') }}"
+            >
+                Create Listing
+            </a>
         </div>
     {% endif %}
 </section>

@@ -19,13 +19,14 @@
         {% endfor %}
     </div>
 {% else %}
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-4 text-center">
-            <h2 class="h4 mb-2">No saved items yet</h2>
-            <p class="text-muted mb-0">
-                Save listings to favorites from the item detail page and they will appear here.
-            </p>
-        </div>
+    <div class="empty-state">
+        <h2 class="h4 mb-2">No favourites yet</h2>
+        <p class="text-muted mb-3">
+            Browse the marketplace and save items you want to revisit later.
+        </p>
+        <a class="btn btn-primary" href="{{ url_for('listings.browse_listings') }}">
+            Browse Listings
+        </a>
     </div>
 {% endif %}
 {% endblock %}

@@ -24,10 +24,14 @@
                             <div>
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
                                     <h2 class="h4 mb-0">{{ purchase_request.listing_title }}</h2>
-                                    <span class="badge text-bg-warning">
+                                    <span class="{{ purchase_request.status_badge_class }}">
                                         {{ purchase_request.status_label }}
                                     </span>
-                                    <span class="badge text-bg-light border">
+                                    <span
+                                        class="{{
+                                            purchase_request.listing_status_badge_class
+                                        }}"
+                                    >
                                         Listing {{ purchase_request.listing_status_label }}
                                     </span>
                                 </div>
@@ -63,7 +67,10 @@
                                                 }}"
                                                 method="post"
                                             >
-                                                <button class="btn btn-success btn-sm" type="submit">
+                                                <button
+                                                    class="btn btn-success btn-sm"
+                                                    type="submit"
+                                                >
                                                     Accept
                                                 </button>
                                             </form>
@@ -120,11 +127,17 @@
         {% endfor %}
     </div>
 {% else %}
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-4 text-center">
-            <h2 class="h4 mb-2">No incoming requests</h2>
-            <p class="text-muted mb-0">Requests from interested buyers will appear here.</p>
-        </div>
+    <div class="empty-state">
+        <h2 class="h4 mb-2">No requests yet</h2>
+        <p class="text-muted mb-3">
+            Create a listing so interested buyers can send purchase requests.
+        </p>
+        <a
+            class="btn btn-primary"
+            href="{{ url_for('listings.create_listing_page') }}"
+        >
+            Create Listing
+        </a>
     </div>
 {% endif %}
 {% endblock %}

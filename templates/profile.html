@@ -5,15 +5,12 @@
     {% include "_account_nav.html" %}
 {% endif %}
 
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <section class="mb-4 d-flex flex-column flex-md-row gap-3 justify-content-between">
+<div class="profile-page">
+    <section class="profile-header mb-4">
+        <div class="d-flex flex-column flex-md-row gap-3 justify-content-between">
             <div>
                 <p class="text-uppercase small text-muted mb-1">Public Profile</p>
                 <h1 class="mb-2">{{ profile.display_name }}</h1>
-                <p class="text-muted mb-0">
-                    View basic seller information before making or accepting a request.
-                </p>
             </div>
             {% if is_own_profile %}
                 <div class="flex-shrink-0">
@@ -25,99 +22,99 @@
                     </a>
                 </div>
             {% endif %}
-        </section>
+        </div>
+    </section>
 
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-4">
-                <div class="row row-cols-1 row-cols-md-3 row-cols-lg-6 g-4 mb-4">
-                    <div class="col">
-                        <div class="rounded-4 bg-light p-3 h-100">
-                            <span class="text-muted d-block mb-1">Member Since</span>
-                            <strong>{{ profile.member_since_label }}</strong>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="rounded-4 bg-light p-3 h-100">
-                            <span class="text-muted d-block mb-1">Active Listings</span>
-                            <strong>{{ profile.active_listing_count }}</strong>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="rounded-4 bg-light p-3 h-100">
-                            <span class="text-muted d-block mb-1">Sold Listings</span>
-                            <strong>{{ profile.sold_listing_count }}</strong>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="rounded-4 bg-light p-3 h-100">
-                            <span class="text-muted d-block mb-1">Completed Trades</span>
-                            <strong>{{ profile.completed_transaction_count }}</strong>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="rounded-4 bg-light p-3 h-100">
-                            <span class="text-muted d-block mb-1">Average Rating</span>
-                            <strong>{{ profile.average_score_label }}</strong>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="rounded-4 bg-light p-3 h-100">
-                            <span class="text-muted d-block mb-1">Positive Feedback</span>
-                            <strong>{{ profile.positive_feedback_label }}</strong>
-                        </div>
-                    </div>
+    <div class="card border-0 shadow-sm profile-card">
+        <div class="card-body p-4">
+            <div class="trust-indicator-grid mb-4">
+                <div class="trust-indicator">
+                    <span class="trust-indicator-label">Member Since</span>
+                    <strong class="trust-indicator-value">
+                        {{ profile.member_since_label }}
+                    </strong>
                 </div>
-
-                <div class="mb-4">
-                    <h2 class="h5">Public Contact Preference</h2>
-                    <p class="mb-1 text-body-secondary">
-                        {{ profile.preferred_contact_method_label }}
-                    </p>
-                    <p class="mb-0"><strong>{{ profile.public_contact_value }}</strong></p>
+                <div class="trust-indicator">
+                    <span class="trust-indicator-label">Active Listings</span>
+                    <strong class="trust-indicator-value">
+                        {{ profile.active_listing_count }}
+                    </strong>
                 </div>
-
-                <div>
-                    <h2 class="h5">Bio</h2>
-                    <p class="mb-0 text-body-secondary" style="white-space: pre-wrap;">
-                        {{ profile.bio }}
-                    </p>
+                <div class="trust-indicator">
+                    <span class="trust-indicator-label">Sold Listings</span>
+                    <strong class="trust-indicator-value">
+                        {{ profile.sold_listing_count }}
+                    </strong>
                 </div>
+                <div class="trust-indicator">
+                    <span class="trust-indicator-label">Completed Trades</span>
+                    <strong class="trust-indicator-value">
+                        {{ profile.completed_transaction_count }}
+                    </strong>
+                </div>
+                <div class="trust-indicator">
+                    <span class="trust-indicator-label">Average Rating</span>
+                    <strong class="trust-indicator-value">
+                        {{ profile.average_score_label }}
+                    </strong>
+                </div>
+                <div class="trust-indicator">
+                    <span class="trust-indicator-label">Positive Feedback</span>
+                    <strong class="trust-indicator-value">
+                        {{ profile.positive_feedback_label }}
+                    </strong>
+                </div>
+            </div>
 
-                <hr>
+            <div class="mb-4">
+                <h2 class="h5">Public Contact Preference</h2>
+                <p class="mb-1 text-body-secondary">
+                    {{ profile.preferred_contact_method_label }}
+                </p>
+                <p class="mb-0"><strong>{{ profile.public_contact_value }}</strong></p>
+            </div>
 
-                <div>
-                    <h2 class="h5">Reviews</h2>
-                    <p class="text-body-secondary mb-3">
-                        {{ profile.review_count }}
-                        review{% if profile.review_count != 1 %}s{% endif %}
-                        from completed transactions.
-                    </p>
-                    {% if profile.recent_reviews %}
-                        <div class="d-grid gap-3">
-                            {% for review in profile.recent_reviews %}
-                                <div class="rounded-4 bg-light p-3">
-                                    <div class="d-flex justify-content-between gap-3 mb-2">
-                                        <strong>{{ review.reviewer_name }}</strong>
-                                        <span class="badge text-bg-success">
-                                            {{ review.score }}/5
-                                        </span>
-                                    </div>
-                                    {% if review.comment %}
-                                        <p class="mb-0 text-body-secondary">
-                                            {{ review.comment }}
-                                        </p>
-                                    {% else %}
-                                        <p class="mb-0 text-body-secondary">
-                                            No comment provided.
-                                        </p>
-                                    {% endif %}
+            <div>
+                <h2 class="h5">Bio</h2>
+                <p class="mb-0 text-body-secondary" style="white-space: pre-wrap;">
+                    {{ profile.bio }}
+                </p>
+            </div>
+
+            <hr>
+
+            <div>
+                <h2 class="h5">Reviews</h2>
+                <p class="text-body-secondary mb-3">
+                    {{ profile.review_count }}
+                    review{% if profile.review_count != 1 %}s{% endif %}
+                    from completed transactions.
+                </p>
+                {% if profile.recent_reviews %}
+                    <div class="d-grid gap-3">
+                        {% for review in profile.recent_reviews %}
+                            <div class="rounded-4 bg-light p-3">
+                                <div class="d-flex justify-content-between gap-3 mb-2">
+                                    <strong>{{ review.reviewer_name }}</strong>
+                                    <span class="badge text-bg-success">
+                                        {{ review.score }}/5
+                                    </span>
                                 </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="text-body-secondary mb-0">No reviews yet.</p>
-                    {% endif %}
-                </div>
+                                {% if review.comment %}
+                                    <p class="mb-0 text-body-secondary">
+                                        {{ review.comment }}
+                                    </p>
+                                {% else %}
+                                    <p class="mb-0 text-body-secondary">
+                                        No comment provided.
+                                    </p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-body-secondary mb-0">No reviews yet.</p>
+                {% endif %}
             </div>
         </div>
     </div>

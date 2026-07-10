@@ -1,10 +1,21 @@
 """Administrator service logic."""
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Mapping, Tuple
 
 from models.db import get_db
 from services.base_service import BaseService
-from utils.constants import REQUEST_STATUS_COMPLETED, ROLE_ADMIN
+from utils.constants import (
+    LISTING_STATUS_AVAILABLE,
+    LISTING_STATUSES,
+    REQUEST_STATUS_COMPLETED,
+    REQUEST_STATUSES,
+    ROLE_ADMIN,
+)
+from utils.status_badges import (
+    listing_status_badge_class,
+    lock_status_badge_class,
+    request_status_badge_class,
+)
 
 ADMIN_REQUESTS_SQL = """
 SELECT
@@ -33,7 +44,39 @@ ORDER BY requests.updated_at DESC, requests.id DESC
 class AdminService(BaseService):
     """Handle administrator control actions."""
 
-    def get_admin_users(self) -> List[Dict[str, Any]]:
+    def get_admin_summary(self) -> Dict[str, int]:
+        """Get high-level platform activity counts for admin pages."""
+
+        db = get_db()
+        row = db.execute(
+            """
+            SELECT
+                (SELECT COUNT(*) FROM users) AS total_users,
+                (SELECT COUNT(*) FROM users WHERE is_locked = 1) AS locked_users,
+                (
+                    SELECT COUNT(*)
+                    FROM listings
+                    WHERE status = ?
+                ) AS active_listings,
+                (
+                    SELECT COUNT(*)
+                    FROM requests
+                    WHERE status = ?
+                ) AS completed_requests
+            """,
+            (LISTING_STATUS_AVAILABLE, REQUEST_STATUS_COMPLETED),
+        ).fetchone()
+        return {
+            "total_users": row["total_users"],
+            "locked_users": row["locked_users"],
+            "active_listings": row["active_listings"],
+            "completed_requests": row["completed_requests"],
+        }
+
+    def get_admin_users(
+        self,
+        filters: Mapping[str, str] | None = None,
+    ) -> List[Dict[str, Any]]:
         """Get users for administrator view."""
 
         db = get_db()
@@ -51,9 +94,13 @@ class AdminService(BaseService):
             ORDER BY created_at DESC, id DESC
             """
         ).fetchall()
-        return [self._serialize_admin_user(row) for row in users]
+        serialized_users = [self._serialize_admin_user(row) for row in users]
+        return self._filter_admin_users(serialized_users, filters or {})
 
-    def get_admin_listings(self) -> List[Dict[str, Any]]:
+    def get_admin_listings(
+        self,
+        filters: Mapping[str, str] | None = None,
+    ) -> List[Dict[str, Any]]:
         """Get listings for administrator view."""
 
         db = get_db()
@@ -75,12 +122,17 @@ class AdminService(BaseService):
             ORDER BY listings.created_at DESC, listings.id DESC
             """
         ).fetchall()
-        return [self._serialize_admin_listing(row) for row in listings]
+        serialized_listings = [self._serialize_admin_listing(row) for row in listings]
+        return self._filter_admin_listings(serialized_listings, filters or {})
 
-    def get_admin_requests(self) -> List[Dict[str, Any]]:
+    def get_admin_requests(
+        self,
+        filters: Mapping[str, str] | None = None,
+    ) -> List[Dict[str, Any]]:
         """Get request records for administrator view."""
 
-        return self._get_admin_request_rows("", [])
+        requests = self._get_admin_request_rows("", [])
+        return self._filter_admin_requests(requests, filters or {})
 
     def delete_inappropriate_listing(self, listing_id: int) -> Tuple[bool, str]:
         """Delete a listing and its dependent moderation records."""
@@ -116,13 +168,52 @@ class AdminService(BaseService):
         db.commit()
         return True, "Listing deleted successfully."
 
-    def get_admin_completed_requests(self) -> List[Dict[str, Any]]:
+    def get_admin_completed_requests(
+        self,
+        filters: Mapping[str, str] | None = None,
+    ) -> List[Dict[str, Any]]:
         """Get completed request records for administrator view."""
 
-        return self._get_admin_request_rows(
+        requests = self._get_admin_request_rows(
             "WHERE requests.status = ?",
             [REQUEST_STATUS_COMPLETED],
         )
+        return self._filter_admin_requests(requests, filters or {})
+
+    @staticmethod
+    def get_listing_status_filter_options() -> List[Dict[str, str]]:
+        """Get listing status values for admin filters."""
+
+        return [
+            {"value": status, "label": status.title()}
+            for status in LISTING_STATUSES
+        ]
+
+    @staticmethod
+    def get_request_status_filter_options() -> List[Dict[str, str]]:
+        """Get request status values for admin filters."""
+
+        return [
+            {"value": status, "label": status.title()}
+            for status in REQUEST_STATUSES
+        ]
+
+    def get_listing_category_filter_options(self) -> List[Dict[str, str]]:
+        """Get categories that currently have admin-visible listings."""
+
+        db = get_db()
+        categories = db.execute(
+            """
+            SELECT DISTINCT categories.name
+            FROM listings
+            INNER JOIN categories ON categories.id = listings.category_id
+            ORDER BY categories.name
+            """
+        ).fetchall()
+        return [
+            {"value": row["name"], "label": row["name"]}
+            for row in categories
+        ]
 
     def lock_user_account(self, user_id: int) -> Tuple[bool, str]:
         """Lock a user account."""
@@ -232,6 +323,10 @@ class AdminService(BaseService):
         request = dict(row)
         request["status_label"] = str(request["status"]).title()
         request["lock_status_label"] = "Locked" if request["is_locked"] else "Open"
+        request["status_badge_class"] = request_status_badge_class(
+            request["status"],
+        )
+        request["lock_badge_class"] = lock_status_badge_class(request["is_locked"])
         request["listing_price_label"] = "{0:.2f}".format(request["listing_price"])
         request["created_at_label"] = str(request["created_at"]).replace("T", " ")[:16]
         request["updated_at_label"] = str(request["updated_at"]).replace("T", " ")[:16]
@@ -244,6 +339,9 @@ class AdminService(BaseService):
         listing = dict(row)
         listing["condition_label"] = str(listing["condition"]).title()
         listing["status_label"] = str(listing["status"]).title()
+        listing["status_badge_class"] = listing_status_badge_class(
+            listing["status"],
+        )
         listing["price_label"] = "{0:.2f}".format(listing["price"])
         listing["created_at_label"] = str(listing["created_at"]).replace("T", " ")[:16]
         return listing
@@ -256,8 +354,86 @@ class AdminService(BaseService):
         user["role_label"] = str(user["role"]).title()
         user["preferred_contact_method_label"] = str(user["preferred_contact_method"]).title()
         user["account_status_label"] = "Locked" if user["is_locked"] else "Active"
+        user["role_badge_class"] = (
+            "text-bg-primary" if user["role"] == ROLE_ADMIN else "text-bg-light border"
+        )
+        user["account_status_badge_class"] = (
+            "text-bg-danger" if user["is_locked"] else "text-bg-success"
+        )
         user["created_at_label"] = str(user["created_at"]).replace("T", " ")[:16]
         return user
+
+    @staticmethod
+    def _filter_admin_users(
+        users: List[Dict[str, Any]],
+        filters: Mapping[str, str],
+    ) -> List[Dict[str, Any]]:
+        """Filter admin users by role and lock state."""
+
+        role_filter = filters.get("role", "")
+        status_filter = filters.get("status", "")
+        filtered_users = users
+        if role_filter:
+            filtered_users = [
+                user for user in filtered_users if user["role"] == role_filter
+            ]
+        if status_filter == "locked":
+            filtered_users = [user for user in filtered_users if user["is_locked"]]
+        elif status_filter == "active":
+            filtered_users = [
+                user for user in filtered_users if not user["is_locked"]
+            ]
+        return filtered_users
+
+    @staticmethod
+    def _filter_admin_listings(
+        listings: List[Dict[str, Any]],
+        filters: Mapping[str, str],
+    ) -> List[Dict[str, Any]]:
+        """Filter admin listings by status and category."""
+
+        status_filter = filters.get("status", "")
+        category_filter = filters.get("category", "")
+        filtered_listings = listings
+        if status_filter:
+            filtered_listings = [
+                listing
+                for listing in filtered_listings
+                if listing["status"] == status_filter
+            ]
+        if category_filter:
+            filtered_listings = [
+                listing
+                for listing in filtered_listings
+                if listing["category_name"] == category_filter
+            ]
+        return filtered_listings
+
+    @staticmethod
+    def _filter_admin_requests(
+        requests: List[Dict[str, Any]],
+        filters: Mapping[str, str],
+    ) -> List[Dict[str, Any]]:
+        """Filter admin requests by status and lock state."""
+
+        status_filter = filters.get("status", "")
+        lock_filter = filters.get("lock", "")
+        filtered_requests = requests
+        if status_filter:
+            filtered_requests = [
+                request
+                for request in filtered_requests
+                if request["status"] == status_filter
+            ]
+        if lock_filter == "locked":
+            filtered_requests = [
+                request for request in filtered_requests if request["is_locked"]
+            ]
+        elif lock_filter == "open":
+            filtered_requests = [
+                request for request in filtered_requests if not request["is_locked"]
+            ]
+        return filtered_requests
 
 
 admin_service = AdminService()

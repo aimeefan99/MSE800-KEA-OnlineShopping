@@ -13,6 +13,10 @@ from utils.constants import (
     REQUEST_STATUS_PENDING,
     REQUEST_STATUS_REJECTED,
 )
+from utils.status_badges import (
+    listing_status_badge_class,
+    request_status_badge_class,
+)
 
 INCOMING_REQUESTS_SQL = """
 SELECT
@@ -578,7 +582,13 @@ class TransactionService(BaseService):
         request = dict(row)
         request["listing_price_label"] = "{0:.2f}".format(request["listing_price"])
         request["status_label"] = request["status"].title()
+        request["status_badge_class"] = request_status_badge_class(
+            request["status"],
+        )
         request["listing_status_label"] = request["listing_status"].title()
+        request["listing_status_badge_class"] = listing_status_badge_class(
+            request["listing_status"],
+        )
         if request["buyer_contact_method"] == CONTACT_METHOD_PHONE:
             request["buyer_contact_method_label"] = "Phone"
             request["buyer_contact_value"] = request["buyer_phone_number"] or "Not provided"
@@ -600,6 +610,9 @@ class TransactionService(BaseService):
         favorite = dict(row)
         favorite["condition_label"] = favorite["condition"].title()
         favorite["status_label"] = favorite["status"].title()
+        favorite["status_badge_class"] = listing_status_badge_class(
+            favorite["status"],
+        )
         favorite["price_label"] = "{0:.2f}".format(favorite["price"])
         return favorite
 
@@ -609,7 +622,13 @@ class TransactionService(BaseService):
         request = dict(row)
         request["listing_price_label"] = "{0:.2f}".format(request["listing_price"])
         request["status_label"] = request["status"].title()
+        request["status_badge_class"] = request_status_badge_class(
+            request["status"],
+        )
         request["listing_status_label"] = request["listing_status"].title()
+        request["listing_status_badge_class"] = listing_status_badge_class(
+            request["listing_status"],
+        )
         self._attach_review_state(
             request,
             current_user_id,

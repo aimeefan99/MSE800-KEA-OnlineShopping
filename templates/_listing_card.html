@@ -14,7 +14,12 @@
                 <h2 class="h5 card-title mb-0">
                     <a
                         class="text-dark text-decoration-none"
-                        href="{{ url_for('listings.view_listing_detail', listing_id=detail_listing_id) }}"
+                        href="{{
+                            url_for(
+                                'listings.view_listing_detail',
+                                listing_id=detail_listing_id
+                            )
+                        }}"
                     >
                         {{ card_item.title }}
                     </a>
@@ -24,7 +29,9 @@
 
             {% if show_status_badge %}
                 <p class="mb-2">
-                    <span class="badge text-bg-success">{{ card_item.status_label }}</span>
+                    <span class="{{ card_item.status_badge_class }}">
+                        {{ card_item.status_label }}
+                    </span>
                 </p>
             {% else %}
                 <p class="text-muted small mb-3">Status: {{ card_item.status_label }}</p>
@@ -35,7 +42,12 @@
                     {{ card_item.category_name }} by
                     <a
                         class="text-decoration-none"
-                        href="{{ url_for('profiles.view_public_profile', user_id=card_item.seller_id) }}"
+                        href="{{
+                            url_for(
+                                'profiles.view_public_profile',
+                                user_id=card_item.seller_id
+                            )
+                        }}"
                     >
                         {{ card_item.seller_name }}
                     </a>
@@ -55,7 +67,12 @@
                 </span>
                 <a
                     class="btn btn-outline-primary btn-sm"
-                    href="{{ url_for('listings.view_listing_detail', listing_id=detail_listing_id) }}"
+                    href="{{
+                        url_for(
+                            'listings.view_listing_detail',
+                            listing_id=detail_listing_id
+                        )
+                    }}"
                 >
                     View Details
                 </a>

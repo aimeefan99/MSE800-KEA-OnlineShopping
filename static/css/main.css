@@ -1,5 +1,165 @@
+:root {
+    --kea-bg: #f7f5ee;
+    --kea-surface: #ffffff;
+    --kea-surface-soft: #eef4ec;
+    --kea-heading: #183f35;
+    --kea-text: #20322e;
+    --kea-muted: #60716b;
+    --kea-teal: #0f615f;
+    --kea-teal-dark: #0a4744;
+    --kea-green: #678328;
+    --kea-orange: #d97922;
+    --kea-border: #dbe3da;
+    --kea-shadow: rgba(24, 63, 53, 0.08);
+}
+
 body {
-    background-color: #f8f9fa;
+    background-color: var(--kea-bg);
+    color: var(--kea-text);
+}
+
+a {
+    color: var(--kea-teal);
+}
+
+a:hover,
+a:focus {
+    color: var(--kea-teal-dark);
+}
+
+h1,
+h2,
+h3,
+.h1,
+.h2,
+.h3 {
+    color: var(--kea-heading);
+}
+
+.navbar.bg-light {
+    background-color: rgba(255, 255, 255, 0.94) !important;
+}
+
+.card,
+.list-group-item {
+    border-color: var(--kea-border);
+}
+
+.card {
+    background-color: var(--kea-surface);
+}
+
+.bg-light,
+.bg-light-subtle {
+    background-color: var(--kea-surface-soft) !important;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--kea-teal);
+    --bs-btn-border-color: var(--kea-teal);
+    --bs-btn-hover-bg: var(--kea-teal-dark);
+    --bs-btn-hover-border-color: var(--kea-teal-dark);
+    --bs-btn-active-bg: var(--kea-teal-dark);
+    --bs-btn-active-border-color: var(--kea-teal-dark);
+    --bs-btn-disabled-bg: var(--kea-teal);
+    --bs-btn-disabled-border-color: var(--kea-teal);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--kea-teal);
+    --bs-btn-border-color: var(--kea-teal);
+    --bs-btn-hover-bg: var(--kea-teal);
+    --bs-btn-hover-border-color: var(--kea-teal);
+    --bs-btn-active-bg: var(--kea-teal-dark);
+    --bs-btn-active-border-color: var(--kea-teal-dark);
+}
+
+.text-primary,
+.text-success {
+    color: var(--kea-teal-dark) !important;
+}
+
+.text-warning {
+    color: var(--kea-orange) !important;
+}
+
+.text-bg-primary,
+.text-bg-success {
+    background-color: var(--kea-green) !important;
+    color: #fff !important;
+}
+
+.text-bg-warning {
+    background-color: var(--kea-orange) !important;
+    color: #fff !important;
+}
+
+.text-bg-light {
+    background-color: #f8f7f1 !important;
+    color: var(--kea-heading) !important;
+}
+
+.badge.border {
+    border-color: var(--kea-border) !important;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.55rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.status-badge--available {
+    background-color: #2f7d32;
+    color: #fff;
+}
+
+.status-badge--pending {
+    background-color: #f2c94c;
+    color: #2f2717;
+}
+
+.status-badge--sold,
+.status-badge--neutral {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.status-badge--completed {
+    background-color: #2563eb;
+    color: #fff;
+}
+
+.status-badge--locked {
+    background-color: #b42318;
+    color: #fff;
+}
+
+.site-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+}
+
+.site-brand-logo {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(217, 121, 34, 0.18);
+}
+
+.site-brand-name {
+    font-weight: 700;
+    color: var(--kea-heading);
+    white-space: nowrap;
 }
 
 .nav-link-bilingual {
@@ -16,7 +176,7 @@ body {
 
 .nav-link-secondary {
     font-size: 0.94rem;
-    color: #6c757d;
+    color: var(--kea-muted);
 }
 
 .bilingual-welcome {
@@ -31,7 +191,148 @@ body {
 
 .bilingual-welcome-secondary {
     font-size: 0.95rem;
-    color: #495057;
+    color: var(--kea-muted);
+}
+
+.account-nav .nav {
+    align-items: center;
+}
+
+.account-nav .nav-link {
+    border-radius: 8px;
+    color: var(--kea-teal);
+}
+
+.account-nav .nav-link.active {
+    background-color: var(--kea-teal);
+    color: #fff;
+}
+
+.admin-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1rem;
+}
+
+.admin-summary-card {
+    padding: 1.25rem;
+    border: 1px solid var(--kea-border);
+    border-radius: 8px;
+    background: var(--kea-surface);
+    box-shadow: 0 0.75rem 1.5rem var(--kea-shadow);
+}
+
+.admin-summary-label {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--kea-muted);
+    font-size: 0.9rem;
+}
+
+.admin-summary-value {
+    display: block;
+    color: var(--kea-heading);
+    font-size: 2rem;
+    line-height: 1.1;
+}
+
+.admin-filter-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, max-content));
+    align-items: end;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--kea-border);
+    border-radius: 8px;
+    background: var(--kea-surface);
+}
+
+.admin-filter-bar .form-label {
+    margin-bottom: 0.35rem;
+    color: var(--kea-muted);
+    font-size: 0.9rem;
+}
+
+.admin-filter-bar .form-select {
+    min-width: 180px;
+}
+
+.admin-filter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.admin-table thead th {
+    color: var(--kea-heading);
+    font-size: 0.88rem;
+    white-space: nowrap;
+}
+
+.admin-table tbody tr:hover {
+    background-color: rgba(15, 97, 95, 0.05);
+}
+
+.empty-state {
+    padding: 3rem 1.5rem;
+    border: 1px solid var(--kea-border);
+    border-radius: 8px;
+    background: var(--kea-surface);
+    box-shadow: 0 0.75rem 1.5rem var(--kea-shadow);
+    text-align: center;
+}
+
+.empty-state p {
+    max-width: 520px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.profile-page {
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.profile-header {
+    padding-top: 1rem;
+}
+
+.profile-header .btn {
+    align-self: flex-start;
+}
+
+.profile-card {
+    border-radius: 8px;
+}
+
+.trust-indicator-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+.trust-indicator {
+    min-height: 128px;
+    padding: 1.25rem;
+    border: 1px solid var(--kea-border);
+    border-radius: 8px;
+    background: var(--kea-surface-soft);
+}
+
+.trust-indicator-label {
+    display: block;
+    margin-bottom: 0.75rem;
+    color: var(--kea-muted);
+    font-size: 0.95rem;
+    line-height: 1.35;
+}
+
+.trust-indicator-value {
+    display: block;
+    color: var(--kea-heading);
+    font-size: clamp(1.25rem, 1.8vw, 1.65rem);
+    line-height: 1.25;
+    overflow-wrap: anywhere;
 }
 
 .listing-card {
@@ -41,13 +342,13 @@ body {
 
 .listing-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 1rem 2rem rgba(15, 23, 42, 0.08);
+    box-shadow: 0 1rem 2rem var(--kea-shadow);
 }
 
 .listing-card-image,
 .listing-detail-image {
     width: 100%;
-    background: linear-gradient(135deg, #eef2f6, #dde6f0);
+    background: linear-gradient(135deg, #eef4ec, #dfe8d6);
 }
 
 .listing-card-image {
@@ -62,7 +363,7 @@ body {
 }
 
 .listing-price {
-    color: #0b6b4b;
+    color: var(--kea-teal-dark);
     font-weight: 700;
 }
 
@@ -72,7 +373,7 @@ body {
     gap: 1rem;
     padding: 1rem;
     border-radius: 1rem;
-    background: #f3f6f8;
+    background: var(--kea-surface-soft);
 }
 
 .listing-meta span,
@@ -81,6 +382,31 @@ body {
 }
 
 @media (max-width: 767px) {
+    .site-brand-logo {
+        width: 44px;
+        height: 44px;
+    }
+
+    .site-brand-name {
+        font-size: 1rem;
+    }
+
+    .profile-header {
+        padding-top: 0.25rem;
+    }
+
+    .trust-indicator-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-filter-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-filter-bar .form-select {
+        min-width: 100%;
+    }
+
     .listing-card-image {
         height: 220px;
     }
