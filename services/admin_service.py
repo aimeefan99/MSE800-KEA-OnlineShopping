@@ -1,6 +1,6 @@
 """Administrator service logic."""
 
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 from models.db import get_db
 from services.base_service import BaseService
@@ -75,7 +75,7 @@ class AdminService(BaseService):
 
     def get_admin_users(
         self,
-        filters: Mapping[str, str] | None = None,
+        filters: Optional[Mapping[str, str]] = None,
     ) -> List[Dict[str, Any]]:
         """Get users for administrator view."""
 
@@ -99,7 +99,7 @@ class AdminService(BaseService):
 
     def get_admin_listings(
         self,
-        filters: Mapping[str, str] | None = None,
+        filters: Optional[Mapping[str, str]] = None,
     ) -> List[Dict[str, Any]]:
         """Get listings for administrator view."""
 
@@ -127,7 +127,7 @@ class AdminService(BaseService):
 
     def get_admin_requests(
         self,
-        filters: Mapping[str, str] | None = None,
+        filters: Optional[Mapping[str, str]] = None,
     ) -> List[Dict[str, Any]]:
         """Get request records for administrator view."""
 
@@ -170,7 +170,7 @@ class AdminService(BaseService):
 
     def get_admin_completed_requests(
         self,
-        filters: Mapping[str, str] | None = None,
+        filters: Optional[Mapping[str, str]] = None,
     ) -> List[Dict[str, Any]]:
         """Get completed request records for administrator view."""
 
