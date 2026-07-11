@@ -4,13 +4,39 @@
 <section class="mb-4">
     <p class="text-uppercase small text-muted mb-1">Administrator</p>
     <h1 class="mb-2">Completed Request Records</h1>
-    <p class="text-muted mb-0">
-        Monitor completed requests that represent finished platform transactions.
-    </p>
 </section>
+
+{% include "admin/_summary_cards.html" %}
 
 {% set active_section = 'completed_requests' %}
 {% include "admin/_management_nav.html" %}
+
+<form class="admin-filter-bar mb-3" method="get">
+    <div>
+        <label class="form-label" for="lock-filter">Review Lock</label>
+        <select class="form-select" id="lock-filter" name="lock">
+            <option value="">All lock states</option>
+            <option value="open" {% if filters.lock == 'open' %}selected{% endif %}>
+                Open
+            </option>
+            <option
+                value="locked"
+                {% if filters.lock == 'locked' %}selected{% endif %}
+            >
+                Locked
+            </option>
+        </select>
+    </div>
+    <div class="admin-filter-actions">
+        <button class="btn btn-primary" type="submit">Apply</button>
+        <a
+            class="btn btn-outline-primary"
+            href="{{ url_for('admin.view_completed_requests') }}"
+        >
+            Reset
+        </a>
+    </div>
+</form>
 
 {% set empty_title = "No completed request records found" %}
 {% set empty_message = "Completed buyer-seller requests will appear here." %}

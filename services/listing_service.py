@@ -19,6 +19,7 @@ from utils.constants import (
     LISTING_STATUSES,
     LISTING_STATUS_AVAILABLE,
 )
+from utils.status_badges import listing_status_badge_class
 
 DEFAULT_CATEGORIES = [
     "Electronics",
@@ -522,6 +523,7 @@ class ListingService(BaseService):
         listing["condition"] = LEGACY_CONDITION_MAP.get(listing["condition"], listing["condition"])
         listing["condition_label"] = listing["condition"].title()
         listing["status_label"] = listing["status"].title()
+        listing["status_badge_class"] = listing_status_badge_class(listing["status"])
         listing["price_label"] = "{0:.2f}".format(listing["price"])
         seller_contact_method = listing.get("seller_contact_method")
         

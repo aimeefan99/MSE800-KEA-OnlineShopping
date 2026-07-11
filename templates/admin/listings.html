@@ -4,18 +4,54 @@
 <section class="mb-4">
     <p class="text-uppercase small text-muted mb-1">Administrator</p>
     <h1 class="mb-2">Listing Management</h1>
-    <p class="text-muted mb-0">
-        Review platform listings across all statuses when moderation is needed.
-    </p>
 </section>
+
+{% include "admin/_summary_cards.html" %}
 
 {% set active_section = 'listings' %}
 {% include "admin/_management_nav.html" %}
 
+<form class="admin-filter-bar mb-3" method="get">
+    <div>
+        <label class="form-label" for="status-filter">Status</label>
+        <select class="form-select" id="status-filter" name="status">
+            <option value="">All statuses</option>
+            {% for status_option in status_options %}
+                <option
+                    value="{{ status_option.value }}"
+                    {% if filters.status == status_option.value %}selected{% endif %}
+                >
+                    {{ status_option.label }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="form-label" for="category-filter">Category</label>
+        <select class="form-select" id="category-filter" name="category">
+            <option value="">All categories</option>
+            {% for category_option in category_options %}
+                <option
+                    value="{{ category_option.value }}"
+                    {% if filters.category == category_option.value %}selected{% endif %}
+                >
+                    {{ category_option.label }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="admin-filter-actions">
+        <button class="btn btn-primary" type="submit">Apply</button>
+        <a class="btn btn-outline-primary" href="{{ url_for('admin.view_listings') }}">
+            Reset
+        </a>
+    </div>
+</form>
+
 {% if listings %}
     <div class="card border-0 shadow-sm">
         <div class="table-responsive">
-            <table class="table align-middle mb-0">
+            <table class="table table-hover align-middle mb-0 admin-table">
                 <thead class="table-light">
                     <tr>
                         <th scope="col">ID</th>
@@ -48,9 +84,13 @@
                                 </a>
                             </td>
                             <td>{{ listing.category_name }}</td>
-                            <td>{{ listing.condition_label }}</td>
                             <td>
                                 <span class="badge text-bg-light border">
+                                    {{ listing.condition_label }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {{ listing.status_badge_class }}">
                                     {{ listing.status_label }}
                                 </span>
                             </td>
@@ -78,7 +118,11 @@
                                         }}"
                                         method="post"
                                         class="d-inline"
-                                        onsubmit="return confirm('Delete this listing permanently?')"
+                                        onsubmit="
+                                            return confirm(
+                                                'Delete this listing permanently?'
+                                            )
+                                        "
                                     >
                                         <button
                                             type="submit"

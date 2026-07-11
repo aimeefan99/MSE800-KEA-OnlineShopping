@@ -63,6 +63,18 @@ class SmokeTestCase(unittest.TestCase):
 
         self.temp_dir.cleanup()
 
+    def test_brand_rule_header_uses_kea_marketplace_logo(self) -> None:
+        """Protect the rule that the shared header uses the branded logo."""
+
+        response = self.client.get("/")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("<title>Kea Marketplace</title>", page)
+        self.assertIn("kea-marketplace-logo.png", page)
+        self.assertIn("Kea Marketplace", page)
+        self.assertNotIn("Second-Hand Trading Platform", page)
+
     def test_access_rule_admin_cannot_open_marketplace_only_pages(self) -> None:
         """Protect the rule that admin accounts do not participate in trading flows."""
 
@@ -118,6 +130,59 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("User Management", page)
         self.assertIn("buyer@example.com", page)
         self.assertIn("admin@example.com", page)
+
+    def test_admin_pages_show_summary_cards_and_filter_tables(self) -> None:
+        """Protect admin summary cards and table filtering controls."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        self.client.post("/admin/users/1/lock")
+
+        users_response = self.client.get("/admin/users?status=locked")
+        users_page = users_response.get_data(as_text=True)
+        listings_response = self.client.get("/admin/listings?status=sold")
+        listings_page = listings_response.get_data(as_text=True)
+
+        self.assertEqual(users_response.status_code, 200)
+        self.assertIn("Total Users", users_page)
+        self.assertIn("Locked Users", users_page)
+        self.assertIn("Active Listings", users_page)
+        self.assertIn("Completed Requests", users_page)
+        self.assertIn("buyer@example.com", users_page)
+        self.assertNotIn("admin@example.com", users_page)
+
+        self.assertEqual(listings_response.status_code, 200)
+        self.assertIn("Sold Bike", listings_page)
+        self.assertNotIn("Available Camera", listings_page)
+
+    def test_status_badges_use_consistent_colour_classes(self) -> None:
+        """Protect status badge colour classes across listings and requests."""
+
+        self._login_as(2, ROLE_ADMIN, "Admin")
+        listings_page = self.client.get("/admin/listings").get_data(as_text=True)
+        requests_page = self.client.get("/admin/requests").get_data(as_text=True)
+        completed_page = self.client.get(
+            "/admin/requests/completed",
+        ).get_data(as_text=True)
+
+        self.assertIn("status-badge--available", listings_page)
+        self.assertIn("status-badge--sold", listings_page)
+        self.assertIn("status-badge--pending", requests_page)
+        self.assertIn("status-badge--completed", completed_page)
+
+        self.client.post("/admin/requests/1/lock")
+        locked_page = self.client.get("/admin/requests").get_data(as_text=True)
+        self.assertIn("status-badge--locked", locked_page)
+
+    def test_theme_styles_alerts_with_kea_feedback_colours(self) -> None:
+        """Protect themed flash and status alert styles."""
+
+        stylesheet = (PROJECT_ROOT / "static" / "css" / "main.css").read_text()
+
+        self.assertIn(".alert-success", stylesheet)
+        self.assertIn(".alert-danger", stylesheet)
+        self.assertIn(".alert-warning", stylesheet)
+        self.assertIn(".alert-info", stylesheet)
+        self.assertIn("box-shadow: 0 0.65rem 1.25rem var(--kea-shadow);", stylesheet)
 
     def test_admin_user_rule_admin_can_lock_marketplace_user_account(self) -> None:
         """Protect the rule that administrators can lock unsafe user accounts."""
@@ -424,6 +489,26 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("No listings created yet", page)
         self.assertNotIn("Available Camera", page)
 
+    def test_empty_states_include_useful_next_actions(self) -> None:
+        """Protect empty states so users are not left on dead-end pages."""
+
+        self._login_as(1, ROLE_USER, "Buyer")
+        favorites_page = self.client.get("/favorites").get_data(as_text=True)
+        listings_page = self.client.get("/account/listings").get_data(as_text=True)
+
+        connection = sqlite3.connect(self.database_path)
+        connection.execute("DELETE FROM requests")
+        connection.commit()
+        connection.close()
+        requests_page = self.client.get("/requests/history").get_data(as_text=True)
+
+        self.assertIn("No favourites yet", favorites_page)
+        self.assertIn("Browse Listings", favorites_page)
+        self.assertIn("No listings created yet", listings_page)
+        self.assertIn("Create Listing", listings_page)
+        self.assertIn("No requests yet", requests_page)
+        self.assertIn("Browse Listings", requests_page)
+
     def test_listing_rule_expanded_category_options_are_available(self) -> None:
         """Protect the rule that second-hand categories cover common item types."""
 
@@ -573,6 +658,20 @@ class SmokeTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("buyer@example.com", page)
         self.assertNotIn("Buyer Legal Name", page)
+
+    def test_profile_rule_empty_trust_values_are_compact_and_reviews_are_not_duplicated(self) -> None:
+        """Protect the compact empty state requested during peer review."""
+
+        response = self.client.get("/profiles/1")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Jun 2026", page)
+        self.assertNotIn("2026-06-15", page)
+        self.assertNotIn("No ratings yet", page)
+        self.assertNotIn("No feedback yet", page)
+        self.assertEqual(1, page.count("No reviews yet."))
+        self.assertNotIn("0 reviews from completed transactions", page)
 
     def test_profile_rule_public_profile_shows_trust_indicators(self) -> None:
         """Protect the rule that public profiles show reliability indicators."""

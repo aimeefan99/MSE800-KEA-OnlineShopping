@@ -1,6 +1,6 @@
 """Administrator routes."""
 
-from flask import Blueprint, flash, redirect, render_template, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from services.admin_service import admin_service
 from utils.decorators import admin_required
@@ -13,9 +13,15 @@ admin_bp = Blueprint("admin", __name__)
 def view_users() -> str:
     """Render the administrator user page."""
 
+    filters = {
+        "role": request.args.get("role", ""),
+        "status": request.args.get("status", ""),
+    }
     return render_template(
         "admin/users.html",
-        users=admin_service.get_admin_users(),
+        admin_summary=admin_service.get_admin_summary(),
+        filters=filters,
+        users=admin_service.get_admin_users(filters),
     )
 
 
@@ -24,9 +30,17 @@ def view_users() -> str:
 def view_listings() -> str:
     """Render the administrator listing page."""
 
+    filters = {
+        "status": request.args.get("status", ""),
+        "category": request.args.get("category", ""),
+    }
     return render_template(
         "admin/listings.html",
-        listings=admin_service.get_admin_listings(),
+        admin_summary=admin_service.get_admin_summary(),
+        category_options=admin_service.get_listing_category_filter_options(),
+        filters=filters,
+        listings=admin_service.get_admin_listings(filters),
+        status_options=admin_service.get_listing_status_filter_options(),
     )
 
 
@@ -35,9 +49,16 @@ def view_listings() -> str:
 def view_requests() -> str:
     """Render the administrator request page."""
 
+    filters = {
+        "status": request.args.get("status", ""),
+        "lock": request.args.get("lock", ""),
+    }
     return render_template(
         "admin/requests.html",
-        requests=admin_service.get_admin_requests(),
+        admin_summary=admin_service.get_admin_summary(),
+        filters=filters,
+        requests=admin_service.get_admin_requests(filters),
+        status_options=admin_service.get_request_status_filter_options(),
     )
 
 
@@ -46,9 +67,14 @@ def view_requests() -> str:
 def view_completed_requests() -> str:
     """Render the administrator completed request page."""
 
+    filters = {
+        "lock": request.args.get("lock", ""),
+    }
     return render_template(
         "admin/completed_requests.html",
-        requests=admin_service.get_admin_completed_requests(),
+        admin_summary=admin_service.get_admin_summary(),
+        filters=filters,
+        requests=admin_service.get_admin_completed_requests(filters),
     )
 
 

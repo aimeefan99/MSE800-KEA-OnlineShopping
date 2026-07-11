@@ -1,5 +1,7 @@
 """Profile service logic."""
 
+from datetime import datetime
+
 from typing import Any, Dict, Mapping, Optional, Tuple
 
 from models.db import get_db
@@ -145,7 +147,13 @@ class ProfileService(BaseService):
 
         profile = dict(row)
         profile["bio"] = profile.get("bio") or "No public bio provided yet."
-        profile["member_since_label"] = str(profile["created_at"])[:10]
+        raw_created_at = str(profile["created_at"])
+        try:
+            profile["member_since_label"] = datetime.fromisoformat(
+                raw_created_at
+            ).strftime("%b %Y")
+        except ValueError:
+            profile["member_since_label"] = raw_created_at[:7]
         if profile["preferred_contact_method"] == CONTACT_METHOD_PHONE:
             profile["preferred_contact_method_label"] = "Phone"
             profile["public_contact_value"] = profile.get("phone_number") or "Not provided"
@@ -190,7 +198,7 @@ class ProfileService(BaseService):
         positive_review_count = int(summary["positive_review_count"] or 0)
         average_score = summary["average_score"]
         profile["average_score_label"] = (
-            "{0:.1f}".format(average_score) if average_score is not None else "No ratings yet"
+            "{0:.1f}".format(average_score) if average_score is not None else "—"
         )
         profile["positive_feedback_label"] = ProfileService._format_positive_feedback(
             profile["review_count"],
@@ -203,7 +211,7 @@ class ProfileService(BaseService):
         """Return the positive feedback percentage for public profile display."""
 
         if review_count == 0:
-            return "No feedback yet"
+            return "—"
 
         positive_feedback_rate = positive_review_count / review_count
         return "{0:.0%}".format(positive_feedback_rate)
