@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 from models.db import get_db
 from services.base_service import BaseService
+from services.image_storage_service import image_storage_service
 from utils.constants import (
     LISTING_STATUS_AVAILABLE,
     LISTING_STATUSES,
@@ -139,7 +140,7 @@ class AdminService(BaseService):
 
         db = get_db()
         listing_row = db.execute(
-            "SELECT id FROM listings WHERE id = ?",
+            "SELECT id, image_url FROM listings WHERE id = ?",
             (listing_id,),
         ).fetchone()
         if listing_row is None:
@@ -166,6 +167,7 @@ class AdminService(BaseService):
         db.execute("DELETE FROM favorite_list WHERE listing_id = ?", (listing_id,))
         db.execute("DELETE FROM listings WHERE id = ?", (listing_id,))
         db.commit()
+        image_storage_service.delete_listing_image(listing_row["image_url"])
         return True, "Listing deleted successfully."
 
     def get_admin_completed_requests(

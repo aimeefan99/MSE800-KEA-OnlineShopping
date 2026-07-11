@@ -60,11 +60,6 @@ def uploaded_file(filename: str):
     if image_path.is_file():
         return send_from_directory(upload_folder, normalized_filename)
 
-    legacy_upload_folder = Path(current_app.config["LEGACY_UPLOAD_FOLDER"])
-    legacy_image_path = legacy_upload_folder / normalized_filename
-    if legacy_image_path.is_file():
-        return send_from_directory(legacy_upload_folder, normalized_filename)
-
     abort(404)
 
 

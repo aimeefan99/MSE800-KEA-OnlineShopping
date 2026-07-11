@@ -30,9 +30,13 @@ class Config:
     UPLOAD_FOLDER = Path(
         os.getenv("UPLOAD_FOLDER", str(INSTANCE_DIR / "uploads"))
     )
-    LEGACY_UPLOAD_FOLDER = Path(
-        os.getenv("LEGACY_UPLOAD_FOLDER", str(BASE_DIR / "static" / "uploads"))
-    )
+    IMAGE_STORAGE_PROVIDER = os.getenv("IMAGE_STORAGE_PROVIDER", "local").strip().lower()
+    S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "").strip()
+    S3_REGION = os.getenv("S3_REGION", "").strip()
+    S3_PUBLIC_BASE_URL = os.getenv("S3_PUBLIC_BASE_URL", "").strip().rstrip("/")
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "").strip()
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "").strip()
+    AWS_SESSION_TOKEN = os.getenv("AWS_SESSION_TOKEN", "").strip()
     APP_HOST = os.getenv("APP_HOST", "127.0.0.1")
     APP_PORT = int(os.getenv("APP_PORT", "5001"))
     DEBUG = _to_bool(os.getenv("FLASK_DEBUG"), True)

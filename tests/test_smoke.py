@@ -24,6 +24,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from app import create_app
 from models.schema import SCHEMA
+from utils.listing_images import resolve_listing_image_url
 from utils.constants import (
     CONTACT_METHOD_EMAIL,
     LISTING_STATUS_AVAILABLE,
@@ -603,6 +604,21 @@ class SmokeTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Electronics", page)
         self.assertIn("Available Camera", page)
+
+    def test_image_rule_s3_provider_builds_public_image_urls(self) -> None:
+        """Protect the rule that deployed listing images can resolve from S3."""
+
+        self.app.config.update(
+            IMAGE_STORAGE_PROVIDER="s3",
+            S3_PUBLIC_BASE_URL="https://example-bucket.s3.us-east-1.amazonaws.com",
+        )
+        with self.app.app_context():
+            image_url = resolve_listing_image_url("uploads/sample-image.jpg")
+
+        self.assertEqual(
+            "https://example-bucket.s3.us-east-1.amazonaws.com/sample-image.jpg",
+            image_url,
+        )
 
     def test_recommendation_api_returns_listing_results_only(self) -> None:
         """Protect the documented recommendation endpoint response shape."""

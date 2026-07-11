@@ -1,17 +1,14 @@
 """Listing service logic."""
 
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Tuple
-from uuid import uuid4
 
-from flask import current_app
 from werkzeug.datastructures import FileStorage
-from werkzeug.utils import secure_filename
 
 from models.db import get_db
 from models.factory import ListingFactory
 from services.base_service import BaseService
+from services.image_storage_service import image_storage_service
 from utils.constants import (
     CONTACT_METHOD_EMAIL,
     CONTACT_METHOD_PHONE,
@@ -194,7 +191,7 @@ class ListingService(BaseService):
         if validation_error is not None:
             return False, validation_error, cleaned_data, None
 
-        image_url = self._save_image_file(image_file)
+        image_url = image_storage_service.save_listing_image(image_file)
         listing = ListingFactory.create_from_form(
             seller_id=seller_id,
             category_id=int(cleaned_data["category_id"]),
@@ -239,7 +236,8 @@ class ListingService(BaseService):
         image_url = item["image_url"]
         # Keep the current photo unless the seller uploads a replacement image.
         if image_file is not None and image_file.filename:
-            image_url = self._save_image_file(image_file)
+            image_storage_service.delete_listing_image(image_url)
+            image_url = image_storage_service.save_listing_image(image_file)
 
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         db.execute(
@@ -280,6 +278,7 @@ class ListingService(BaseService):
         if not item or item["seller_id"] != user_id:
             return False
 
+        image_storage_service.delete_listing_image(item["image_url"])
         db.execute("DELETE FROM listings WHERE id = ?", (listing_id,))
         db.commit()
         return True
@@ -440,18 +439,6 @@ class ListingService(BaseService):
         if price <= 0:
             return "Price must be greater than 0."
         return None
-
-    @staticmethod
-    def _save_image_file(image_file: FileStorage) -> str:
-        """Save the uploaded image and return its relative path."""
-        upload_folder = Path(current_app.config["UPLOAD_FOLDER"])
-        upload_folder.mkdir(parents=True, exist_ok=True)
-
-        filename = secure_filename(image_file.filename)
-        unique_name = "{0}_{1}".format(uuid4().hex, filename)
-        image_path = upload_folder / unique_name
-        image_file.save(image_path)
-        return "uploads/{0}".format(unique_name)
 
     @staticmethod
     def _insert_listing(listing) -> int:

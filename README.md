@@ -157,9 +157,17 @@ variables, including:
 - `SECRET_KEY`
 - `DATABASE_PATH`
 - `UPLOAD_FOLDER`
+- `IMAGE_STORAGE_PROVIDER`
+- `S3_BUCKET_NAME`
+- `S3_REGION`
+- `S3_PUBLIC_BASE_URL`
 - `APP_HOST`
 - `APP_PORT`
 - `GEMINI_API_KEY`
+
+When `IMAGE_STORAGE_PROVIDER=s3`, listing images are uploaded to Amazon S3 and
+listing records should store the S3 object key rather than a local `uploads/...`
+path.
 
 ### 4. Run Code Quality Check
 
@@ -204,6 +212,25 @@ Notes:
 - the container installs Python dependencies from `requirements.txt`
 - the startup command automatically initializes the SQLite schema before launching Flask
 - the container runs the app on `0.0.0.0:5001` so the browser can access it from the host machine
+
+### S3 image storage
+
+For deployment, configure the following values in `.env`:
+
+```bash
+IMAGE_STORAGE_PROVIDER=s3
+S3_BUCKET_NAME=mse800-market-images
+S3_REGION=us-east-1
+S3_PUBLIC_BASE_URL=https://mse800-market-images.s3.us-east-1.amazonaws.com
+```
+
+If you have already uploaded legacy listing images from `instance/uploads` into
+the bucket using their original filenames, run the migration script once to
+update database image references from `uploads/filename.jpg` to `filename.jpg`:
+
+```bash
+python scripts/migrate_listing_images_to_s3_keys.py
+```
 
 ---
 
