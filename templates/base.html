@@ -14,11 +14,13 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
         <div class="container">
             <a class="navbar-brand site-brand" href="/">
-                <img
-                    class="site-brand-logo"
-                    src="{{ url_for('static', filename='images/kea-marketplace-logo.png') }}"
-                    alt="Kea Marketplace logo"
-                >
+                <span class="site-brand-logo-frame">
+                    <img
+                        class="site-brand-logo"
+                        src="{{ url_for('static', filename='images/kea-marketplace-logo.png') }}"
+                        alt="Kea Marketplace logo"
+                    >
+                </span>
                 <span class="site-brand-name">Kea Marketplace</span>
             </a>
             <div class="navbar-nav gap-2">

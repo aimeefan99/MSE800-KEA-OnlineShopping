@@ -659,6 +659,20 @@ class SmokeTestCase(unittest.TestCase):
         self.assertIn("buyer@example.com", page)
         self.assertNotIn("Buyer Legal Name", page)
 
+    def test_profile_rule_empty_trust_values_are_compact_and_reviews_are_not_duplicated(self) -> None:
+        """Protect the compact empty state requested during peer review."""
+
+        response = self.client.get("/profiles/1")
+        page = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Jun 2026", page)
+        self.assertNotIn("2026-06-15", page)
+        self.assertNotIn("No ratings yet", page)
+        self.assertNotIn("No feedback yet", page)
+        self.assertEqual(1, page.count("No reviews yet."))
+        self.assertNotIn("0 reviews from completed transactions", page)
+
     def test_profile_rule_public_profile_shows_trust_indicators(self) -> None:
         """Protect the rule that public profiles show reliability indicators."""
 

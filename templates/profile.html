@@ -85,12 +85,12 @@
 
             <div>
                 <h2 class="h5">Reviews</h2>
-                <p class="text-body-secondary mb-3">
-                    {{ profile.review_count }}
-                    review{% if profile.review_count != 1 %}s{% endif %}
-                    from completed transactions.
-                </p>
                 {% if profile.recent_reviews %}
+                    <p class="text-body-secondary mb-3">
+                        {{ profile.review_count }} verified
+                        review{% if profile.review_count != 1 %}s{% endif %}
+                        from completed transactions.
+                    </p>
                     <div class="d-grid gap-3">
                         {% for review in profile.recent_reviews %}
                             <div class="rounded-4 bg-light p-3">
@@ -113,7 +113,9 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p class="text-body-secondary mb-0">No reviews yet.</p>
+                    <div class="review-empty-state" role="status">
+                        <p class="mb-0">No reviews yet.</p>
+                    </div>
                 {% endif %}
             </div>
         </div>
