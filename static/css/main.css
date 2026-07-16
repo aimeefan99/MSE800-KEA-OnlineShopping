@@ -174,15 +174,15 @@ h3,
 .site-brand {
     display: inline-flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 1rem;
     min-width: 0;
-    padding: 0.35rem 0;
+    padding: 0.45rem 0;
 }
 
 .site-brand-logo-frame {
-    width: 64px;
-    height: 64px;
-    flex: 0 0 64px;
+    width: 88px;
+    height: 88px;
+    flex: 0 0 88px;
     overflow: hidden;
     border-radius: 50%;
     box-shadow: 0 0 0 2px rgba(217, 121, 34, 0.18);
@@ -199,7 +199,9 @@ h3,
 
 .site-brand-name {
     font-weight: 800;
-    font-size: 1.35rem;
+    font-size: 1.9rem;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
     color: var(--kea-heading);
     white-space: nowrap;
 }
