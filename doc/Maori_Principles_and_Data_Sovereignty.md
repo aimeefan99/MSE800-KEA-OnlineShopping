@@ -3,7 +3,7 @@
 ## 1. Introduction
 
 This report explains how Māori principles and Māori Data Sovereignty are considered in
-the `Second-Hand Trading Platform` project. Software development is not only about
+the `Second-Hand Trading Platform - Kea Marketplace` project. Software development is not only about
 building features. It also includes making responsible decisions about how data is
 collected, stored, used, and shared.
 

@@ -2,12 +2,12 @@
 
 ## 1. Purpose
 
-This document records the early feasibility study for the `Second-Hand Trading Platform`
+This document records the early feasibility study for the `Second-Hand Trading Platform - Kea Marketplace`
 project. It explains why we chose this project, what scope decisions we made at the
 beginning, and why the project was realistic for a two-person, six-week software
-engineering assignment.
+engineering project.
 
-The study follows the main feasibility dimensions emphasized in class:
+The study follows the main feasibility dimensions used in software feasibility analysis:
 
 - technical feasibility
 - operational feasibility
@@ -87,8 +87,8 @@ split into clear modules for:
 - administration
 - AI and recommendation features
 
-This made Flask a good fit for a two-developer academic project where both clarity and
-speed of development mattered.
+This made Flask a good fit for a two-developer project where both clarity and speed of
+development mattered.
 
 ### 4.2 Frontend
 
@@ -110,7 +110,7 @@ usually use a stronger database platform.
 
 ### 4.4 AI Feature
 
-Using the `OpenAI API` for AI-assisted listing draft generation was feasible because we
+Using the `Google Gemini API` for AI-assisted listing draft generation was feasible because we
 only needed a simple assisted workflow. The AI output is treated as a draft suggestion,
 not as final product data.
 

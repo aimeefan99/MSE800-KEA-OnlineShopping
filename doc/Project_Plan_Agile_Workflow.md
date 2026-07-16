@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-### Second-Hand Trading Platform
+### Second-Hand Trading Platform - Kea Marketplace
 
 *With AI One-Click Listing and Interest-Based Homepage Recommendation*
 
@@ -21,6 +21,22 @@ In response, our project focuses on two highlighted features that are practical 
 
 The project will also be deployed as a live containerised system and refined through user testing.
 
+## Technology Stack
+
+- Backend: Python, Flask
+- Frontend: HTML, CSS, Bootstrap
+- Database: SQLite
+- AI Integration: Google Gemini API
+- Containerization: Docker
+- CI/CD: GitHub Actions
+- Cloud Hosting: AWS EC2
+- Cloud Image Storage: Amazon S3
+- Version Control: GitHub
+- Project Management: Jira
+- Design Tool: draw.io
+
+The implementation approach follows object-oriented programming and selected design patterns where appropriate.
+
 ## Agile Approach
 
 This project follows a lightweight six-week Agile workflow suitable for a two-member team.
@@ -30,16 +46,16 @@ The team will work in short sprints, review progress regularly, and adjust tasks
 - delivering a working MVP early
 - improving the system by sprint iteration
 - keeping the scope realistic
-- sharing work equally across the team
+- coordinating work clearly across the team
 - testing and refining the system continuously
 
 Each sprint is expected to deliver a testable and reviewable increment so the system can improve through continuous sprint iteration.
 
 ## Team Collaboration
 
-This project uses an equal-contribution collaboration model.
+This project uses a shared collaboration model across a two-member team.
 
-Both team members will participate in:
+Both team members will contribute across implementation and review activities, including:
 
 - frontend development
 - backend development
@@ -50,20 +66,17 @@ Both team members will participate in:
 - sprint review and retrospective
 - deployment implementation and verification
 
-Work will be divided evenly by sprint tasks and project features rather than by fixed frontend or backend ownership.
+Work will be coordinated by sprint tasks, feature groupings, and shared project standards rather than by a strict frontend-versus-backend split.
 
-## Technology Stack
+High-level responsibility areas are summarized below:
 
-- Backend: Python, Flask
-- Frontend: HTML, CSS, Bootstrap
-- Database: SQLite
-- AI Integration: OpenAI API
-- Containerization and Deployment: Docker, Kubernetes
-- Version Control: GitHub
-- Project Management: Trello or Jira
-- Design Tool: draw.io
-
-The implementation approach follows object-oriented programming and selected design patterns from the course where appropriate.
+| Area | Main Responsibility |
+|---|---|
+| Project Management, Sprint Management, High Level Project Documents and Shared Technical Standards | Fan Fan |
+| System Design, Flask Mapping and ALL Diagrams: System Architecture Diagram, Use Case Diagram, Activity Diagram, Class Diagram, ER Diagram | Mahima Hoque Mim |
+| Core features: AI listing draft(Gemini), Account management, Listing Creation, Listing Browsing, Item Details, Favorites List, and Administrator Management  | Fan Fan |
+| Core features: Smart Homepage, Search and Filter, Request and Transaction, Trust and Review, Administrator Request-Management, and UI Refinement | Mahima Hoque Mim |
+| Deployment and AWS Cloud Setup: Docker, GitHub Actions, EC2 Hosting, S3 Image Storage, Environment Configuration, and Deployment Validation | Fan Fan |
 
 ## Agile Ceremonies
 
@@ -112,9 +125,10 @@ A task will be considered complete when:
 - related database changes are completed if required
 - it is integrated into the main workflow
 - basic testing has been completed
+- the related code review has been completed before merge to `main`
 - the work has been committed and pushed to GitHub
 
-## Delivery Boundary
+## Scope Control
 
 The team will follow these priority boundaries during development:
 
@@ -135,552 +149,262 @@ To keep the project realistic and manageable, the team will monitor a small numb
 - integration risk: test feature integration at the end of each sprint
 - deployment risk: prepare deployment early and keep the deployment environment aligned with the core system
 
-## Product Backlog Priority
+## Cost Management
 
-### Must Have
+The project was designed to keep operating costs low during development and demonstration:
 
-- guest browsing of listings and item details
-- user registration
-- user login and logout
-- user and administrator roles
-- profile editing with contact preference
-- age verification during registration using date of birth
-- create listing
-- edit listing
-- delete listing
-- listing image upload
-- browse listings
-- search listings by keyword
-- filter by category
-- filter by condition
-- filter by price range
-- item detail page
-- public user profile viewing
-- favorite list support
-- purchase request submission
-- request management for listing owners
-- sold status update after transaction completion
-- administrator viewing of user accounts and listings
-- administrator deletion of inappropriate listings
-- AI one-click listing assistant
-- interest-based homepage recommendation
-- ratings and reviews for completed transactions
-- profile trust indicators such as transaction count and rating summary
+- the AI listing feature uses the Gemini API free tier for low-volume prototype usage
+- AWS deployment was kept within the AWS new-account credit model used by the project account
+- Docker, EC2, and S3 were kept to a simple single-instance deployment design to avoid unnecessary infrastructure cost
+- public cloud usage was limited to the services directly needed for hosting, image storage, and demonstration
 
-### Should Have
-
-- better UI usability improvements
-
-### Could Have
-
-- request or transaction history view
-- administrator viewing of request records and completed request records
-- administrator locking of request records
-- semantic-style search improvement only if time permits
-- analytics dashboard
-- flagged listing workflow
-- recently viewed items support
+Cost usage was monitored during implementation because some AWS resources, including Elastic IP usage, can still consume credit balance.
 
 ## MVP and Innovation Scope
 
 ### Core Features
 
-The core feature scope will be considered complete when the following platform capabilities are working:
+The MVP scope covers the main second-hand marketplace workflow:
 
-1. Visitors can browse listings, search by keyword, apply filters, and view item details without registering.
-2. Users can register, log in, and access the platform according to their role.
-3. User registration includes age verification based on date of birth.
-4. Users can edit core profile details, including phone number and preferred contact method.
-5. Users can create, edit, and delete their own listings with clear listing status support.
-6. Registered users can save interesting listings to a favorite list page.
-7. Registered users can submit purchase requests through the platform.
-8. Listing owners can view purchase requests and accept or reject them.
-9. Buyers can confirm when a transaction is completed, and the related listing is then marked as sold.
-10. Listings marked as `sold` no longer appear in normal browse and search results for available items.
-11. Users can view basic request or transaction history.
-12. Administrators can view user accounts, view listings, delete inappropriate listings, view request records and completed request records, and lock users or lock request records when needed without changing the transaction outcome directly.
-
-Project completion also requires the innovation features defined below.
+- visitors can browse, search, filter, and view listings without registering
+- users can register, log in, edit profiles, and manage their own listings
+- users can save favorites and submit purchase requests
+- sellers can manage incoming requests and complete the basic transaction flow
+- administrators can monitor users and listings and remove inappropriate content
 
 ### Innovation Features
 
-The innovation feature scope will be considered complete when the following features are working:
+The main innovation scope is limited to two features:
 
-1. Sellers can upload one product image and receive a draft listing with a suggested item name, suggested category, short description draft, and a rough platform-based price reference.
-2. The homepage can identify a user's recent interest category from search, browsing, and favorite list behaviour, then prioritise relevant listings for that user.
+- AI-assisted listing draft generation from a single uploaded product image
+- homepage recommendations based on recent user interest signals
 
-## Core User Stories
+## Product Backlog Priority
 
-The product backlog is prioritised using three levels:
+The detailed backlog was maintained in Jira. This document records backlog priority only at a summary level:
 
-- `Must Have`: required for the MVP, the core trading workflow, or the two highlighted features.
-- `Should Have`: important for usability and trust, but the platform can still run without them if time becomes tight.
-- `Could Have`: useful improvements that can be postponed without breaking the main workflow or the feature demo.
+- `Must Have`: features required for the marketplace MVP and the two main differentiation features
+- `Should Have`: important trust, usability, and refinement features
+- `Could Have`: lower-priority enhancements that can be postponed without affecting the core demonstration
 
-The backlog also aligns to Jira priority labels as follows:
+The Jira priority labels were aligned as follows:
 
-- `Highest` or `High`: Must Have
-- `Medium`: Should Have
-- `Low`: Could Have
-- `Lowest`: reserved for ideas that are explicitly parked outside the current delivery plan
+- `Highest` or `High` -> `Must Have`
+- `Medium` -> `Should Have`
+- `Low` -> `Could Have`
 
-### Must Have
+## Sprint Management and Tracking
 
-#### Access and Core Platform Entry
+Detailed story status, sprint progress, and acceptance criteria were managed in Jira:
 
-- As a visitor, I want to browse listings without registering so that I can explore the platform before creating an account.
-- As a visitor, I want to search listings and view item details without logging in so that I can decide whether the platform has items I am interested in.
-- As a user, I want to register an account so that I can use the platform.
-- As a user, I want to log in and log out securely so that I can access my personal features safely.
-
-#### Listing and Selling Workflow
-
-- As a user, I want to create a listing so that I can offer an item for sale on the platform.
-- As a user, I want to edit or delete my listing so that I can keep item information accurate.
-- As a user, I want to upload one product image and receive a draft listing so that I can publish items much faster than filling every field manually.
-- As a user, I want to view incoming purchase requests on my listings so that I can manage interested buyers.
-- As a user, I want to accept or reject incoming purchase requests on my listings so that the transaction process is clear.
-- As a user, I want to confirm a completed transaction so that the related listing is updated to sold correctly.
-
-#### Buying and Discovery Workflow
-
-- As a user, I want to browse listings so that I can discover available items on the platform.
-- As a user, I want to search listings by keyword so that I can quickly find relevant products.
-- As a user, I want to use filters such as category, condition, and price range so that I can narrow search results efficiently.
-- As a user, I want to view item details so that I can decide whether I am interested in a product.
-- As a user, I want to save interesting items to a favorite list so that I can revisit them later.
-- As a user, I want to view my favorite list page so that I can manage saved items.
-- As a user, I want to submit a purchase request so that I can express interest in buying an item.
-- As a user, I want the homepage to recommend listings from categories I recently searched, browsed, or saved so that discovery feels more relevant to my current interest.
-
-#### Administrator Control
-
-- As an administrator, I want to view user accounts so that I can monitor platform safety.
-- As an administrator, I want to view listings so that I can inspect platform content when needed.
-- As an administrator, I want to delete inappropriate listings so that clearly unsuitable content can be removed from the platform.
-
-### Should Have
-
-#### Profile, Trust, and Communication
-
-- As a user, I want to edit my profile details so that my account information and contact preference stay up to date.
-- As a user, I want to set my preferred contact method to email or phone so that other users know the best way to contact me.
-- As a user, I want to view another user's profile so that I can understand credibility before responding to a request.
-- As a user, I want to leave a rating or review after a completed transaction so that trust can be built between users.
-- As a user, I want to view profile trust indicators such as completed transactions and positive feedback so that I can judge reliability more easily.
-- As a user, I want my public profile to show key trust and contact information so that marketplace communication is more practical and transparent.
-
-#### Administration and Record Tracking
-
-- As an administrator, I want to lock a user account when necessary so that unsafe or inappropriate activity can be controlled.
-- As an administrator, I want to view request records and completed request records so that I can monitor platform activity responsibly.
-- As a user, I want to view my request or transaction history so that I can track my activity on the platform.
-
-### Could Have
-
-#### Secondary Administrative and Usability Enhancements
-
-- As an administrator, I want to lock a request record when necessary so that a problematic case can be frozen for review without manually changing its result.
-- As an administrator, I want to view request records and completed request records so that I can monitor platform activity responsibly.
-- As a user, I want to view my request or transaction history so that I can track my activity on the platform.
-- As a user, I want to view another user's profile so that I can understand credibility before responding to a request.
-- As a user, I want to set my preferred contact method to email or phone so that other users know the best way to contact me.
+- https://aimeefan99.atlassian.net/jira/software/projects/MSE800/summary
 
 ## Sprint Structure
 
+The sprint plan is intentionally kept at a summary level here. Detailed task tracking, assignees, and acceptance criteria were managed in Jira during implementation.
+
 ## Sprint 1: Project Setup and Requirements
 
-Duration:
-
-- Week 1
+Duration: `Week 1`
 
 Sprint Goal:
 
-- confirm requirements and establish the technical foundation
+- confirm project scope and prepare the shared technical foundation
 
-Highlight Tasks:
+Key Focus:
 
-- finalize project scope
-- confirm the user and administrator role model
-- define MVP features
-- define out-of-scope features
-- confirm core user stories
-- review reference platforms such as Trade Me
-- identify the project point of difference
-- confirm the AI one-click listing concept
-- confirm the homepage recommendation logic
-- create use case diagram
-- create ER diagram
-- create activity diagram
-- sketch main page structure
-- set up GitHub repository
-- set up Trello or Jira board
-- initialize Flask project structure
-- prepare database schema draft
+- define the product vision, scope, and differentiation points
+- create and prioritise the backlog
+- define functional requirements, shared routes, and development guidelines
+- prepare system design, data model, and initial diagrams
+- set up the repository, workflow, and initial Flask project structure
 
-Frontend / UI Tasks:
+Key Stories:
 
-- sketch wireframes for the main pages
-- define page structure and navigation flow
-- confirm the main user journey for user and administrator interfaces
-
-Backend / System Tasks:
-
-- initialize Flask project structure
-- prepare the initial database schema draft
-- confirm the main entities and workflow relationships
-
-Deployment / DevOps Tasks:
-
-- set up GitHub repository and branch workflow
-- set up Trello or Jira board
-- confirm Docker and Kubernetes deployment direction
-
-Detailed User Stories:
-
-- `Priority: Medium | Should Have` As a project team, we want to document how Māori principles and Māori Data Sovereignty are considered in our project so that our cultural, ethical, and data-handling decisions are clearly explained.
-
-- Core user stories are reviewed, prioritised, and translated into backlog items for implementation.
-- This sprint makes sure the following development work is based on clear user needs, agreed scope boundaries, and a shared system structure.
+- `MSE800-50` project vision, scope, and differentiation
+- `MSE800-51` core requirements documentation
+- `MSE800-52` backlog creation and prioritisation
+- `MSE800-53` system architecture and module responsibilities
+- `MSE800-54` data model and business rules
+- `MSE800-55` shared routes, fields, and response rules
+- `MSE800-56` development guidelines
+- `MSE800-59` Flask usage documentation
+- `MSE800-60` feasibility study
 
 Expected Output:
 
-- confirmed project scope
-- prioritized user stories completed
-- key diagrams completed
-- project structure set up
-- initial backlog created
+- agreed scope and feature priorities
+- shared project structure and working conventions
+- initial technical documentation and diagrams
+- development-ready backlog for implementation
 
 ## Sprint 2: Account and Listing Increment
 
-Duration:
-
-- Week 2
+Duration: `Week 2`
 
 Sprint Goal:
 
-- build the core account and listing management system
+- build the core account, listing, and browsing foundation
 
-Highlight Tasks:
+Key Focus:
 
-- implement user registration
-- implement age verification during registration using date of birth
-- implement login and logout
-- implement user and administrator role handling
-- implement basic administrator access control foundation
-- create database tables for users, listings, categories, and requests
-- create database support for favorite list
-- create database support for listing status foundation
-- implement create listing
-- implement listing image support
-- implement edit listing
-- implement delete listing
-- implement browse listings page
-- implement item detail page
-- implement search by keyword
-- implement practical filters such as category, condition, and price range
-- implement basic page templates and forms
-- test authentication workflow
-- test listing creation and browsing workflow
+- registration, login, logout, and profile editing
+- listing creation, editing, deletion, and status handling
+- browse listings, item details, keyword search, and filters
+- establish the first working database-backed marketplace flow
 
-Frontend / UI Tasks:
+Key Stories:
 
-- build register and login pages
-- build profile edit page
-- build listing form and listing management page
-- include listing image input in listing forms
-- build browse listings page and item detail page
-- build search and filter interface
-- build favorite list page structure
-- connect the first account and listing pages to the backend
-
-Backend / System Tasks:
-
-- implement registration, login, and logout logic
-- implement age verification logic during registration
-- implement user and administrator role handling
-- implement basic administrator access control foundation
-- create users, listings, categories, and requests tables
-- create favorite list table
-- add editable profile fields such as phone number and preferred contact method
-- add support for listing status foundation
-- add listing image field support for listings
-- implement listing create, edit, and delete logic
-- implement listing browse, item detail, keyword search, and filter logic
-
-Deployment / DevOps Tasks:
-
-- prepare Docker-related project structure
-- confirm the application can run consistently in the local development environment
-
-Detailed User Stories:
-
-- `Priority: Highest | Must Have` As a user, I want to register an account so that I can use the platform.
-- `Priority: Highest | Must Have` As a user, I want to log in and log out securely so that I can access my personal features safely.
-- `Priority: Highest | Must Have` As a user, I want to browse listings so that I can discover available items on the platform.
-- `Priority: Highest | Must Have` As a user, I want to search listings by keyword so that I can quickly find relevant products.
-- `Priority: High | Must Have` As a user, I want to use filters such as category, condition, and price range so that I can narrow search results efficiently.
-- `Priority: High | Must Have` As a user, I want to view item details so that I can decide whether I am interested in a product.
-- `Priority: Highest | Must Have` As a user, I want to create a listing so that I can sell an item.
-- `Priority: High | Must Have` As a user, I want to edit or delete my listing so that I can keep item information accurate.
-- `Priority: High | Must Have` As a user, I want to see listing status such as available, pending, or sold so that I understand the current trading state of an item.
-- `Priority: Medium | Should Have` As a user, I want to edit my profile details, including preferred contact method and related contact details, so that my account information stays up to date.
-- `Priority: Low | Could Have` As a user, I want to set my preferred contact method to email or phone so that other users know the best way to contact me.
+- `MSE800-1` register account
+- `MSE800-2` log in and log out
+- `MSE800-3` edit profile details
+- `MSE800-4` create listing
+- `MSE800-5` edit or delete listing
+- `MSE800-12` browse listings
+- `MSE800-13` search listings by keyword
+- `MSE800-14` listing filters
+- `MSE800-15` item details
+- `MSE800-27` listing status display
 
 Expected Output:
 
-- authentication working
-- users can manage their own listings
-- users can browse and search listings
-- database schema implemented
-- basic UI pages connected to backend
+- working authentication flow
+- working listing create, edit, delete, and browse flow
+- searchable and filterable marketplace pages
+- stable database foundation for later transaction features
 
 ## Sprint 3: Marketplace MVP Increment
 
-Duration:
-
-- Week 3
+Duration: `Week 3`
 
 Sprint Goal:
 
-- complete the main user-to-user transaction flow
+- complete the first end-to-end marketplace transaction workflow
 
-Highlight Tasks:
+Key Focus:
 
-- implement public user profile view pages
-- implement favorite list add and view flow
-- implement purchase request submission
-- implement incoming request view for listing owners
-- implement request actions such as accept, reject, and complete
-- implement buyer confirmation of completed transaction
-- update sold status after completion confirmation
-- implement basic administrator pages for viewing users and listings
-- implement administrator deletion of inappropriate listings
-- test end-to-end marketplace workflow
-- fix integration issues
+- public profile viewing
+- favorite list add and view flow
+- purchase request submission and incoming request handling
+- buyer-side completion flow
+- initial administrator user and listing management
 
-Frontend / UI Tasks:
+Key Stories:
 
-- build public user profile view pages
-- build favorite list page
-- build purchase request form or action flow
-- build listing owner request management page
-- build basic administrator management pages
-
-Backend / System Tasks:
-
-- implement public user profile data support
-- implement favorite list add and retrieval logic
-- implement purchase request submission
-- implement request handling actions such as accept, reject, and complete
-- implement buyer confirmation of completed transaction
-- update sold status after completion confirmation
-- implement administrator listing deletion support
-- implement basic administrator user and listing views
-- prepare lightweight recommendation data foundations
-
-Deployment / DevOps Tasks:
-
-- prepare containerized MVP build
-- verify the marketplace MVP can run in the intended deployment setup
-
-Detailed User Stories:
-
-- `Priority: Low | Could Have` As a user, I want to view another user's profile so that I can understand credibility before making or accepting a request.
-- `Priority: High | Must Have` As a user, I want to save interesting items to a favorite list so that I can revisit them later.
-- `Priority: High | Must Have` As a user, I want to view my favorite list page so that I can manage saved items.
-- `Priority: Highest | Must Have` As a user, I want to submit a purchase request so that I can express interest in buying an item.
-- `Priority: Highest | Must Have` As a user, I want to view incoming purchase requests on my listings so that I can manage interested buyers.
-- `Priority: Highest | Must Have` As a user, I want to accept or reject incoming purchase requests on my listings so that the transaction process is clear.
-- `Priority: Highest | Must Have` As a user, I want to confirm when a transaction is completed so that the platform can close the trading process correctly.
-- `Priority: High | Must Have` As an administrator, I want to view user accounts so that I can monitor platform safety.
-- `Priority: High | Must Have` As an administrator, I want to view listings so that I can inspect platform content when needed.
-- `Priority: High | Must Have` As an administrator, I want to delete inappropriate listings so that unsuitable content can be removed from the platform.
+- `MSE800-8` view incoming purchase requests
+- `MSE800-9` accept or reject incoming purchase requests
+- `MSE800-10` confirm completed transaction
+- `MSE800-11` view another user's profile
+- `MSE800-16` save items to favorites
+- `MSE800-17` view favorite list
+- `MSE800-18` submit a purchase request
+- `MSE800-19` administrator views user accounts
+- `MSE800-20` administrator views listings
+- `MSE800-21` administrator deletes inappropriate listings
 
 Expected Output:
 
-- users can submit purchase requests
-- listing owners can manage requests
-- administrators can view users and listings and delete inappropriate listings
-- public profile viewing is available
-- favorite list support is available
-- core marketplace workflow completed
+- users can save listings and submit purchase requests
+- listing owners can manage incoming requests
+- administrators can monitor users and listings
+- the core marketplace trading loop is functional
 
 ## Sprint 4: Core Differentiation Features
 
-Duration:
-
-- Week 4
+Duration: `Week 4`
 
 Sprint Goal:
 
-- complete the two signature features that distinguish the platform from a standard marketplace flow
+- implement the main differentiation features of the platform
 
-Highlight Tasks:
+Key Focus:
 
-- implement AI image upload flow for one-click listing draft generation
-- connect uploaded listing images to the AI service
-- generate suggested item name, category, and description draft from the uploaded image
-- generate a rough platform-based price reference using similar listings in the database
-- build homepage recommendation logic based on recent search, browsing, and favorite list behaviour
-- connect homepage recommendation results to the main user landing page
-- implement a simple rating and review feature for completed transactions
-- implement profile trust indicators such as completed transactions and positive feedback
-- connect trust information to public profile and transaction pages
-- test whether AI listing draft output is useful and relevant
-- test whether homepage recommendations are noticeably more relevant than fixed generic content
+- AI-assisted listing draft generation from product images
+- homepage recommendations based on recent interest signals
+- ratings, reviews, and public trust indicators
+- stronger public profile contact and credibility information
 
-Frontend / UI Tasks:
+Key Stories:
 
-- build AI one-click listing assistant interface
-- build image upload and draft preview flow
-- display homepage recommendation sections based on detected interest category
-- build rating and review form
-- display profile trust indicators
-- display preferred contact method and selected contact details on public profiles
-
-Backend / System Tasks:
-
-- implement image upload handling for AI listing draft generation
-- call the AI service for item recognition and listing draft generation
-- implement platform-database-based rough price estimation using similar listings
-- implement homepage recommendation logic based on interest category signals
-- implement rating and review logic for completed transactions
-- calculate profile trust indicators such as completed transactions and positive feedback
-- support public profile display for transaction count, rating summary, and preferred contact method
-
-Deployment / DevOps Tasks:
-
-- update the deployed application structure for AI and review-related features
-- verify deployment compatibility after the new feature integration
-
-Detailed User Stories:
-
-- `Priority: Highest | Must Have` As a user, I want to upload one product image and receive a listing draft so that I can publish an item faster.
-- `Priority: Highest | Must Have` As a user, I want the platform to suggest an item name, category, description, and rough price reference so that creating a listing feels easier and more informed.
-- `Priority: Highest | Must Have` As a user, I want the homepage to surface listings related to my recent interest category so that item discovery feels more relevant than a fixed general marketplace homepage.
-- `Priority: Medium | Should Have` As a user, I want to leave a rating or review after a completed transaction so that trust can be built between users.
-- `Priority: Medium | Should Have` As a user, I want to view profile trust indicators such as completed transactions and positive feedback so that I can judge reliability more easily.
-- `Priority: Medium | Should Have` As a user, I want my public profile to show key trust and contact information so that marketplace communication is more practical and transparent.
+- `MSE800-28` AI listing draft generation
+- `MSE800-30` homepage recent-interest recommendations
+- `MSE800-31` rating and review after completed transaction
+- `MSE800-32` profile trust indicators
+- `MSE800-33` public profile trust and contact information
+- `MSE800-36` recommendation improvement after testing
 
 Expected Output:
 
-- AI one-click listing assistant working
-- interest-based homepage recommendation working
-- ratings and reviews feature working for completed transactions
-- public trust indicators visible in profiles
-- the platform's unique value is clearly visible in the demo
+- AI listing assistant visible in the user flow
+- recent-interest recommendations visible on the homepage
+- trust-building features connected to completed transactions and profiles
+- the platform's distinctive value clearly demonstrated
 
 ## Sprint 5: System Refinement Increment
 
-Duration:
-
-- Week 5
+Duration: `Week 5`
 
 Sprint Goal:
 
-- stabilize the system and improve usability
+- stabilize the system and prepare it for demonstration and deployment
 
-Highlight Tasks:
+Key Focus:
 
-- implement request or transaction history view
-- implement administrator view of request records and completed request records
-- implement administrator user and request record locking actions
-- fix bugs
-- improve UI and usability
-- run user testing
-- run integration testing
-- refine homepage recommendation quality and AI listing draft usability based on testing feedback
-- refine diagrams and documentation
-- prepare screenshots and testing evidence
-- review unresolved issues
-- update final backlog status
-- rehearse final presentation and demo
+- request history and administrator request-record controls
+- account and listing management refinements
+- bilingual labels, UI polish, branding, and category improvements
+- testing evidence, documentation, Docker, AWS deployment, S3 image storage, and secrets management
 
-Frontend / UI Tasks:
+Key Stories:
 
-- improve layout consistency and usability
-- refine user flow based on testing feedback
-- polish key pages for final demonstration
-
-Backend / System Tasks:
-
-- implement request or transaction history view
-- implement administrator request record and completed request record support
-- implement administrator user and request record locking support
-- fix bugs in implemented features
-- improve integration reliability across modules
-- refine data handling and system stability
-- tune homepage recommendation logic and AI listing draft behaviour where needed
-
-Deployment / DevOps Tasks:
-
-- test the integrated system in the deployment environment
-- refine configuration issues before final release
-
-Detailed User Stories:
-
-- `Priority: Low | Could Have` As a user, I want to view my request or transaction history so that I can track my activity on the platform.
-- `Priority: Low | Could Have` As an administrator, I want to view request records and completed request records so that I can monitor platform activity responsibly.
-- `Priority: High | Must Have` As an administrator, I want to lock a user account when necessary so that unsafe or inappropriate activity can be controlled.
-- `Priority: Low | Could Have` As an administrator, I want to lock a request record when necessary so that a problematic case can be frozen for review without manually changing its result.
-- `Priority: Medium | Should Have` As a user, I want the main platform pages to be easier to use so that buying, selling, and browsing feel smoother.
-- `Priority: Medium | Should Have` As a user, I want homepage recommendations to be improved after testing so that the feature quality feels more useful in practice.
-- `Priority: Low | Could Have` As a visitor, I want to see bilingual interface labels so that the platform feels more inclusive and culturally aware.
+- `MSE800-22` administrator request-record views
+- `MSE800-23` administrator user lock
+- `MSE800-24` administrator request-record lock
+- `MSE800-25` request and transaction history
+- `MSE800-57` testing strategy
+- `MSE800-58` verification and validation evidence
+- `MSE800-61` bilingual interface labels
+- `MSE800-62` Māori principles and data sovereignty documentation
+- `MSE800-63` Docker containerisation
+- `MSE800-64` AWS deployment
+- `MSE800-65` S3 image storage
+- `MSE800-66` deployment configuration and secrets management
+- `MSE800-69` category coverage improvement
+- `MSE800-70` header logo
+- `MSE800-72` UI polish and consistency
+- `MSE800-73` account page and my listings management
 
 Expected Output:
 
-- request or transaction history available
-- administrator request record and locking features available
-- bugs reduced across core workflows
-- usability improvements applied to key pages
-- testing evidence prepared
-- system more stable for final release
+- refined administrator and account-management workflows
+- improved usability and presentation quality
+- completed testing and evidence documentation
+- working Docker and AWS-based deployed environment with S3-backed listing images
 
 ## Sprint 6: Release Preparation Increment
 
-Duration:
-
-- Week 6
+Duration: `Week 6`
 
 Sprint Goal:
 
-- finalize deliverables, deployment, and submission
+- use the final week as a release buffer, final verification period, and submission preparation window
 
-Highlight Tasks:
+Key Focus:
 
-- complete README and technical documentation
-- deploy the application to a live platform
-- complete final testing check
-- finalize diagrams and evidence
-- complete presentation and demo preparation
-- conduct final submission review
+- final README, diagrams, and report polishing
+- final deployment verification and demo rehearsal
+- defect fixes if required
+- final presentation and submission preparation
 
-Frontend / UI Tasks:
+Key Stories:
 
-- complete final UI verification in the live environment
-- prepare screenshots and demo-ready page flow
-
-Backend / System Tasks:
-
-- complete final technical verification of implemented features
-- confirm the system is stable for demonstration and submission
-
-Deployment / DevOps Tasks:
-
-- deploy the application to a live Kubernetes-based environment
-- verify the deployed version is accessible and functional
-- complete final deployment check before submission
-
-Detailed User Stories:
-
-- As a user, I want the completed platform features to work in the deployed environment so that the final system can be demonstrated clearly.
+- no major new implementation stories were planned for this sprint
 
 Expected Output:
 
-- final report materials prepared
-- deployment completed
-- project ready for final submission
+- final report and presentation materials prepared
+- live system verified for demonstration
+- project ready for submission
 
 ## Deliverables by the End of the Project
 
@@ -694,24 +418,14 @@ Expected Output:
 - final documentation
 - deployed live version
 
-## Workflow Notes
+## Out-of-Scope Features
 
 To keep the project realistic for a two-person team, the following features are excluded from the main scope:
 
-- shopping cart and multi-item checkout
-- online payment
-- live chat
-- shipping, delivery tracking, and receiving workflow
-- dispute handling
-- complex negotiation workflow
-- automatic timeout-based completion
-- automatic default ratings or reviews
-- multiple image gallery support for each listing
-- multi-image AI recognition for listing generation
-- transaction readiness indicator as a separate feature
-- external market price integration
-- advanced recommendation engine
-- vector database or heavy semantic search infrastructure
-- complex machine learning pipeline
+- shopping cart, multi-item checkout, and online payment
+- live chat, shipping, delivery tracking, and dispute handling
+- complex negotiation or automation features beyond the basic request flow
+- multiple-image listing galleries and multi-image AI recognition
+- external market price integration and advanced recommendation or search infrastructure
 
 If time permits, the team may extend the project after the MVP and innovation features are complete.

@@ -2,7 +2,7 @@
 
 ## 1. Purpose
 
-This document defines the shared route, request field, and response behaviour for the `Second-Hand Trading Platform` project.
+This document defines the shared route, request field, and response behaviour for the `Second-Hand Trading Platform - Kea Marketplace` project.
 
 Both developers must follow this document when implementing:
 
@@ -32,8 +32,10 @@ If a shared route, field name, or response structure must change, both developer
 
 ### Shared Response Rules
 
-- Successful form submission must redirect.
-- Validation failure must return a visible error message on the page.
+- Successful form-based submission must redirect.
+- Successful JSON endpoints may return JSON payloads instead of redirects.
+- Validation failure on form-based routes must return a visible error message on the page.
+- Validation failure on JSON endpoints must return a JSON error response.
 - Required input must be checked before database write.
 - Shared field names must stay identical across forms, routes, templates, and database logic.
 
@@ -60,9 +62,13 @@ If a shared route, field name, or response structure must change, both developer
 | `request_id` | purchase request id |
 | `score` | review rating value |
 | `comment` | review text |
-| `price_reference` | AI draft rough price result |
 | `status` | listing or request status |
-| `category` | AI draft suggested category label |
+| `suggested_title` | AI draft suggested listing title |
+| `suggested_category` | AI draft suggested category label |
+| `suggested_description` | AI draft suggested listing description |
+| `visible_text` | short text detected from the uploaded image |
+| `detected_attributes` | short list of visible item attributes |
+| `confidence` | AI confidence level for the detected main item |
 
 ## 3. Authentication Routes
 
@@ -73,7 +79,7 @@ If a shared route, field name, or response structure must change, both developer
 | Route | `POST /register` |
 | Required fields | `display_name`, `full_name`, `date_of_birth`, `email`, `password`, `preferred_contact_method` |
 | Optional fields | `phone_number` |
-| Success result | create user account and redirect to login or home page |
+| Success result | create user account and redirect to the login page |
 | Failure result | show validation error on register page |
 
 Validation rules:
@@ -89,7 +95,7 @@ Validation rules:
 |---|---|
 | Route | `POST /login` |
 | Required fields | `email`, `password` |
-| Success result | create login session and redirect |
+| Success result | create login session and redirect to the homepage |
 | Failure result | show error message on login page |
 
 ### Logout
@@ -107,6 +113,7 @@ Validation rules:
 | Item | Definition |
 |---|---|
 | Route | `POST /listings/create` |
+| Access rule | logged-in marketplace user only |
 | Required fields | `title`, `category_id`, `description`, `condition`, `price`, `image` |
 | Success result | create listing with `available` status |
 | Owner rule | listing belongs to the logged-in user |
@@ -122,7 +129,8 @@ Rules:
 | Item | Definition |
 |---|---|
 | Route | `POST /listings/<listing_id>/edit` |
-| Required fields | `title`, `category_id`, `description`, `condition`, `price` |
+| Access rule | logged-in marketplace user only |
+| Required fields | `title`, `category_id`, `description`, `condition`, `price`, `status` |
 | Optional fields | `image` |
 | Success result | update listing and redirect to listing page or listing management page |
 | Owner rule | only the seller may edit the listing |
@@ -132,6 +140,7 @@ Rules:
 | Item | Definition |
 |---|---|
 | Route | `POST /listings/<listing_id>/delete` |
+| Access rule | logged-in marketplace user only |
 | Required route parameter | `listing_id` |
 | Success result | remove seller-owned listing and redirect |
 | Owner rule | only the seller may delete the listing |
@@ -159,6 +168,7 @@ Rules:
 | Item | Definition |
 |---|---|
 | Route | `POST /favorites/add` |
+| Access rule | logged-in marketplace user only |
 | Required fields | `listing_id` |
 | Success result | save listing to the current user's favorite list |
 
@@ -172,14 +182,16 @@ Rules:
 | Item | Definition |
 |---|---|
 | Route | `POST /favorites/remove` |
+| Access rule | logged-in marketplace user only |
 | Required fields | `listing_id` |
-| Success result | remove listing from the current user's favorite list |
+| Current implementation status | route exists but removal logic is not implemented yet |
 
 ### View Favorite List
 
 | Item | Definition |
 |---|---|
 | Route | `GET /favorites` |
+| Access rule | logged-in marketplace user only |
 | Required data | saved listings for the logged-in user |
 
 ## 6. Purchase Request and Transaction Routes
@@ -189,6 +201,7 @@ Rules:
 | Item | Definition |
 |---|---|
 | Route | `POST /requests/create` |
+| Access rule | logged-in marketplace user only |
 | Required fields | `listing_id` |
 | Optional fields | `message` |
 | Success result | create request with `pending` status |
@@ -205,6 +218,7 @@ Rules:
 | Item | Definition |
 |---|---|
 | Route | `POST /requests/<request_id>/accept` |
+| Access rule | logged-in marketplace user only |
 | Required route parameter | `request_id` |
 | Success result | update request status to `accepted` and update related listing status to `pending` |
 | Owner rule | only the listing owner may accept the request |
@@ -219,6 +233,7 @@ Rules:
 | Item | Definition |
 |---|---|
 | Route | `POST /requests/<request_id>/reject` |
+| Access rule | logged-in marketplace user only |
 | Required route parameter | `request_id` |
 | Success result | update request status to `rejected` |
 | Owner rule | only the listing owner may reject the request |
@@ -232,6 +247,7 @@ Rules:
 | Item | Definition |
 |---|---|
 | Route | `POST /requests/<request_id>/complete` |
+| Access rule | logged-in marketplace user only |
 | Required route parameter | `request_id` |
 | Success result | update request status to `completed` and update related listing status to `sold` |
 | Owner rule | only the buyer of the accepted request may complete the transaction |
@@ -246,6 +262,7 @@ Rules:
 | Item | Definition |
 |---|---|
 | Route | `GET /requests/incoming` |
+| Access rule | logged-in marketplace user only |
 | Required data | requests on listings owned by the logged-in user |
 
 ### View Request and Transaction History
@@ -253,6 +270,7 @@ Rules:
 | Item | Definition |
 |---|---|
 | Route | `GET /requests/history` |
+| Access rule | logged-in marketplace user only |
 | Required data | request records involving the logged-in user, including completed requests used as transaction history |
 
 ## 7. Review Routes
@@ -262,6 +280,7 @@ Rules:
 | Item | Definition |
 |---|---|
 | Route | `POST /reviews/create` |
+| Access rule | logged-in marketplace user only |
 | Required fields | `request_id`, `reviewed_user_id`, `score` |
 | Optional fields | `comment` |
 | Success result | create one review record and redirect |
@@ -281,16 +300,18 @@ Rules:
 | Item | Definition |
 |---|---|
 | Route | `POST /ai/listing-draft` |
+| Access rule | logged-in marketplace user only |
 | Required fields | `image` |
-| Required output fields | `title`, `category`, `description`, `price_reference` |
+| Success response shape | JSON object with `success: true` and a nested `draft` object |
+| Required draft fields | `suggested_title`, `suggested_category`, `suggested_description`, `visible_text`, `detected_attributes`, `confidence` |
 
 Rules:
 
 - the response is a draft only
 - the route must not create a final listing record
 - the user must review and confirm the final values before publishing
-- `category` is a suggested category label and must be mapped to a valid `category_id` before final listing creation
-- `price_reference` is a rough result based on internal listing data only and is not stored as a standalone database field in the first version
+- `suggested_category` is a suggested category label and must be mapped to a valid `category_id` before final listing creation
+- the route returns visible image evidence only and does not estimate market price in the current version
 - multi-image AI recognition is out of scope
 - external market price integration is out of scope
 
@@ -298,10 +319,15 @@ Example output structure:
 
 ```json
 {
-  "title": "Dell 24-inch Monitor",
-  "category": "Electronics",
-  "description": "Used monitor in good condition with power cable included.",
-  "price_reference": 120
+  "success": true,
+  "draft": {
+    "suggested_title": "Canon EOS 6D DSLR Camera",
+    "suggested_category": "Electronics",
+    "suggested_description": "This is a Canon EOS 6D digital SLR camera body. Includes the original product box.",
+    "visible_text": ["Canon", "EOS 6D", "Wi-Fi CERTIFIED"],
+    "detected_attributes": ["Black", "DSLR camera", "Includes original box"],
+    "confidence": "high"
+  }
 }
 ```
 
@@ -312,8 +338,8 @@ Example output structure:
 | Item | Definition |
 |---|---|
 | Route | `GET /recommendations/homepage` |
-| Internal inputs | recent search behaviour, recent browsing behaviour, recent favorite list behaviour |
-| Required output | prioritised listings |
+| Internal inputs | recent browsing category ids and saved favorite categories |
+| Required output | JSON array of prioritised listings |
 
 Rules:
 
@@ -321,8 +347,9 @@ Rules:
 - the feature does not expose technical scoring metadata to templates
 - the feature uses lightweight internal logic only
 - request behaviour is not part of the recommendation logic
+- when the user is logged in, their own listings are excluded from homepage recommendations
 
-## 10. Public Profile Routes
+## 10. Profile and Account Routes
 
 ### View Public Profile
 
@@ -337,12 +364,29 @@ Rules:
 | Item | Definition |
 |---|---|
 | Route | `POST /profile/edit` |
+| Access rule | logged-in marketplace user only |
 | Editable fields | `display_name`, `full_name`, `phone_number`, `preferred_contact_method`, `bio` |
 | Owner rule | users may edit only their own profile |
 
 Rules:
 
 - if `preferred_contact_method` is `phone`, `phone_number` must be provided
+
+### View Account Landing Page
+
+| Item | Definition |
+|---|---|
+| Route | `GET /account` |
+| Access rule | logged-in marketplace user only |
+| Required page data | current user's public profile summary |
+
+### View My Listings
+
+| Item | Definition |
+|---|---|
+| Route | `GET /account/listings` |
+| Access rule | logged-in marketplace user only |
+| Required page data | listings created by the current user only |
 
 ## 11. Admin Routes
 
