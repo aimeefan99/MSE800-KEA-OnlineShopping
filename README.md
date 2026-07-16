@@ -123,6 +123,10 @@ cp .env.example .env
 
 Then update any values you need, especially the secret key and AI API key.
 
+For local browser access and Docker runs, keep `APP_PORT=5001`. The default
+example file uses `APP_HOST=0.0.0.0`, which works for container access and also
+still allows you to open the site in the browser with `http://127.0.0.1:5001`.
+
 You can also set environment variables directly in the shell if preferred. For example:
 
 ```bash
@@ -164,6 +168,42 @@ Use `pylint` to check code quality during development:
 ```bash
 pylint app.py routes services models utils
 ```
+
+---
+
+## Run with Docker
+
+### 1. Build the image
+
+```bash
+docker build -t mse800-2 .
+```
+
+### 2. Start the container
+
+```bash
+docker run --rm -p 5001:5001 --env-file .env mse800-2
+```
+
+If you do not want to use a local `.env` file, you can pass values directly:
+
+```bash
+docker run --rm -p 5001:5001 -e SECRET_KEY=dev-secret-key -e APP_HOST=0.0.0.0 mse800-2
+```
+
+### 3. Open the app
+
+Once the container starts successfully, open:
+
+```text
+http://127.0.0.1:5001
+```
+
+Notes:
+
+- the container installs Python dependencies from `requirements.txt`
+- the startup command automatically initializes the SQLite schema before launching Flask
+- the container runs the app on `0.0.0.0:5001` so the browser can access it from the host machine
 
 ---
 
