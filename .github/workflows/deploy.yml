@@ -3,7 +3,7 @@ name: Deploy to Amazon EC2
 on:
   push:
     branches:
-      - deployment  
+      - main  
 
 jobs:
   deploy:
@@ -17,7 +17,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}   
           script: |
             cd /home/ubuntu/MSE800-Assessment2 
-            git reset --hard origin/deployment
-            git pull origin deployment
+            git reset --hard origin/main
+            git pull origin main
             cd /home/ubuntu/mse800-deploy
             docker compose up -d --build --force-recreate
