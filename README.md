@@ -147,6 +147,10 @@ For local browser access and Docker runs, keep `APP_PORT=5001`. The default
 example file uses `APP_HOST=0.0.0.0`, which works for container access while
 still allowing local browser access through `http://127.0.0.1:5001`.
 
+For listing images, local development can use the default local upload folders.
+If `S3_BUCKET_NAME` is configured, the application automatically stores and serves
+listing images through Amazon S3 instead.
+
 You can also set environment variables directly in the shell if preferred. For example:
 
 ```bash
@@ -177,6 +181,7 @@ variables, including:
 - `SECRET_KEY`
 - `DATABASE_PATH`
 - `UPLOAD_FOLDER`
+- `LEGACY_UPLOAD_FOLDER`
 - `APP_HOST`
 - `APP_PORT`
 - `S3_BUCKET_NAME`
@@ -235,6 +240,7 @@ Notes:
 - the container installs Python dependencies from `requirements.txt`
 - the startup command automatically initializes the SQLite schema before launching Flask
 - the container runs the app on `0.0.0.0:5001` so the browser can access it from the host machine
+- if no S3 settings are provided, listing images fall back to local upload storage
 - if you want the deployed-style image workflow to work, the runtime environment must also provide the required S3 settings
 - if you want the AI listing draft feature to work, the runtime environment must provide a valid `GEMINI_API_KEY`
 

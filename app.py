@@ -1,6 +1,6 @@
 """Application entry point for the second-hand trading platform."""
 
-from flask import Flask, render_template, session
+from flask import Flask, render_template, send_from_directory, session
 
 from config import Config
 from models.db import close_db
@@ -20,6 +20,7 @@ def create_app() -> Flask:
 
     app = Flask(__name__)
     app.config.from_object(Config)
+    app.config["UPLOAD_FOLDER"].mkdir(parents=True, exist_ok=True)
     app.teardown_appcontext(close_db)
 
     # Register feature blueprints here so routes stay grouped by responsibility.
@@ -43,6 +44,12 @@ def create_app() -> Flask:
             recommendations["listings"]
         )
         return render_template("home.html", recommendations=recommendations)
+
+    @app.get("/uploads/<path:filename>")
+    def uploaded_file(filename: str):
+        """Serve locally stored listing images when S3 is not configured."""
+
+        return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
     return app
 

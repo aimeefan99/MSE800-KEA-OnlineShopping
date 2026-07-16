@@ -1,0 +1,23 @@
+name: Deploy to Amazon EC2
+
+on:
+  push:
+    branches:
+      - main  
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 3.227.125.114               
+          username: ubuntu                  
+          key: ${{ secrets.EC2_SSH_KEY }}   
+          script: |
+            cd /home/ubuntu/MSE800-Assessment2 
+            git reset --hard origin/main
+            git pull origin main
+            cd /home/ubuntu/mse800-deploy
+            docker compose up -d --build --force-recreate

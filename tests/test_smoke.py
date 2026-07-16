@@ -17,6 +17,7 @@ import tempfile
 import unittest
 from io import BytesIO
 from pathlib import Path
+from unittest.mock import patch
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
@@ -24,6 +25,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from app import create_app
 from models.schema import SCHEMA
+from utils.listing_images import resolve_listing_image_url
 from utils.constants import (
     CONTACT_METHOD_EMAIL,
     LISTING_STATUS_AVAILABLE,
@@ -41,18 +43,22 @@ class SmokeTestCase(unittest.TestCase):
 
         self.temp_dir = tempfile.TemporaryDirectory()
         self.database_path = Path(self.temp_dir.name) / "test.db"
-        self.upload_dir = Path(self.temp_dir.name) / "uploads"
-        self.legacy_upload_dir = Path(self.temp_dir.name) / "legacy_uploads"
-        self.upload_dir.mkdir(parents=True, exist_ok=True)
-        self.legacy_upload_dir.mkdir(parents=True, exist_ok=True)
+        self.upload_s3_patcher = patch(
+            "services.image_storage_service.ImageStorageService._upload_to_s3"
+        )
+        self.delete_s3_patcher = patch(
+            "services.image_storage_service.ImageStorageService._delete_from_s3"
+        )
+        self.upload_s3_patcher.start()
+        self.delete_s3_patcher.start()
 
         self.app = create_app()
         self.app.config.update(
             TESTING=True,
             SECRET_KEY="test-secret",
             DATABASE_PATH=self.database_path,
-            UPLOAD_FOLDER=self.upload_dir,
-            LEGACY_UPLOAD_FOLDER=self.legacy_upload_dir,
+            S3_BUCKET_NAME="test-bucket",
+            S3_PUBLIC_BASE_URL="https://example-bucket.s3.us-east-1.amazonaws.com",
         )
         self.client = self.app.test_client()
 
@@ -61,6 +67,8 @@ class SmokeTestCase(unittest.TestCase):
     def tearDown(self) -> None:
         """Clean up the temporary workspace used by the test."""
 
+        self.upload_s3_patcher.stop()
+        self.delete_s3_patcher.stop()
         self.temp_dir.cleanup()
 
     def test_brand_rule_header_uses_kea_marketplace_logo(self) -> None:
@@ -603,6 +611,17 @@ class SmokeTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Electronics", page)
         self.assertIn("Available Camera", page)
+
+    def test_image_rule_s3_provider_builds_public_image_urls(self) -> None:
+        """Protect the rule that deployed listing images resolve from S3."""
+
+        with self.app.app_context():
+            image_url = resolve_listing_image_url("uploads/sample-image.jpg")
+
+        self.assertEqual(
+            "https://example-bucket.s3.us-east-1.amazonaws.com/sample-image.jpg",
+            image_url,
+        )
 
     def test_recommendation_api_returns_listing_results_only(self) -> None:
         """Protect the documented recommendation endpoint response shape."""
