@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Codex">
   <diagram id="ERDSecondHandPlatform" name="ER Diagram">
-    <mxGraphModel dx="1778" dy="1147" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2000" dy="1290" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -8,7 +8,7 @@
           <mxGeometry height="40" width="800" x="550" y="20" as="geometry" />
         </mxCell>
         <mxCell id="users" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=13;align=left;spacingLeft=10;verticalAlign=top;" value="&lt;b&gt;users&lt;/b&gt;&lt;hr/&gt;&lt;b&gt;PK&lt;/b&gt; id&lt;br/&gt;display_name&lt;br/&gt;full_name&lt;br/&gt;date_of_birth&lt;br/&gt;email (UNIQUE)&lt;br/&gt;phone_number (NULL)&lt;br/&gt;preferred_contact_method&lt;br/&gt;password_hash&lt;br/&gt;role&lt;br/&gt;is_locked&lt;br/&gt;bio (NULL)&lt;br/&gt;created_at" vertex="1">
-          <mxGeometry height="300" width="280" x="60" y="180" as="geometry" />
+          <mxGeometry height="300" width="280" x="60" y="245" as="geometry" />
         </mxCell>
         <mxCell id="categories" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=13;align=left;spacingLeft=10;verticalAlign=top;" value="&lt;b&gt;categories&lt;/b&gt;&lt;hr/&gt;&lt;b&gt;PK&lt;/b&gt; id&lt;br/&gt;name" vertex="1">
           <mxGeometry height="105" width="250" x="550" y="90" as="geometry" />
@@ -17,10 +17,10 @@
           <mxGeometry height="280" width="330" x="510" y="255" as="geometry" />
         </mxCell>
         <mxCell id="requests" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=13;align=left;spacingLeft=10;verticalAlign=top;" value="&lt;b&gt;requests&lt;/b&gt;&lt;hr/&gt;&lt;b&gt;PK&lt;/b&gt; id&lt;br/&gt;&lt;b&gt;FK&lt;/b&gt; listing_id references listings.id&lt;br/&gt;&lt;b&gt;FK&lt;/b&gt; buyer_id references users.id&lt;br/&gt;&lt;b&gt;FK&lt;/b&gt; seller_id references users.id&lt;br/&gt;status&lt;br/&gt;is_locked&lt;br/&gt;message (NULL)&lt;br/&gt;created_at&lt;br/&gt;updated_at&lt;br/&gt;CHECK (buyer_id != seller_id)" vertex="1">
-          <mxGeometry height="285" width="350" x="1050" y="255" as="geometry" />
+          <mxGeometry height="285" width="350" x="1050" y="254" as="geometry" />
         </mxCell>
         <mxCell id="favorite_list" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=13;align=left;spacingLeft=10;verticalAlign=top;" value="&lt;b&gt;favorite_list&lt;/b&gt;&lt;hr/&gt;&lt;b&gt;PK&lt;/b&gt; id&lt;br/&gt;&lt;b&gt;FK&lt;/b&gt; user_id references users.id&lt;br/&gt;&lt;b&gt;FK&lt;/b&gt; listing_id references listings.id&lt;br/&gt;created_at&lt;br/&gt;UNIQUE (user_id, listing_id)" vertex="1">
-          <mxGeometry height="180" width="350" x="500" y="730" as="geometry" />
+          <mxGeometry height="180" width="350" x="500" y="704" as="geometry" />
         </mxCell>
         <mxCell id="reviews" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=13;align=left;spacingLeft=10;verticalAlign=top;" value="&lt;b&gt;reviews&lt;/b&gt;&lt;hr/&gt;&lt;b&gt;PK&lt;/b&gt; id&lt;br/&gt;&lt;b&gt;FK&lt;/b&gt; request_id references requests.id&lt;br/&gt;&lt;b&gt;FK&lt;/b&gt; reviewer_id references users.id&lt;br/&gt;&lt;b&gt;FK&lt;/b&gt; reviewed_user_id references users.id&lt;br/&gt;score&lt;br/&gt;comment (NULL)&lt;br/&gt;created_at&lt;br/&gt;CHECK (score BETWEEN 1 AND 5)&lt;br/&gt;UNIQUE (request_id, reviewer_id, reviewed_user_id)" vertex="1">
           <mxGeometry height="265" width="390" x="1030" y="690" as="geometry" />
@@ -44,20 +44,20 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e_buyer_request" edge="1" parent="1" source="users" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;strokeColor=#4D4D4D;" target="requests" value="buyer submits">
-          <mxGeometry relative="1" x="-0.133" as="geometry">
+          <mxGeometry relative="1" x="0.5272" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
-              <mxPoint x="360" y="575" />
-              <mxPoint x="1225" y="575" />
+              <mxPoint x="260" y="575" />
+              <mxPoint x="1190" y="575" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="e_seller_request" edge="1" parent="1" source="users" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;strokeColor=#4D4D4D;" target="requests" value="seller receives">
-          <mxGeometry relative="1" x="-0.1084" as="geometry">
+          <mxGeometry relative="1" x="0.4897" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
-              <mxPoint x="360" y="615" />
-              <mxPoint x="1225" y="615" />
+              <mxPoint x="260" y="615" />
+              <mxPoint x="1190" y="615" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -65,9 +65,7 @@
           <mxGeometry relative="1" x="0.2462" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
-              <mxPoint x="380" y="655" />
-              <mxPoint x="470" y="655" />
-              <mxPoint x="470" y="820" />
+              <mxPoint x="150" y="820" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -84,16 +82,14 @@
         <mxCell id="e_reviewer_review" edge="1" parent="1" source="users" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;strokeColor=#4D4D4D;" target="reviews" value="reviewer writes">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="370" y="970" />
-              <mxPoint x="1210" y="970" />
+              <mxPoint x="100" y="900" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="e_subject_review" edge="1" parent="1" source="users" style="edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;strokeColor=#4D4D4D;" target="reviews" value="reviewed user receives">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="350" y="1015" />
-              <mxPoint x="1240" y="1015" />
+              <mxPoint x="100" y="920" />
             </Array>
           </mxGeometry>
         </mxCell>
