@@ -8,7 +8,7 @@
             <h1 class="mb-2">Discover Items</h1>
             {% if recommendations.is_personalized %}
                 <p class="text-muted mb-0">
-                    Recommended from your recent browsing and saved item categories.
+                    Recommended for you based on your recent interests.
                 </p>
             {% else %}
                 <p class="text-muted mb-0">
@@ -20,6 +20,48 @@
             Browse All Listings
         </a>
     </div>
+</section>
+
+<section class="mb-4">
+    <form
+        class="row g-2 align-items-end"
+        action="{{ url_for('listings.browse_listings') }}"
+        method="get"
+    >
+        <div class="col-md-8 col-lg-6">
+            <label class="form-label" for="keyword">Search listings</label>
+            <input
+                class="form-control"
+                id="keyword"
+                name="keyword"
+                type="search"
+                value="{{ filters.keyword }}"
+                placeholder="Search by product, description, or category"
+            >
+        </div>
+        <div class="col-md-4 col-lg-3">
+            <label class="form-label" for="category_id">Category</label>
+            <select class="form-select" id="category_id" name="category_id">
+                <option value="">All categories</option>
+                {% for category in categories %}
+                    <option
+                        value="{{ category.id }}"
+                        {% if filters.category_id == category.id|string %}selected{% endif %}
+                    >
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-lg-3 d-flex gap-2">
+            <button class="btn btn-primary flex-grow-1" type="submit">Search</button>
+            {% if filters.keyword or filters.category_id %}
+                <a class="btn btn-outline-secondary" href="{{ url_for('home') }}">
+                    Clear
+                </a>
+            {% endif %}
+        </div>
+    </form>
 </section>
 
 {% if recommendations.interest_categories %}
