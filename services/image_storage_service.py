@@ -1,6 +1,5 @@
 """Storage helpers for listing images."""
 
-from pathlib import Path
 from typing import Optional
 from uuid import uuid4
 
@@ -10,27 +9,18 @@ from werkzeug.utils import secure_filename
 
 
 class ImageStorageService:
-    """Save, delete, and resolve listing images across environments."""
+    """Save, delete, and resolve listing images through S3-backed storage."""
 
     def save_listing_image(self, image_file: FileStorage) -> str:
-        """Store one uploaded image and return the persisted image reference."""
+        """Upload one listing image to S3 and return its stored object key."""
 
         filename = secure_filename(image_file.filename or "")
         unique_name = "{0}_{1}".format(uuid4().hex, filename)
-        provider = current_app.config["IMAGE_STORAGE_PROVIDER"]
-
-        if provider == "s3":
-            self._upload_to_s3(image_file, unique_name)
-            return unique_name
-
-        upload_folder = Path(current_app.config["UPLOAD_FOLDER"])
-        upload_folder.mkdir(parents=True, exist_ok=True)
-        image_path = upload_folder / unique_name
-        image_file.save(image_path)
-        return "uploads/{0}".format(unique_name)
+        self._upload_to_s3(image_file, unique_name)
+        return unique_name
 
     def delete_listing_image(self, image_reference: Optional[str]) -> None:
-        """Remove a stored image when a listing photo is replaced or deleted."""
+        """Remove a stored S3 image when a listing photo is replaced or deleted."""
 
         if not image_reference:
             return
@@ -39,19 +29,10 @@ class ImageStorageService:
             return
 
         normalized_name = self.normalize_image_reference(image_reference)
-        provider = current_app.config["IMAGE_STORAGE_PROVIDER"]
-
-        if provider == "s3":
-            self._delete_from_s3(normalized_name)
-            return
-
-        upload_folder = Path(current_app.config["UPLOAD_FOLDER"])
-        local_image_path = upload_folder / normalized_name
-        if local_image_path.is_file():
-            local_image_path.unlink()
+        self._delete_from_s3(normalized_name)
 
     def resolve_listing_image_url(self, image_reference: str) -> str:
-        """Return a browser-safe image URL for the active storage backend."""
+        """Return a browser-safe image URL for the stored S3 image."""
 
         if not image_reference:
             return url_for("static", filename="images/listing-placeholder.svg")
@@ -60,16 +41,7 @@ class ImageStorageService:
             return image_reference
 
         normalized_name = self.normalize_image_reference(image_reference)
-        provider = current_app.config["IMAGE_STORAGE_PROVIDER"]
-
-        if provider == "s3":
-            return self._build_s3_public_url(normalized_name)
-
-        upload_folder = Path(current_app.config["UPLOAD_FOLDER"])
-        if (upload_folder / normalized_name).is_file():
-            return url_for("listings.uploaded_file", filename=normalized_name)
-
-        return url_for("static", filename="images/listing-placeholder.svg")
+        return self._build_s3_public_url(normalized_name)
 
     @staticmethod
     def normalize_image_reference(value: str) -> str:
@@ -100,7 +72,7 @@ class ImageStorageService:
 
         bucket_name = current_app.config["S3_BUCKET_NAME"]
         if not bucket_name:
-            raise RuntimeError("S3_BUCKET_NAME is required when IMAGE_STORAGE_PROVIDER=s3.")
+            raise RuntimeError("S3_BUCKET_NAME is required for listing image storage.")
 
         image_file.stream.seek(0)
         client = self._build_s3_client()

@@ -30,7 +30,7 @@ Main Flask responsibilities in the project:
 | Flask component | Project file | Purpose |
 | --- | --- | --- |
 | `Flask(__name__)` | `app.py` | Creates the web application instance. |
-| `app.config.from_object(Config)` | `app.py`, `config.py` | Loads database, upload, and secret-key configuration. |
+| `app.config.from_object(Config)` | `app.py`, `config.py` | Loads database, S3 image, and secret-key configuration. |
 | `app.teardown_appcontext(close_db)` | `app.py`, `models/db.py` | Closes the SQLite connection after each request context. |
 | `app.register_blueprint(...)` | `app.py` | Adds modular route groups to the application. |
 | `@app.get("/")` | `app.py` | Defines the homepage route. |
@@ -42,7 +42,7 @@ The project separates route files by feature area. This keeps controller code or
 | Blueprint | File | Main responsibility |
 | --- | --- | --- |
 | `auth_bp` | `routes/auth_routes.py` | Login, registration, logout. |
-| `listing_bp` | `routes/listing_routes.py` | Listing browsing, detail view, create, edit, delete, image serving. |
+| `listing_bp` | `routes/listing_routes.py` | Listing browsing, detail view, create, edit, and delete. |
 | `transaction_bp` | `routes/transaction_routes.py` | Favorites, purchase requests, request history, reviews. |
 | `profile_bp` | `routes/profile_routes.py` | Public profile and edit profile pages. |
 | `recommendation_bp` | `routes/recommendation_routes.py` | Homepage recommendation JSON endpoint. |
@@ -58,7 +58,6 @@ The project separates route files by feature area. This keeps controller code or
 | `GET` | `/` | `home()` in `app.py` | `templates/home.html` | Shows the homepage with recent or recommended listings. |
 | `GET` | `/listings` | `browse_listings()` | `templates/listings.html` | Shows searchable and filterable marketplace listings. |
 | `GET` | `/listings/<listing_id>` | `view_listing_detail()` | `templates/listing_detail.html` | Shows one listing and request/favorite actions. |
-| `GET` | `/uploads/<filename>` | `uploaded_file()` | File response | Serves uploaded listing images. |
 
 ### Authentication Routes
 

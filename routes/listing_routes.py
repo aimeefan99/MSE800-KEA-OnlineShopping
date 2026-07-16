@@ -1,15 +1,12 @@
 """Listing controller routes for creating, showing, editing, and deleting items."""
 
-from pathlib import Path
 from flask import (
     Blueprint,
     abort,
-    current_app,
     flash,
     redirect,
     render_template,
     request,
-    send_from_directory,
     session,
     url_for,
 )
@@ -19,7 +16,6 @@ from utils.decorators import login_required, marketplace_user_required
 from utils.listing_images import (
     attach_listing_image_sources,
     resolve_listing_image_url,
-    strip_upload_prefix,
 )
 
 listing_bp = Blueprint("listings", __name__)
@@ -49,18 +45,6 @@ def browse_listings() -> str:
         categories=listing_service.get_category_options(),
         condition_options=listing_service.get_condition_options(),
     )
-
-
-@listing_bp.get("/uploads/<path:filename>")
-def uploaded_file(filename: str):
-    """Serve uploaded listing images from the runtime upload directory."""
-    normalized_filename = strip_upload_prefix(filename)
-    upload_folder = Path(current_app.config["UPLOAD_FOLDER"])
-    image_path = upload_folder / normalized_filename
-    if image_path.is_file():
-        return send_from_directory(upload_folder, normalized_filename)
-
-    abort(404)
 
 
 @listing_bp.get("/listings/<int:listing_id>")

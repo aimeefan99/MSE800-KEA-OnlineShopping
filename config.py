@@ -27,10 +27,6 @@ class Config:
     DATABASE_PATH = Path(
         os.getenv("DATABASE_PATH", str(INSTANCE_DIR / "app.db"))
     )
-    UPLOAD_FOLDER = Path(
-        os.getenv("UPLOAD_FOLDER", str(INSTANCE_DIR / "uploads"))
-    )
-    IMAGE_STORAGE_PROVIDER = os.getenv("IMAGE_STORAGE_PROVIDER", "local").strip().lower()
     S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "").strip()
     S3_REGION = os.getenv("S3_REGION", "").strip()
     S3_PUBLIC_BASE_URL = os.getenv("S3_PUBLIC_BASE_URL", "").strip().rstrip("/")
@@ -40,6 +36,11 @@ class Config:
     APP_HOST = os.getenv("APP_HOST", "127.0.0.1")
     APP_PORT = int(os.getenv("APP_PORT", "5001"))
     DEBUG = _to_bool(os.getenv("FLASK_DEBUG"), True)
+    # Cache static assets so shared UI images like the site logo are reused
+    # across page navigations instead of being revalidated every time.
+    SEND_FILE_MAX_AGE_DEFAULT = int(
+        os.getenv("STATIC_FILE_MAX_AGE_SECONDS", "604800")
+    )
     AI_PROVIDER = os.getenv("AI_PROVIDER", "gemini")
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
     GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
