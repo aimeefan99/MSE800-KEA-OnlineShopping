@@ -1,6 +1,6 @@
 ## Project Overview
 
-### Second-Hand Trading Platform
+### Second-Hand Trading Platform - Kea Marketplace
 
 *With AI One-Click Listing and Interest-Based Homepage Recommendation*
 

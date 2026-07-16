@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document explains how Flask is used in the second-hand trading platform, how route handlers connect browser requests to rendered pages or JSON responses, and where Flask fits in the system architecture.
+This document explains how Flask is used in the `Second-Hand Trading Platform - Kea Marketplace`, how route handlers connect browser requests to rendered pages or JSON responses, and where Flask fits in the system architecture.
 
 Flask is the web framework used to receive HTTP requests, run controller logic, call service-layer functions, and return either HTML templates or JSON data. The official Flask documentation describes Flask as a lightweight WSGI web application framework designed to start quickly and scale into more complex applications.
 
@@ -30,7 +30,7 @@ Main Flask responsibilities in the project:
 | Flask component | Project file | Purpose |
 | --- | --- | --- |
 | `Flask(__name__)` | `app.py` | Creates the web application instance. |
-| `app.config.from_object(Config)` | `app.py`, `config.py` | Loads database, upload, and secret-key configuration. |
+| `app.config.from_object(Config)` | `app.py`, `config.py` | Loads database, S3 image, and secret-key configuration. |
 | `app.teardown_appcontext(close_db)` | `app.py`, `models/db.py` | Closes the SQLite connection after each request context. |
 | `app.register_blueprint(...)` | `app.py` | Adds modular route groups to the application. |
 | `@app.get("/")` | `app.py` | Defines the homepage route. |
@@ -42,9 +42,9 @@ The project separates route files by feature area. This keeps controller code or
 | Blueprint | File | Main responsibility |
 | --- | --- | --- |
 | `auth_bp` | `routes/auth_routes.py` | Login, registration, logout. |
-| `listing_bp` | `routes/listing_routes.py` | Listing browsing, detail view, create, edit, delete, image serving. |
+| `listing_bp` | `routes/listing_routes.py` | Listing browsing, detail view, create, edit, and delete. |
 | `transaction_bp` | `routes/transaction_routes.py` | Favorites, purchase requests, request history, reviews. |
-| `profile_bp` | `routes/profile_routes.py` | Public profile and edit profile pages. |
+| `profile_bp` | `routes/profile_routes.py` | Public profile, account, account listings, and edit profile pages. |
 | `recommendation_bp` | `routes/recommendation_routes.py` | Homepage recommendation JSON endpoint. |
 | `admin_bp` | `routes/admin_routes.py` | Admin listing, user, request, completed request, and lock actions. |
 | `ai_bp` | `routes/ai_routes.py` | AI listing draft page and draft generation endpoint. |
@@ -58,7 +58,6 @@ The project separates route files by feature area. This keeps controller code or
 | `GET` | `/` | `home()` in `app.py` | `templates/home.html` | Shows the homepage with recent or recommended listings. |
 | `GET` | `/listings` | `browse_listings()` | `templates/listings.html` | Shows searchable and filterable marketplace listings. |
 | `GET` | `/listings/<listing_id>` | `view_listing_detail()` | `templates/listing_detail.html` | Shows one listing and request/favorite actions. |
-| `GET` | `/uploads/<filename>` | `uploaded_file()` | File response | Serves uploaded listing images. |
 
 ### Authentication Routes
 
@@ -100,6 +99,8 @@ The project separates route files by feature area. This keeps controller code or
 | Method | Route | Flask handler | Template or response | Purpose |
 | --- | --- | --- | --- | --- |
 | `GET` | `/profiles/<user_id>` | `view_public_profile()` | `templates/profile.html` | Shows a user's public profile, trust indicators, and reviews. |
+| `GET` | `/account` | `account_page()` | `templates/profile.html` | Shows the signed-in user's account profile view. |
+| `GET` | `/account/listings` | `account_listings_page()` | `templates/account_listings.html` | Shows listings created by the signed-in user. |
 | `GET` | `/profile/edit` | `edit_profile_page()` | `templates/edit_profile.html` | Shows the signed-in user's editable profile form. |
 | `POST` | `/profile/edit` | `edit_profile()` | Redirect | Saves profile changes. |
 
@@ -123,13 +124,14 @@ This route uses Flask's `jsonify()` rather than rendering a page template becaus
 | `POST` | `/admin/users/<user_id>/lock` | `lock_user_account()` | Redirect | Locks a marketplace user account. |
 | `POST` | `/admin/users/<user_id>/unlock` | `unlock_user_account()` | Redirect | Unlocks a marketplace user account. |
 | `POST` | `/admin/requests/<request_id>/lock` | `lock_request_record()` | Redirect | Locks a request record for review. |
+| `POST` | `/admin/requests/<request_id>/unlock` | `unlock_request_record()` | Redirect | Unlocks a request record for normal review flow. |
 
 ### AI Listing Routes
 
 | Method | Route | Flask handler | Template or response | Purpose |
 | --- | --- | --- | --- | --- |
 | `GET` | `/ai/listing` | `ai_listing_page()` | `templates/ai_listing.html` | Shows the AI listing draft page. |
-| `POST` | `/ai/listing-draft` | `create_listing_draft()` | Template response | Generates a draft listing suggestion. |
+| `POST` | `/ai/listing-draft` | `generate_listing_draft()` | JSON response | Generates a draft listing suggestion. |
 
 ## Request Handling Flow
 
@@ -171,7 +173,7 @@ These session values support authentication, role-based navigation, marketplace 
 
 Form submissions usually return redirects rather than directly rendering the next page. This follows the post-redirect-get pattern and prevents duplicate submissions when the browser refreshes.
 
-The project also uses Flask flash messages to show success or error feedback after actions such as login, listing creation, request actions, reviews, admin deletion, and request locking.
+The project also uses Flask flash messages to show success or error feedback after actions such as login, listing creation, request actions, reviews, admin deletion, and request locking or unlocking.
 
 ## Access Control
 

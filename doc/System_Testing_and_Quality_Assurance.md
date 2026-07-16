@@ -2,7 +2,7 @@
 
 ## 1. Purpose
 
-This document explains how the `Second-Hand Trading Platform` project is tested and how
+This document explains how the `Second-Hand Trading Platform - Kea Marketplace` project is tested and how
 verification and validation are used to show that the implemented system meets its
 intended requirements and user goals.
 
@@ -20,14 +20,13 @@ It combines:
 
 ## 2. Testing Strategy
 
-This project uses a practical testing strategy suitable for a two-person academic
-software project. The aim is not only to check whether individual features work, but
+This project uses a practical testing strategy suitable for a two-person software
+project. The aim is not only to check whether individual features work, but
 also to confirm that the whole platform behaves correctly as an integrated second-hand
 trading system.
 
-The strategy follows the Week 11 testing material discussed in class. In that lecture,
-software testing was presented as the main verification activity, and product readiness
-was linked to whether the system is:
+The strategy follows standard software testing ideas in which testing is treated as the
+main verification activity and product readiness is linked to whether the system is:
 
 - correct
 - reliable
@@ -49,8 +48,8 @@ to be checked in the browser, but it also has several shared platform rules that
 easy to break during parallel development and therefore benefit from automated smoke
 tests.
 
-Testing was not treated as a final-stage activity only. In line with the classroom
-discussion on verification and validation, testing started during implementation and
+Testing was not treated as a final-stage activity only. In line with the verification
+and validation approach used in this project, testing started during implementation and
 continued as features were integrated across sprints.
 
 ## 3. Testing Scope
@@ -142,8 +141,8 @@ marketplace workflows rather than isolated pages.
 Acceptance testing checks whether the final system is suitable for demonstration and
 matches the intended user workflows described in the project requirements.
 
-Following the Week 11 classroom discussion, acceptance testing is the closest level to
-final user and stakeholder judgement. In this project, acceptance testing is based on the
+Acceptance testing is the closest level to final user and stakeholder judgement. In this
+project, acceptance testing is based on the
 implemented user stories and their acceptance criteria.
 
 Examples include confirming that:
@@ -207,7 +206,7 @@ the main workflows after significant code changes.
 
 ### 4.8 Product Readiness
 
-The Week 11 lecture linked testing to product readiness. For this project, the system is
+Testing is closely linked to product readiness. For this project, the system is
 considered ready for final demonstration when there is enough evidence to argue that the
 prototype is dependable for its intended scope.
 
@@ -226,8 +225,8 @@ Verification answers the question:
 
 **Are we building the product right?**
 
-In the Week 11 lecture, verification was described as proving that the software conforms
-to its specified functional and non-functional requirements. In this project, that means
+In this project, verification is treated as proving that the software conforms to its
+specified functional and non-functional requirements. That means
 checking whether the implemented platform matches the documented requirements in
 `Project_Requirements.md`, the expected route behaviour, and the intended system rules.
 
@@ -258,9 +257,8 @@ Validation answers the question:
 
 **Are we building the right product?**
 
-In the Week 11 lecture, validation was described as checking whether the software meets
-the customer’s real requirements, needs, and expectations. In this project, validation
-means checking whether the delivered system makes sense as a second-hand marketplace
+In this project, validation means checking whether the delivered system makes sense as a
+second-hand marketplace
 prototype and whether the completed workflows are meaningful from the user point of view.
 
 Validation is considered from these perspectives:
@@ -320,7 +318,7 @@ This testing and V&V approach has some limitations:
 ## 9. Conclusion
 
 This document explains how testing, verification, and validation are applied to the
-project in a way that matches both the classroom testing concepts and the actual system
+project in a way that matches both the documented quality approach and the actual system
 implemented by the team.
 
 Together, these sections support the claim that the project was not only built to work at
