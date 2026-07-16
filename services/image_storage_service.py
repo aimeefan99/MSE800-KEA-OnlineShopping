@@ -1,5 +1,6 @@
 """Storage helpers for listing images."""
 
+from pathlib import Path
 from typing import Optional
 from uuid import uuid4
 
@@ -9,18 +10,22 @@ from werkzeug.utils import secure_filename
 
 
 class ImageStorageService:
-    """Save, delete, and resolve listing images through S3-backed storage."""
+    """Save, delete, and resolve listing images through S3 or local storage."""
 
     def save_listing_image(self, image_file: FileStorage) -> str:
-        """Upload one listing image to S3 and return its stored object key."""
+        """Store one listing image and return the saved reference."""
 
         filename = secure_filename(image_file.filename or "")
         unique_name = "{0}_{1}".format(uuid4().hex, filename)
-        self._upload_to_s3(image_file, unique_name)
-        return unique_name
+        if self._use_s3_storage():
+            self._upload_to_s3(image_file, unique_name)
+            return unique_name
+
+        self._save_to_local_uploads(image_file, unique_name)
+        return "uploads/{0}".format(unique_name)
 
     def delete_listing_image(self, image_reference: Optional[str]) -> None:
-        """Remove a stored S3 image when a listing photo is replaced or deleted."""
+        """Remove a stored image when a listing photo is replaced or deleted."""
 
         if not image_reference:
             return
@@ -29,10 +34,14 @@ class ImageStorageService:
             return
 
         normalized_name = self.normalize_image_reference(image_reference)
-        self._delete_from_s3(normalized_name)
+        if self._use_s3_storage():
+            self._delete_from_s3(normalized_name)
+            return
+
+        self._delete_from_local_uploads(normalized_name)
 
     def resolve_listing_image_url(self, image_reference: str) -> str:
-        """Return a browser-safe image URL for the stored S3 image."""
+        """Return a browser-safe image URL for the active image storage mode."""
 
         if not image_reference:
             return url_for("static", filename="images/listing-placeholder.svg")
@@ -41,7 +50,12 @@ class ImageStorageService:
             return image_reference
 
         normalized_name = self.normalize_image_reference(image_reference)
-        return self._build_s3_public_url(normalized_name)
+        if self._use_s3_storage():
+            return self._build_s3_public_url(normalized_name)
+
+        if self._local_file_exists(normalized_name):
+            return url_for("uploaded_file", filename=normalized_name)
+        return url_for("static", filename="images/listing-placeholder.svg")
 
     @staticmethod
     def normalize_image_reference(value: str) -> str:
@@ -66,6 +80,52 @@ class ImageStorageService:
             region,
             object_key,
         )
+
+    @staticmethod
+    def _use_s3_storage() -> bool:
+        """Return whether the runtime is configured to use S3 storage."""
+
+        return bool(current_app.config["S3_BUCKET_NAME"])
+
+    def _save_to_local_uploads(self, image_file: FileStorage, filename: str) -> None:
+        """Save one uploaded image into the configured local uploads folder."""
+
+        upload_path = self._local_upload_path(filename)
+        upload_path.parent.mkdir(parents=True, exist_ok=True)
+        image_file.stream.seek(0)
+        image_file.save(upload_path)
+
+    def _delete_from_local_uploads(self, filename: str) -> None:
+        """Delete one locally stored image if it exists."""
+
+        for file_path in self._candidate_local_paths(filename):
+            if file_path.exists():
+                file_path.unlink()
+
+    def _local_file_exists(self, filename: str) -> bool:
+        """Return whether a local image exists in an active or legacy folder."""
+
+        return any(file_path.exists() for file_path in self._candidate_local_paths(filename))
+
+    def _candidate_local_paths(self, filename: str):
+        """Return local file locations checked for one listing image."""
+
+        return [
+            self._local_upload_path(filename),
+            self._legacy_upload_path(filename),
+        ]
+
+    @staticmethod
+    def _local_upload_path(filename: str) -> Path:
+        """Return the primary local uploads path for one filename."""
+
+        return current_app.config["UPLOAD_FOLDER"] / filename
+
+    @staticmethod
+    def _legacy_upload_path(filename: str) -> Path:
+        """Return the legacy static uploads path for one filename."""
+
+        return current_app.config["LEGACY_UPLOAD_FOLDER"] / filename
 
     def _upload_to_s3(self, image_file: FileStorage, object_key: str) -> None:
         """Upload one image object into the configured S3 bucket."""

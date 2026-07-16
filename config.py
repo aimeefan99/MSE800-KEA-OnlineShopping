@@ -27,6 +27,12 @@ class Config:
     DATABASE_PATH = Path(
         os.getenv("DATABASE_PATH", str(INSTANCE_DIR / "app.db"))
     )
+    UPLOAD_FOLDER = Path(
+        os.getenv("UPLOAD_FOLDER", str(INSTANCE_DIR / "uploads"))
+    )
+    LEGACY_UPLOAD_FOLDER = Path(
+        os.getenv("LEGACY_UPLOAD_FOLDER", str(BASE_DIR / "static" / "uploads"))
+    )
     S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "").strip()
     S3_REGION = os.getenv("S3_REGION", "").strip()
     S3_PUBLIC_BASE_URL = os.getenv("S3_PUBLIC_BASE_URL", "").strip().rstrip("/")
