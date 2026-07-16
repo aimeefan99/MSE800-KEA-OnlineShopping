@@ -2,7 +2,7 @@
 
 ## 1. Purpose
 
-This document defines the mandatory development rules for the `Second-Hand Trading Platform` project.
+This document defines the mandatory development rules for the `Second-Hand Trading Platform - Kea Marketplace` project.
 
 Both developers must follow this document when writing code, naming files and fields, structuring logic, defining routes, updating the database, and integrating features.
 

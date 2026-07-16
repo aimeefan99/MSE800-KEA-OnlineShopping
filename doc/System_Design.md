@@ -1,6 +1,6 @@
 # System Design
 
-### Second-Hand Trading Platform
+### Second-Hand Trading Platform - Kea Marketplace
 
 *With AI One-Click Listing and Interest-Based Homepage Recommendation*
 
@@ -11,6 +11,8 @@ This system includes:
 - guest browsing of listings and item details
 - user registration and login
 - user and administrator roles
+- account profile viewing and editing
+- account-based listing management for signed-in sellers
 - listing creation, editing, deletion, and sold status update
 - purchase request workflow
 - request and transaction history
@@ -64,7 +66,7 @@ Fields:
 - `id` - primary key
 - `seller_id` - foreign key to `users.id`
 - `category_id` - foreign key to `categories.id`
-- `image_url` - single listing image path or URL in the first version
+- `image_url` - single listing image reference stored as an S3 object key
 - `title` - listing title
 - `description` - listing description
 - `condition` - `new` or `used`
@@ -128,18 +130,6 @@ Rules:
 - each record stores one saved listing for one user
 - one user can save one listing only once
 
-## Table Relationships
-
-- one `user` creates many `listings`
-- one `category` contains many `listings`
-- one `listing` receives many `requests`
-- one `user` creates many `requests`
-- one `user` receives many `requests` on owned listings
-- one completed `request` can produce reviews
-- one `user` writes many `reviews`
-- one `user` receives many `reviews`
-- one `user` saves many listings in `favorite_list`
-
 ## Relationship Summary
 
 - `users.id` -> `listings.seller_id`
@@ -173,7 +163,7 @@ Rules:
 - when a listing is confirmed as sold, remaining open requests for that listing are closed or rejected
 - the buyer confirms transaction completion through the platform
 - when a transaction is completed, the related listing moves to `sold`
-- administrators can view accounts, view listings, delete inappropriate listings, lock user accounts, and lock request records, but they do not decide transaction outcomes for buyers and sellers
+- administrators can view accounts, view listings, view request records, delete inappropriate listings, lock or unlock user accounts, and lock or unlock request records, but they do not decide transaction outcomes for buyers and sellers
 - reviews are optional and are never created automatically
 - public profiles display trust indicators and the preferred contact method
 
@@ -193,27 +183,23 @@ Rules:
 
 1. The seller uploads one product image.
 2. The system sends the image to the AI service.
-3. The AI service returns a draft title, draft category, and draft description.
-4. The platform compares the result with similar listings already stored in the database.
-5. The platform returns a rough price reference based on similar listings.
-6. The seller reviews and edits the draft before publishing.
+3. The AI service returns a structured draft with a suggested title, suggested category, suggested description, visible text, detected attributes, and confidence.
+4. The seller reviews and edits the draft before publishing.
 
 ### Output
 
-- draft title
-- draft category
-- draft description
-- rough price reference based on similar platform listings
-
-### Storage Rule
-
-- `price_reference` is shown to the user during listing creation and is not stored as a standalone database field in the first version
+- suggested title
+- suggested category
+- suggested description
+- visible text
+- detected attributes
+- confidence level
 
 ### Boundaries
 
 - the assistant generates a draft, not a final published listing
 - the seller must review and confirm the result
-- the price is a rough reference, not an exact valuation
+- the result must be based on visible image evidence only
 - the first version uses one image only
 - the first version does not use external market price data
 
@@ -221,179 +207,20 @@ Rules:
 
 ### Signals
 
-- recent search keywords
-- recent browsing behaviour
-- recent favorite list behaviour
-- mapped interest category from those interactions
+- recent browsing category ids
+- category ids inferred from search behaviour
+- favorite list categories
 
 ### Recommendation Rule
 
-- the homepage prioritises listings from the user's recent interest category
+- the homepage prioritises available listings from the user's recent interest categories
+- if not enough matching listings exist, the homepage falls back to recent available listings
+- when the user is logged in, their own listings are excluded from homepage recommendations
 
 ### Boundaries
 
 - the first version uses lightweight rule-based logic
 - the first version does not use a heavy recommendation engine, vector database, or complex machine learning pipeline
-
-## ER Diagram Design
-
-### Main Entities
-
-- `users`
-- `categories`
-- `listings`
-- `requests`
-- `reviews`
-- `favorite_list`
-
-### Main Relationships
-
-- one user creates many listings
-- one category contains many listings
-- one listing receives many requests
-- one user creates many requests
-- one user receives many requests on owned listings
-- one completed request can have reviews
-- one user writes many reviews
-- one user receives many reviews
-
-### Key Attributes
-
-- primary keys
-- foreign keys
-- listing status
-- request status
-- preferred contact method
-- review score
-
-## Use Case Diagram Design
-
-### Main Actors
-
-- Visitor
-- User
-- Administrator
-
-### Visitor Use Cases
-
-- browse listings
-- search listings
-- filter listings
-- view item details
-- view public user profiles
-
-### User Use Cases
-
-- register account
-- log in and log out
-- edit profile
-- browse listings
-- search listings
-- filter listings
-- view item details
-- view other user profiles
-- create listing
-- edit listing
-- delete listing
-- submit purchase request
-- view request and transaction history
-- save a listing to the favorite list
-- remove a listing from the favorite list
-- view the favorite list page
-- confirm completed transaction
-- receive homepage recommendations
-- use AI one-click listing support when creating a listing
-- leave a review after a completed transaction
-
-### User Role Note
-
-- the same account can act as both buyer and seller in different transactions
-
-### Administrator Use Cases
-
-- log in
-- view user accounts
-- view listings
-- delete inappropriate listings
-- lock user accounts
-- lock request records
-- view request records
-- view completed request records
-
-## Activity Diagram Design
-
-### Main Activity Flow
-
-1. A user logs in and browses or searches listings.
-2. The user applies filters and views item details.
-3. The user checks the seller profile and trust indicators.
-4. The user can save the listing to the favorite list.
-5. The user submits a purchase request.
-6. The system stores the request with `pending` status.
-7. The seller views incoming requests.
-8. The seller accepts or rejects a request.
-9. If accepted, the listing status becomes `pending`.
-10. The buyer confirms transaction completion.
-11. The request status becomes `completed`.
-12. The listing status becomes `sold`.
-13. Both users can leave reviews.
-14. Trust indicators are updated.
-
-### Additional Activity Flows
-
-- AI one-click listing creation flow
-- profile editing flow
-- administrator control flow
-
-## Class Diagram Design
-
-### Main Classes
-
-- `User`
-- `Administrator`
-- `FavoriteList`
-- `Listing`
-- `Category`
-- `Request`
-- `Review`
-
-### Relationships
-
-- `Administrator` is a privileged role of `User`
-- `User` creates `Listing`
-- `Listing` belongs to `Category`
-- `User` submits `Request`
-- `User` manages incoming requests on owned listings
-- `Request` can result in `Review` after completion
-- `User` saves `Listing` items into `FavoriteList`
-- `User` holds profile information and trust indicators
-- `Administrator` views users, listings, request records, and completed request records and applies control actions
-
-### Core Attributes
-
-- `User`: id, display_name, email, phone_number, preferred_contact_method, role, is_locked
-- `Listing`: id, title, description, condition, price, status
-- `Request`: id, status, is_locked, message, created_at
-- `Review`: id, score, comment
-- `FavoriteList`: id, user_id, listing_id
-- `Category`: id, name
-
-### Core Methods
-
-- `User.editProfile()`
-- `User.createListing()`
-- `User.acceptRequest()`
-- `User.rejectRequest()`
-- `User.confirmCompletedTransaction()`
-- `User.submitRequest()`
-- `User.viewHomepageRecommendations()`
-- `User.saveFavorite()`
-- `User.removeFavorite()`
-- `Administrator.viewUsers()`
-- `Administrator.viewListings()`
-- `Administrator.deleteInappropriateListing()`
-- `Administrator.lockUserAccount()`
-- `Administrator.lockRequestRecord()`
 
 ## System Architecture Diagram Design
 
@@ -404,9 +231,9 @@ Rules:
 - HTML Templates and Bootstrap UI
 - Application Services
 - SQLite Database
-- OpenAI API
-- Docker Container
-- Kubernetes Deployment
+- Amazon S3 Bucket
+- Google Gemini API
+- Docker Container on AWS EC2
 
 ### Main Connections
 
@@ -415,9 +242,9 @@ Rules:
 - the Flask web application renders HTML templates and returns UI pages
 - the Flask web application calls application services for authentication, listing management, request management, review management, favorite list management, and homepage recommendation
 - the application services read from and write to the SQLite database
-- the AI one-click listing service sends image input to the OpenAI API and receives draft listing output
-- the Flask application runs inside a Docker container
-- Kubernetes deploys and manages the containerized application
+- the image utilities upload listing images to Amazon S3 and resolve public image URLs
+- the AI one-click listing service sends image input to the Google Gemini API and receives draft listing output
+- the Flask application runs inside a Docker container on AWS EC2
 
 ### Main Data Flow
 
@@ -425,41 +252,112 @@ Rules:
 2. The browser sends a request to the Flask application.
 3. The Flask application processes the request through the relevant service layer.
 4. The service layer reads or updates data in SQLite when required.
-5. If the action uses AI one-click listing, the application sends the image to the OpenAI API and receives a draft result.
-6. The Flask application returns the final page or result to the browser.
+5. If the action includes listing image handling, the application stores the image in Amazon S3 and keeps the object key in the database.
+6. If the action uses AI one-click listing, the application sends the image to the Google Gemini API and receives a draft result.
+7. The Flask application returns the final page or result to the browser.
 
 ### Deployment Scope
 
-- one containerized Flask application
-- one SQLite database file used by the application
-- Docker for containerization
-- Kubernetes for deployment and management
+- one containerized Flask application running on AWS EC2
+- one SQLite database file persisted on the EC2 host through a bind-mounted volume
+- one Amazon S3 bucket for listing image storage
+- Docker for containerization and deployment
 
-## Wireframes Design
+## Supporting Design Artefacts
 
-### Required Screens
+The supporting design artefacts for this project are maintained in the `diagram/` folder.
+They help explain the system from different perspectives and are based on the design
+decisions recorded in this document.
 
-- homepage
-- login page
-- register page
-- listing browse page
-- listing detail page
-- create listing page
-- AI one-click listing page
-- favorite list page
-- request history page
-- public profile page
-- administrator management page
+### ER Diagram Basis
 
-### Wireframe Focus
+The ER diagram should show the six main entities:
 
-- page layout
-- navigation structure
-- main form fields
-- main buttons and actions
-- search and filter placement
-- homepage recommendation section placement
-- AI one-click listing input and output area
+- `users`
+- `categories`
+- `listings`
+- `requests`
+- `reviews`
+- `favorite_list`
+
+The ER diagram should emphasise:
+
+- primary keys and foreign keys
+- seller, buyer, and reviewer relationships
+- status fields for listings and requests
+- the fact that `requests` stores both request flow and completed transaction state
+
+### Use Case Diagram Basis
+
+The use case diagram should use three actors:
+
+- Visitor
+- User
+- Administrator
+
+The use case diagram should highlight:
+
+- guest browsing and public profile access
+- user actions such as listing creation, request submission, favorites, reviews, and account management
+- administrator monitoring and control actions without participation in buyer-seller transaction decisions
+
+### Activity Diagram Basis
+
+The activity diagram should centre on the core trading flow:
+
+1. browse or search listings
+2. view a listing and seller details
+3. optionally save the listing
+4. submit a purchase request
+5. seller accepts or rejects
+6. accepted listing moves to `pending`
+7. buyer completes the transaction
+8. request becomes `completed`
+9. listing becomes `sold`
+10. both sides may leave reviews
+
+It can also show supporting flows such as AI-assisted listing creation and administrator review locking.
+
+### Class Diagram Basis
+
+The class diagram should reflect the main domain concepts:
+
+- `User`
+- `Administrator`
+- `Listing`
+- `Category`
+- `Request`
+- `Review`
+- `FavoriteList`
+
+The class diagram should make clear that:
+
+- `Administrator` is a privileged role of `User`
+- `User` can act as buyer or seller depending on the workflow
+- `Request` links buyer, seller, and listing
+- `Review` is created only after a completed request
+- `FavoriteList` stores saved listing relationships per user
+
+### System Architecture Diagram Basis
+
+The system architecture diagram should show:
+
+- browser access to the Flask application
+- Flask routes, templates, and service-layer separation
+- SQLite persistence for prototype data
+- Amazon S3 for listing image storage
+- Google Gemini as the external AI draft service
+- Docker container runtime on AWS EC2
+- session-based personalization for homepage recommendations
+
+- `ER_diagram.drawio` shows the database entities and their relationships.
+- `use_case_diagram.drawio` shows the main visitor, user, and administrator interactions.
+- `activity_diagram.drawio` shows the core request and transaction workflow.
+- `class_diagram_second_hand_platform_clean_fixed.drawio` shows the main domain classes.
+- `system_architecture.drawio` shows the implemented runtime architecture on Flask, Docker, EC2, SQLite, S3, and Gemini.
+
+Wireframes were not maintained as a separate design artefact in the current repository.
+The implemented page structure was refined directly through template development and browser-based UI review.
 
 ## Scope Boundary
 
@@ -478,17 +376,3 @@ This document defines the technical system boundary so the diagrams and implemen
 - advanced recommendation models
 - vector database or heavy semantic search
 - complex machine learning pipeline
-
-## Additional Diagrams
-
-- System Architecture Diagram
-- Wireframes
-
-## Diagram Priority
-
-1. ER Diagram
-2. Use Case Diagram
-3. Activity Diagram
-4. Class Diagram
-5. System Architecture Diagram
-6. Wireframes
