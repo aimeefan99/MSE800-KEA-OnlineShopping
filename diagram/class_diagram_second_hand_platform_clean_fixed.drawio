@@ -1,90 +1,225 @@
-<mxfile host="Electron" agent="ChatGPT">
+<mxfile host="Electron" agent="Codex">
   <diagram id="classDiagram" name="Class Diagram">
-    <mxGraphModel dx="844" dy="1569" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1231" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1300" math="0" shadow="0">
       <root>
         <mxCell id="0" />
-        <mxCell id="1" parent="0" value="" />
-        <mxCell id="User" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;" value="&lt;b&gt;User&lt;/b&gt;&lt;hr align=&quot;center&quot; size=&quot;1&quot;&gt;&lt;div align=&quot;left&quot;&gt;- id: int&lt;br&gt;- displayName: string&lt;br&gt;- fullName: string&lt;br&gt;- dateOfBirth: date&lt;br&gt;- email: string&lt;br&gt;- phoneNumber: string&lt;br&gt;- preferredContactMethod: string&lt;br&gt;- passwordHash: string&lt;br&gt;- role: string&lt;br&gt;- isLocked: boolean&lt;br&gt;- bio: string&lt;/div&gt;&lt;hr align=&quot;center&quot; size=&quot;1&quot;&gt;&lt;div align=&quot;left&quot;&gt;+ editProfile(): void&lt;br&gt;+ createListing(): Listing&lt;br&gt;+ submitRequest(): Request&lt;br&gt;+ saveFavorite(): void&lt;br&gt;+ leaveReview(): Review&lt;br&gt;+ viewPersonalisedRecommendations(): List&amp;lt;Listing&amp;gt;&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;+ generateListingWithAI(): void&lt;/div&gt;" vertex="1">
-          <mxGeometry height="380" width="310" x="535" y="110" as="geometry" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=22;fontStyle=1;align=center;" value="Class Diagram: Second-Hand Trading Platform- Kea Marketplace" vertex="1">
+          <mxGeometry height="35" width="900" x="450" y="15" as="geometry" />
         </mxCell>
-        <mxCell id="Administrator" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;" value="&lt;b&gt;Administrator&lt;/b&gt;&lt;hr align=&quot;center&quot; size=&quot;1&quot;&gt;&lt;div align=&quot;left&quot;&gt;- adminLevel: string&lt;/div&gt;&lt;hr align=&quot;center&quot; size=&quot;1&quot;&gt;&lt;div align=&quot;left&quot;&gt;+ viewUsers(): List&amp;lt;User&amp;gt;&lt;br&gt;+ viewListings(): List&amp;lt;Listing&amp;gt;&lt;br&gt;+ removeListing(): void&lt;br&gt;+ lockUserAccount(): void&lt;br&gt;+ lockRequestRecord(): void&lt;/div&gt;" vertex="1">
-          <mxGeometry height="173" width="300" x="540" y="-123" as="geometry" />
+        <mxCell id="domain_pkg" parent="1" style="swimlane;html=1;horizontal=1;startSize=32;rounded=0;strokeColor=#6C8EBF;fillColor=#F5F9FF;fontStyle=1;fontSize=15;" value="Domain entities and persistence association" vertex="1">
+          <mxGeometry height="455" width="1760" x="20" y="65" as="geometry" />
         </mxCell>
-        <mxCell id="Listing" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;" value="&lt;b&gt;Listing&lt;/b&gt;&lt;hr align=&quot;center&quot; size=&quot;1&quot;&gt;&lt;div align=&quot;left&quot;&gt;- id: int&lt;br&gt;- sellerId: int&lt;br&gt;- categoryId: int&lt;br&gt;- imageUrl: string&lt;br&gt;- title: string&lt;br&gt;- description: string&lt;br&gt;- condition: string&lt;br&gt;- price: decimal&lt;br&gt;- status: string&lt;br&gt;- createdAt: datetime&lt;br&gt;- updatedAt: datetime&lt;/div&gt;&lt;hr align=&quot;center&quot; size=&quot;1&quot;&gt;&lt;div align=&quot;left&quot;&gt;+ updateDetails(): void&lt;br&gt;+ markPending(): void&lt;br&gt;+ markSold(): void&lt;br&gt;+ isAvailable(): boolean&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;+ updateStatus(): void&lt;/div&gt;" vertex="1">
-          <mxGeometry height="330" width="310" x="95" y="360" as="geometry" />
+        <mxCell id="service_pkg" parent="1" style="swimlane;html=1;horizontal=1;startSize=32;rounded=0;strokeColor=#82B366;fillColor=#F7FCF5;fontStyle=1;fontSize=15;" value="Service layer" vertex="1">
+          <mxGeometry height="500" width="1760" x="20" y="540" as="geometry" />
         </mxCell>
-        <mxCell id="Category" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;" value="&lt;b&gt;Category&lt;/b&gt;&lt;hr align=&#39;center&#39; size=&#39;1&#39;/&gt;&lt;div align=&quot;left&quot;&gt;- id: int&lt;br/&gt;- name: string&lt;/div&gt;&lt;hr align=&quot;center&quot; size=&quot;1&quot;/&gt;&lt;div align=&quot;left&quot;&gt;+ getListings(): List&amp;lt;Listing&amp;gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="130" width="260" x="120" y="80" as="geometry" />
+        <mxCell id="factory_pkg" parent="1" style="swimlane;html=1;horizontal=1;startSize=32;rounded=0;strokeColor=#D6B656;fillColor=#FFFDF5;fontStyle=1;fontSize=15;" value="Factories" vertex="1">
+          <mxGeometry height="180" width="1760" x="20" y="1060" as="geometry" />
         </mxCell>
-        <mxCell id="Request" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;" value="&lt;b&gt;Request&lt;/b&gt;&lt;hr align=&quot;center&quot; size=&quot;1&quot;&gt;&lt;div align=&quot;left&quot;&gt;- id: int&lt;br&gt;- listingId: int&lt;br&gt;- buyerId: int&lt;br&gt;- sellerId: int&lt;br&gt;- status: string&lt;br&gt;- isLocked: boolean&lt;br&gt;- message: string&lt;br&gt;- createdAt: datetime&lt;br&gt;- updatedAt: datetime&lt;/div&gt;&lt;hr align=&quot;center&quot; size=&quot;1&quot;&gt;&lt;div align=&quot;left&quot;&gt;+ accept(): void&lt;br&gt;+ reject(): void&lt;br&gt;+ complete(): void&lt;br&gt;+ lock(): void&lt;/div&gt;" vertex="1">
-          <mxGeometry height="290" width="330" x="960" y="110" as="geometry" />
+        <mxCell id="User" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=13;" value="&lt;b&gt;User&lt;/b&gt;&lt;hr/&gt;&lt;div align=&quot;left&quot;&gt;- display_name: str&lt;br/&gt;- full_name: str&lt;br/&gt;- date_of_birth: str&lt;br/&gt;- email: str&lt;br/&gt;- preferred_contact_method: str&lt;br/&gt;- role: str = &amp;quot;user&amp;quot;&lt;br/&gt;- phone_number: Optional[str]&lt;br/&gt;- bio: Optional[str]&lt;br/&gt;- is_locked: bool = False&lt;br/&gt;- id: Optional[int]&lt;/div&gt;" vertex="1">
+          <mxGeometry height="245" width="260" x="45" y="115" as="geometry" />
         </mxCell>
-        <mxCell id="Review" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;" value="&lt;b&gt;Review&lt;/b&gt;&lt;hr align=&quot;center&quot; size=&quot;1&quot;&gt;&lt;div align=&quot;left&quot;&gt;- id: int&lt;br&gt;- requestId: int&lt;br&gt;- reviewerId: int&lt;br&gt;- reviewedUserId: int&lt;br&gt;- score: int&lt;br&gt;- comment: string&lt;br&gt;- createdAt: datetime&lt;/div&gt;&lt;hr align=&quot;center&quot; size=&quot;1&quot;&gt;&lt;div align=&quot;left&quot;&gt;+ validateScore(): boolean&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;+ submitReview()&lt;/div&gt;" vertex="1">
-          <mxGeometry height="210" width="300" x="975" y="700" as="geometry" />
+        <mxCell id="Category" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=13;" value="&lt;b&gt;Category&lt;/b&gt;&lt;hr/&gt;&lt;div align=&quot;left&quot;&gt;- name: str&lt;br/&gt;- id: Optional[int]&lt;/div&gt;" vertex="1">
+          <mxGeometry height="105" width="210" x="335" y="115" as="geometry" />
         </mxCell>
-        <mxCell id="FavoriteList" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=14;" value="&lt;b&gt;FavoriteList&lt;/b&gt;&lt;hr align=&#39;center&#39; size=&#39;1&#39;/&gt;&lt;div align=&quot;left&quot;&gt;- id: int&lt;br/&gt;- userId: int&lt;br/&gt;- listingId: int&lt;br/&gt;- createdAt: datetime&lt;/div&gt;&lt;hr align=&quot;center&quot; size=&quot;1&quot;/&gt;&lt;div align=&quot;left&quot;&gt;+ addListing(): void&lt;br/&gt;+ removeListing(): void&lt;br/&gt;+ getSavedListings(): List&amp;lt;Listing&amp;gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="180" width="320" x="530" y="710" as="geometry" />
-        </mxCell>
-        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=20;fontStyle=1" value="UML Class Diagram: AI-Powered Second-Hand Trading Platform" vertex="1">
-          <mxGeometry height="30" width="600" x="400" y="-199" as="geometry" />
-        </mxCell>
-        <mxCell id="e_inherit" edge="1" parent="1" source="Administrator" style="endArrow=block;endFill=0;html=1;rounded=0;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;" target="User" value="inherits from">
+        <mxCell id="nHuNCdRyYnQU92lAmSV3-3" edge="1" parent="1" source="Listing" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;endArrow=none;endFill=0;strokeWidth=2;" target="Request">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_user_listing" edge="1" parent="1" source="User" style="endArrow=none;html=1;rounded=0;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;" target="Listing" value="1 creates 0..*">
+        <mxCell id="nHuNCdRyYnQU92lAmSV3-4" connectable="0" parent="nHuNCdRyYnQU92lAmSV3-3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="1 listing receives 0..*" vertex="1">
+          <mxGeometry relative="1" x="-0.1187" y="2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Listing" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=13;" value="&lt;b&gt;Listing&lt;/b&gt;&lt;hr/&gt;&lt;div align=&quot;left&quot;&gt;- seller_id: int&lt;br/&gt;- category_id: int&lt;br/&gt;- title: str&lt;br/&gt;- description: str&lt;br/&gt;- condition: str&lt;br/&gt;- price: float&lt;br/&gt;- image_url: str&lt;br/&gt;- status: str = &amp;quot;available&amp;quot;&lt;br/&gt;- id: Optional[int]&lt;/div&gt;" vertex="1">
+          <mxGeometry height="225" width="245" x="575" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="Request" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=13;" value="&lt;b&gt;Request&lt;/b&gt;&lt;hr/&gt;&lt;div align=&quot;left&quot;&gt;- listing_id: int&lt;br/&gt;- buyer_id: int&lt;br/&gt;- seller_id: int&lt;br/&gt;- status: str = &amp;quot;pending&amp;quot;&lt;br/&gt;- message: Optional[str]&lt;br/&gt;- is_locked: bool = False&lt;br/&gt;- id: Optional[int]&lt;/div&gt;" vertex="1">
+          <mxGeometry height="190" width="245" x="850" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="nHuNCdRyYnQU92lAmSV3-1" edge="1" parent="1" source="Review" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;endArrow=none;endFill=0;strokeWidth=2;">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="472" y="250" />
-              <mxPoint x="472" y="470" />
+              <mxPoint x="1186" y="330" />
+              <mxPoint x="1040" y="330" />
+            </Array>
+            <mxPoint x="1040" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="nHuNCdRyYnQU92lAmSV3-2" connectable="0" parent="nHuNCdRyYnQU92lAmSV3-1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="1 completed&lt;div&gt;&amp;nbsp;request permits 0..2&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry relative="1" x="0.4456" as="geometry">
+            <mxPoint x="31" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Review" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=13;" value="&lt;b&gt;Review&lt;/b&gt;&lt;hr/&gt;&lt;div align=&quot;left&quot;&gt;- request_id: int&lt;br/&gt;- reviewer_id: int&lt;br/&gt;- reviewed_user_id: int&lt;br/&gt;- score: int&lt;br/&gt;- comment: Optional[str]&lt;br/&gt;- id: Optional[int]&lt;/div&gt;" vertex="1">
+          <mxGeometry height="170" width="245" x="1125" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="FavoriteRecord" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=13;" value="&lt;b&gt;FavoriteRecord&lt;br&gt;&lt;/b&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;- id: int&lt;br&gt;- user_id: int&lt;br&gt;- listing_id: int&lt;br&gt;- created_at: str&lt;br&gt;&lt;br&gt;{unique user_id, listing_id}&lt;/div&gt;" vertex="1">
+          <mxGeometry height="180" width="260" x="1400" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="BaseService" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=13;" value="&lt;b&gt;BaseService&lt;/b&gt;&lt;hr/&gt;&lt;div align=&quot;left&quot;&gt;Shared service structure&lt;/div&gt;" vertex="1">
+          <mxGeometry height="75" width="220" x="790" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="AuthService" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=12;" value="&lt;b&gt;AuthService&lt;/b&gt;&lt;hr/&gt;&lt;div align=&quot;left&quot;&gt;+ register_user()&lt;br/&gt;+ login_user()&lt;br/&gt;+ build_session_data()&lt;/div&gt;" vertex="1">
+          <mxGeometry height="115" width="220" x="45" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="ProfileService" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=12;" value="&lt;b&gt;ProfileService&lt;/b&gt;&lt;hr/&gt;&lt;div align=&quot;left&quot;&gt;+ get_public_profile()&lt;br/&gt;+ get_edit_profile_data()&lt;br/&gt;+ edit_profile()&lt;/div&gt;" vertex="1">
+          <mxGeometry height="115" width="220" x="290" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="ListingService" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=12;" value="&lt;b&gt;ListingService&lt;/b&gt;&lt;hr/&gt;&lt;div align=&quot;left&quot;&gt;+ create_listing()&lt;br/&gt;+ edit_listing()&lt;br/&gt;+ delete_listing()&lt;br/&gt;+ browse_listings()&lt;br/&gt;+ get_listing_detail()&lt;br/&gt;+ get_user_listings()&lt;/div&gt;" vertex="1">
+          <mxGeometry height="165" width="220" x="535" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="TransactionService" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=12;" value="&lt;b&gt;TransactionService&lt;/b&gt;&lt;hr/&gt;&lt;div align=&quot;left&quot;&gt;+ view_favorites()&lt;br/&gt;+ add_favorite()&lt;br/&gt;+ remove_favorite()&lt;br/&gt;+ create_request()&lt;br/&gt;+ incoming_requests()&lt;br/&gt;+ request_history()&lt;br/&gt;+ accept_request()&lt;br/&gt;+ reject_request()&lt;br/&gt;+ complete_request()&lt;br/&gt;+ create_review()&lt;/div&gt;" vertex="1">
+          <mxGeometry height="245" width="245" x="780" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="RecommendationService" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=12;" value="&lt;b&gt;RecommendationService&lt;/b&gt;&lt;hr/&gt;&lt;div align=&quot;left&quot;&gt;+ get_homepage_recommendations()&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="245" x="1050" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="AIListingService" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=12;" value="&lt;b&gt;AIListingService&lt;/b&gt;&lt;hr/&gt;&lt;div align=&quot;left&quot;&gt;+ generate_listing_draft()&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="210" x="1320" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="AdminService" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=12;" value="&lt;b&gt;AdminService&lt;/b&gt;&lt;hr/&gt;&lt;div align=&quot;left&quot;&gt;+ get_admin_users()&lt;br/&gt;+ get_admin_listings()&lt;br/&gt;+ get_admin_requests()&lt;br/&gt;+ get_admin_completed_requests()&lt;br/&gt;+ delete_inappropriate_listing()&lt;br/&gt;+ lock_user_account()&lt;br/&gt;+ unlock_user_account()&lt;br/&gt;+ lock_request_record()&lt;br/&gt;+ unlock_request_record()&lt;/div&gt;" vertex="1">
+          <mxGeometry height="225" width="225" x="1550" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="ListingFactory" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;" value="&lt;b&gt;ListingFactory&lt;/b&gt;&lt;hr/&gt;&lt;div align=&quot;left&quot;&gt;+ create_from_form(): Listing&lt;br/&gt;+ create_from_ai_draft(): Listing&lt;/div&gt;" vertex="1">
+          <mxGeometry height="105" width="300" x="540" y="1105" as="geometry" />
+        </mxCell>
+        <mxCell id="RequestFactory" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;horizontal=1;startSize=30;collapsible=0;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;" value="&lt;b&gt;RequestFactory&lt;/b&gt;&lt;hr/&gt;&lt;div align=&quot;left&quot;&gt;+ create_request(): Request&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="270" x="920" y="1105" as="geometry" />
+        </mxCell>
+        <mxCell id="factory_note" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=11;align=left;spacing=7;" value="RequestFactory is implemented but is not currently called by TransactionService. ListingService uses ListingFactory for form-based creation." vertex="1">
+          <mxGeometry height="75" width="390" x="1270" y="1110" as="geometry" />
+        </mxCell>
+        <mxCell id="e_user_listing" edge="1" parent="1" source="User" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;html=1;rounded=0;strokeWidth=1.5;" target="Listing" value="seller 1   creates   0..*">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="350" />
+              <mxPoint x="700" y="350" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="e_cat_listing" edge="1" parent="1" source="Category" style="endArrow=none;html=1;rounded=0;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;" target="Listing" value="1 contains 0..*">
+        <mxCell id="e_category_listing" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;html=1;rounded=0;strokeWidth=1.5;" target="Listing" value="1 category&lt;div&gt;&amp;nbsp;classifies   0..*&lt;/div&gt;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="470" y="270" />
+              <mxPoint x="560" y="270" />
+              <mxPoint x="560" y="227" />
+            </Array>
+            <mxPoint x="470" y="220" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_user_request_buyer" edge="1" parent="1" source="User" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;html=1;rounded=0;strokeWidth=1.5;" target="Request" value="buyer 1   submits   0..*">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="380" />
+              <mxPoint x="970" y="380" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_user_request_seller" edge="1" parent="1" source="User" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;html=1;rounded=0;strokeWidth=1.5;" target="Request" value="seller 1   receives   0..*">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="410" />
+              <mxPoint x="970" y="410" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_user_review_writer" edge="1" parent="1" source="User" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;html=1;rounded=0;strokeWidth=1.5;" target="Review" value="reviewer 1   writes   0..*">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="315" y="440" />
+              <mxPoint x="1245" y="440" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_user_review_subject" edge="1" parent="1" source="User" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;html=1;rounded=0;strokeWidth=1.5;" target="Review" value="reviewed user 1   receives   0..*">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="315" y="470" />
+              <mxPoint x="1245" y="470" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_user_favorite" edge="1" parent="1" source="User" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;html=1;rounded=0;strokeWidth=1.5;" target="FavoriteRecord" value="1 user   owns   0..* records">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="315" y="510" />
+              <mxPoint x="1530" y="510" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_listing_favorite" edge="1" parent="1" source="Listing" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;html=1;rounded=0;strokeWidth=1.5;" target="FavoriteRecord" value="1 listing   appears in   0..* records">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="700" y="480" />
+              <mxPoint x="1530" y="480" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="j_auth" parent="1" style="ellipse;html=1;opacity=0;fillOpacity=0;strokeOpacity=0;" vertex="1">
+          <mxGeometry height="4" width="4" x="153" y="675" as="geometry" />
+        </mxCell>
+        <mxCell id="j_profile" parent="1" style="ellipse;html=1;opacity=0;fillOpacity=0;strokeOpacity=0;" vertex="1">
+          <mxGeometry height="4" width="4" x="398" y="675" as="geometry" />
+        </mxCell>
+        <mxCell id="j_listing" parent="1" style="ellipse;html=1;opacity=0;fillOpacity=0;strokeOpacity=0;" vertex="1">
+          <mxGeometry height="4" width="4" x="643" y="675" as="geometry" />
+        </mxCell>
+        <mxCell id="j_transaction" parent="1" style="ellipse;html=1;opacity=0;fillOpacity=0;strokeOpacity=0;" vertex="1">
+          <mxGeometry height="4" width="4" x="900" y="675" as="geometry" />
+        </mxCell>
+        <mxCell id="j_recommendation" parent="1" style="ellipse;html=1;opacity=0;fillOpacity=0;strokeOpacity=0;" vertex="1">
+          <mxGeometry height="4" width="4" x="1170" y="675" as="geometry" />
+        </mxCell>
+        <mxCell id="j_ai" parent="1" style="ellipse;html=1;opacity=0;fillOpacity=0;strokeOpacity=0;" vertex="1">
+          <mxGeometry height="4" width="4" x="1423" y="675" as="geometry" />
+        </mxCell>
+        <mxCell id="j_admin" parent="1" style="ellipse;html=1;opacity=0;fillOpacity=0;strokeOpacity=0;" vertex="1">
+          <mxGeometry height="4" width="4" x="1660" y="675" as="geometry" />
+        </mxCell>
+        <mxCell id="i_auth" edge="1" parent="1" source="AuthService" style="endArrow=none;html=1;rounded=0;strokeWidth=1.2;" target="j_auth">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_listing_req" edge="1" parent="1" source="Listing" style="endArrow=none;html=1;rounded=0;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;" target="Request" value="1 receives 0..*">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1100" y="510" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e_user_req_b" edge="1" parent="1" source="User" style="endArrow=none;html=1;rounded=0;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;" target="Request" value="1 submits 0..*">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="940" y="285" />
-              <mxPoint x="940" y="285" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e_req_review" edge="1" parent="1" source="Request" style="endArrow=none;html=1;rounded=0;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;" target="Review" value="1 completed request produces 0..*">
+        <mxCell id="i_profile" edge="1" parent="1" source="ProfileService" style="endArrow=none;html=1;rounded=0;strokeWidth=1.2;" target="j_profile">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_user_review_w" edge="1" parent="1" source="User" style="endArrow=none;html=1;rounded=0;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;" target="Review" value="1 writes 0..*">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="910" y="370" />
-              <mxPoint x="910" y="780" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e_user_fav" edge="1" parent="1" source="User" style="endArrow=none;html=1;rounded=0;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;" target="FavoriteList" value="1 owns 0..*">
+        <mxCell id="i_listing" edge="1" parent="1" source="ListingService" style="endArrow=none;html=1;rounded=0;strokeWidth=1.2;" target="j_listing">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_listing_fav" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;" value="1 saved in 0..*">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="660" y="550" />
-            </Array>
-            <mxPoint x="400" y="550" as="sourcePoint" />
-            <mxPoint x="660" y="710" as="targetPoint" />
-          </mxGeometry>
+        <mxCell id="i_transaction" edge="1" parent="1" source="TransactionService" style="endArrow=none;html=1;rounded=0;strokeWidth=1.2;" target="j_transaction">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="note" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;size=17;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;align=left;spacing=8;" value="&lt;b&gt;Key Design Notes&lt;/b&gt;&lt;br/&gt;• Administrator is a specialised User role.&lt;br/&gt;• One account can act as buyer and seller.&lt;br/&gt;• PurchaseRequest stores the transaction state.&lt;br/&gt;• Reviews are allowed only after completed requests.&lt;br/&gt;• FavoriteList prevents duplicate saved listings." vertex="1">
-          <mxGeometry height="170" width="390" x="60" y="820" as="geometry" />
+        <mxCell id="i_recommendation" edge="1" parent="1" source="RecommendationService" style="endArrow=none;html=1;rounded=0;strokeWidth=1.2;" target="j_recommendation">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="legend" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;align=left;spacing=8;" value="&lt;b&gt;Notation&lt;/b&gt;&lt;br/&gt;+ public method&lt;br/&gt;- private attribute&lt;br/&gt;1 = one&lt;br/&gt;0..* = zero or many&lt;br/&gt;△ = inheritance" vertex="1">
-          <mxGeometry height="150" width="230" x="1300" y="-180" as="geometry" />
+        <mxCell id="i_ai" edge="1" parent="1" source="AIListingService" style="endArrow=none;html=1;rounded=0;strokeWidth=1.2;" target="j_ai">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="i_admin" edge="1" parent="1" source="AdminService" style="endArrow=none;html=1;rounded=0;strokeWidth=1.2;" target="j_admin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bus1" edge="1" parent="1" source="j_auth" style="endArrow=none;html=1;rounded=0;strokeWidth=1.2;" target="j_profile">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bus2" edge="1" parent="1" source="j_profile" style="endArrow=none;html=1;rounded=0;strokeWidth=1.2;" target="j_listing">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bus3" edge="1" parent="1" source="j_listing" style="endArrow=none;html=1;rounded=0;strokeWidth=1.2;" target="j_transaction">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bus4" edge="1" parent="1" source="j_transaction" style="endArrow=none;html=1;rounded=0;strokeWidth=1.2;" target="j_recommendation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bus5" edge="1" parent="1" source="j_recommendation" style="endArrow=none;html=1;rounded=0;strokeWidth=1.2;" target="j_ai">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bus6" edge="1" parent="1" source="j_ai" style="endArrow=none;html=1;rounded=0;strokeWidth=1.2;" target="j_admin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bus_base" edge="1" parent="1" source="j_transaction" style="endArrow=block;endFill=0;html=1;rounded=0;strokeWidth=1.5;" target="BaseService" value="inherits">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d_listing_factory" edge="1" parent="1" source="ListingService" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;rounded=0;strokeWidth=1.5;dashed=1;dashPattern=6 4;" target="ListingFactory" value="uses">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
