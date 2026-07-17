@@ -99,6 +99,7 @@ class RecommendationService(BaseService):
     ) -> List[Dict[str, Any]]:
         """Return matching listings first, then recent listings as fallback."""
 
+        # The homepage should feel personalized without becoming empty when a user has little history.
         matching_listings = self._get_matching_interest_listings(
             interest_category_ids,
             user_id,
@@ -121,6 +122,7 @@ class RecommendationService(BaseService):
 
         matching_listings: List[Dict[str, Any]] = []
         for category_id in interest_category_ids:
+            # Process interests in order so the newest browsing/favorite signals influence the first cards.
             category_listings = self._get_available_listings(
                 "listings.category_id = ?",
                 [category_id],
@@ -175,10 +177,12 @@ class RecommendationService(BaseService):
         parameters: List[Any] = [LISTING_STATUS_AVAILABLE] + extra_parameters
 
         if user_id is not None:
+            # Do not recommend the viewer's own listings back to them on the homepage.
             where_clauses.append("listings.seller_id != ?")
             parameters.append(user_id)
 
         if excluded_listing_ids:
+            # Exclude already-selected cards when we fall back from interest matches to recent listings.
             placeholders = ", ".join("?" for _ in excluded_listing_ids)
             where_clauses.append("listings.id NOT IN ({0})".format(placeholders))
             parameters.extend(excluded_listing_ids)

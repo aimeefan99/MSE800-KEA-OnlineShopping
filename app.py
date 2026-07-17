@@ -37,6 +37,7 @@ def create_app() -> Flask:
     def home() -> str:
         """Render the homepage."""
 
+        # The homepage offers only lightweight discovery controls; full filters stay on /listings.
         filters = {
             "keyword": request.args.get("keyword", "").strip(),
             "category_id": request.args.get("category_id", "").strip(),

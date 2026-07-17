@@ -183,6 +183,7 @@ def _remember_interest_category(category_id: int) -> None:
 def _remember_search_interest_categories(keyword: str, listings) -> None:
     """Remember category interests found from keyword search behaviour."""
 
+    # Combine alias-based inference with the categories of the actual results the user just opened.
     category_ids = listing_service.get_search_interest_category_ids(keyword)
     category_ids.extend(int(listing["category_id"]) for listing in listings)
     _remember_interest_categories(category_ids)
@@ -200,6 +201,7 @@ def _remember_interest_categories(category_ids) -> None:
     if not new_category_ids:
         return
 
+    # Move newly seen categories to the front so homepage recommendations follow recent behaviour first.
     recent_category_ids = [
         existing_category_id
         for existing_category_id in recent_category_ids

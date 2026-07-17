@@ -228,7 +228,7 @@ class ListingService(BaseService):
 
         db = get_db()
 
-        # Ownership Safety Check using the class's built-in get_listing_detail method
+        # Read the existing record first so ownership and the current image can be validated together.
         item = self.get_listing_detail(listing_id)
         if not item or item["seller_id"] != user_id:
             return False
@@ -273,7 +273,7 @@ class ListingService(BaseService):
         """Permanently remove an item, but only if the user making the request is the owner!"""
         db = get_db()
 
-        # Ownership Safety Check using the class's built-in get_listing_detail method
+        # Ownership must be confirmed before deleting both the database row and its stored image.
         item = self.get_listing_detail(listing_id)
         if not item or item["seller_id"] != user_id:
             return False
@@ -317,6 +317,7 @@ class ListingService(BaseService):
         """Build the listing browse WHERE clause and parameter list."""
         where_clauses = ["listings.status = ?"]
         query_parameters: List[Any] = []
+        # Normal browsing never surfaces sold items; only currently available stock belongs here.
         query_parameters.append(LISTING_STATUS_AVAILABLE)
 
         self._add_keyword_filter(filters, where_clauses, query_parameters)
