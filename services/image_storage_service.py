@@ -17,6 +17,7 @@ class ImageStorageService:
 
         filename = secure_filename(image_file.filename or "")
         unique_name = "{0}_{1}".format(uuid4().hex, filename)
+        # A configured bucket switches the app into deployed S3 mode; otherwise local uploads are used.
         if self._use_s3_storage():
             self._upload_to_s3(image_file, unique_name)
             return unique_name
@@ -110,6 +111,7 @@ class ImageStorageService:
     def _candidate_local_paths(self, filename: str):
         """Return local file locations checked for one listing image."""
 
+        # Keep the legacy static path in the lookup order so older records still render locally.
         return [
             self._local_upload_path(filename),
             self._legacy_upload_path(filename),

@@ -157,6 +157,7 @@ The project was designed to keep operating costs low during development and demo
 - AWS deployment was kept within the AWS new-account credit model used by the project account
 - Docker, EC2, and S3 were kept to a simple single-instance deployment design to avoid unnecessary infrastructure cost
 - public cloud usage was limited to the services directly needed for hosting, image storage, and demonstration
+- scope control was also used as a cost-management decision so unnecessary development effort was not spent on features outside the MVP and innovation focus
 
 Cost usage was monitored during implementation because some AWS resources, including Elastic IP usage, can still consume credit balance.
 

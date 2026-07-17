@@ -176,6 +176,12 @@ deliberately limited to a prototype-level implementation.
 From a budget perspective, the project was feasible because it could be developed mainly
 with free or low-cost tools and services.
 
+It was also feasible from a labour point of view because the project scope was matched to
+what a two-person team could realistically complete within six weeks of development work. We deliberately limited the first version to a request-based
+marketplace flow instead of adding a full shopping cart, online payment, and full order
+management, because those features would have increased both implementation effort and
+testing cost significantly.
+
 The project did not require major upfront funding for:
 
 - software licenses
@@ -202,8 +208,8 @@ feature. That risk was still manageable because the project only required limite
 prototype-level usage.
 
 Overall, the project was financially feasible for a student team because the expected
-costs were low and the scope avoided expensive integrations such as full online payment
-processing.
+costs were low, the expected labour effort was manageable, and the scope avoided
+expensive integrations such as full online payment processing.
 
 ### 7.2 Schedule Feasibility
 

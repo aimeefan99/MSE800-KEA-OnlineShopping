@@ -312,6 +312,7 @@ class AdminService(BaseService):
         """Get request rows for administrator monitoring pages."""
 
         db = get_db()
+        # Keep one shared request query so the open/completed admin pages stay aligned.
         requests = db.execute(
             ADMIN_REQUESTS_SQL.format(where_clause=where_clause),
             parameters,

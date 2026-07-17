@@ -243,6 +243,7 @@ class TransactionService(BaseService):
         if self._listing_has_accepted_request(int(request["listing_id"])):
             return False, "This listing already has an accepted request."
 
+        # Keep one buyer selected while the listing is still recoverable if the seller later rejects it.
         self._mark_request_accepted(request_id, int(request["listing_id"]))
         return True, "Purchase request accepted."
 
@@ -270,6 +271,7 @@ class TransactionService(BaseService):
         if request["status"] != "accepted":
             return False, "Only accepted requests can be completed."
 
+        # Completion is the point where the listing is finally closed and competing requests are cleared.
         self._mark_request_completed(request_id, int(request["listing_id"]))
         return True, "Transaction completed successfully."
 
@@ -391,6 +393,7 @@ class TransactionService(BaseService):
             (REQUEST_STATUS_REJECTED, request_id),
         )
         if was_accepted:
+            # Re-open the listing only when the seller is backing out of the currently accepted buyer.
             db.execute(
                 """
                 UPDATE listings
