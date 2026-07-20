@@ -584,7 +584,8 @@ class SmokeTestCase(unittest.TestCase):
         page = response.get_data(as_text=True)
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Recommended from your recent browsing", page)
+        self.assertIn("Recommended for you", page)
+        self.assertIn("recent interests", page)
         self.assertIn("Sports &amp; Outdoors", page)
         self.assertIn("Available Tennis Racket", page)
         self.assertNotIn("Sold Bike", page)
@@ -597,7 +598,8 @@ class SmokeTestCase(unittest.TestCase):
         page = response.get_data(as_text=True)
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Recommended from your recent browsing", page)
+        self.assertIn("Recommended for you", page)
+        self.assertIn("recent interests", page)
         self.assertIn("Clothing &amp; Fashion", page)
         self.assertNotIn("Sold Bike", page)
 
